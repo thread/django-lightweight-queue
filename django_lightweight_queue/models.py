@@ -7,5 +7,3 @@ backend = get_backend()
 tasks = get_tasks()
 
 middleware = get_middleware()
-
-tasks.values()[0](123466, '1234')
