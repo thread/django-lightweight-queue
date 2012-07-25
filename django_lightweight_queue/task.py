@@ -1,3 +1,6 @@
+from .job import Job
+from .utils import get_backend
+
 TASKS = {}
 
 class task(object):
@@ -19,10 +22,7 @@ class TaskWrapper(object):
         return "<TaskWrapper: %s>" % self.path
 
     def __call__(self, *args, **kwargs):
-        from .job import Job
-        from .models import backend
-
         job = Job(self.path, args, kwargs)
         job.validate()
 
-        backend.enqueue(job)
+        get_backend().enqueue(job)

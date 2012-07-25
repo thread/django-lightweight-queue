@@ -3,8 +3,7 @@ import time
 
 from django.utils import simplejson
 
-from .utils import get_path
-from .models import middleware
+from .utils import get_path, get_middleware
 
 class Job(object):
     def __init__(self, path, args, kwargs):
@@ -14,6 +13,8 @@ class Job(object):
 
     def run(self):
         start = time.time()
+
+        middleware = get_middleware()
 
         for instance in middleware:
             if hasattr(instance, 'process_job'):
