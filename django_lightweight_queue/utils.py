@@ -26,18 +26,3 @@ def get_middleware():
             pass
 
     return middleware
-
-def get_tasks():
-    for app_name in settings.INSTALLED_APPS:
-        app_module = import_module(app_name)
-
-        try:
-            import_module('.tasks', app_name)
-        except ImportError:
-            if not module_has_submodule(app_module, 'tasks'):
-                continue
-            raise
-
-    from .task import TASKS
-
-    return TASKS

@@ -2,7 +2,7 @@ from optparse import make_option
 
 from django.core.management.base import NoArgsCommand
 
-from ...utils import get_tasks, get_backend
+from ...utils import get_backend
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -11,7 +11,6 @@ class Command(NoArgsCommand):
     )
 
     def handle_noargs(self, **options):
-        tasks = get_tasks()
         backend = get_backend()
 
         while True:
