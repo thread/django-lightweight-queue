@@ -15,5 +15,6 @@ class Command(NoArgsCommand):
         backend = get_backend()
 
         while True:
-            job = backend.dequeue()
-            job.run()
+            job = backend.dequeue(1)
+            if job is not None:
+                job.run()

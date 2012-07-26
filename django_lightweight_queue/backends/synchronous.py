@@ -8,7 +8,7 @@ class SynchronousBackend(object):
     def enqueue(self, job):
         job.run()
 
-    def dequeue(self):
-        # Cannot dequeue from the synchronous backend but we can emulate
-        while True:
-            time.sleep(60)
+    def dequeue(self, timeout):
+        # Cannot dequeue from the synchronous backend but we can emulate by
+        # never returning anything
+        time.sleep(timeout)
