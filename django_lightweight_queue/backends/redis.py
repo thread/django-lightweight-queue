@@ -2,17 +2,16 @@ from __future__ import absolute_import # For 'redis'
 
 import redis
 
-from django.conf import settings
-
 from ..job import Job
+from .. import app_settings
 
 class RedisBackend(object):
     KEY = 'django_lightweight_queue'
 
     def __init__(self):
         self.client = redis.Redis(
-            host=settings.REDIS_FEEDS_HOST,
-            port=settings.REDIS_FEEDS_PORT,
+            host=app_settings.REDIS_HOST,
+            port=app_settings.REDIS_PORT,
         )
 
     def enqueue(self, job):
