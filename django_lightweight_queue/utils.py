@@ -6,6 +6,8 @@ from django.utils.module_loading import module_has_submodule
 
 from . import app_settings
 
+# TODO: Memoize this
+
 def get_path(path):
     module_name, attr = path.rsplit('.', 1)
 
