@@ -3,7 +3,6 @@ from __future__ import absolute_import # For 'redis'
 import redis
 
 from django.conf import settings
-from django.utils import simplejson
 
 from ..job import Job
 
