@@ -11,6 +11,10 @@ class Job(object):
         self.args = args
         self.kwargs = kwargs
 
+    @classmethod
+    def from_json(cls, json):
+        return cls(**simplejson.loads(json))
+
     def run(self):
         start = time.time()
 
