@@ -48,6 +48,7 @@ class Job(object):
 
     def to_json(self):
         return simplejson.dumps({
+            'path': self.path,
             'args': self.args,
             'kwargs': self.kwargs,
         })
