@@ -2,11 +2,10 @@ from django.db import models
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import MiddlewareNotUsed
+from django.utils.functional import memoize
 from django.utils.module_loading import module_has_submodule
 
 from . import app_settings
-
-# TODO: Memoize this
 
 def get_path(path):
     module_name, attr = path.rsplit('.', 1)
@@ -28,3 +27,7 @@ def get_middleware():
             pass
 
     return middleware
+
+get_path = memoize(get_path, {}, 1)
+get_backend = memoize(get_backend, {}, 0)
+get_middleware = memoize(get_middleware, {}, 0)
