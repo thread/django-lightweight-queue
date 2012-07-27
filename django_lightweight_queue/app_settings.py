@@ -6,6 +6,7 @@ def setting(suffix, default):
 BACKEND = setting('BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')
 MIDDLEWARE = setting('MIDDLEWARE', (
     'django_lightweight_queue.middleware.logging.LoggingMiddleware',
+    'django_lightweight_queue.middleware.transaction.TransactionMiddleware',
 ))
 
 # Backend-specific settings
