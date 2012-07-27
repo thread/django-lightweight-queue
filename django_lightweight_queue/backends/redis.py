@@ -18,7 +18,9 @@ class RedisBackend(object):
         self.client.rpush(self.KEY, job.to_json())
 
     def dequeue(self, timeout):
-        data = self.client.blpop(self.KEY, timeout)
+        try:
+            key, data = self.client.blpop(self.KEY, timeout)
 
-        if data is not None:
             return Job.from_json(data)
+        except TypeError:
+            pass
