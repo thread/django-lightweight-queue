@@ -29,9 +29,14 @@ def get_middleware():
     return middleware
 
 try:
-    from setproctitle import setproctitle
+    import setproctitle
+
+    original_title = setproctitle.getproctitle()
+
+    def set_process_title(title):
+        setproctitle.setproctitle("%s [%s]" % (original_title, title))
 except ImportError:
-    def setproctitle(title):
+    def set_process_title(title):
         pass
 
 get_path = memoize(get_path, {}, 1)
