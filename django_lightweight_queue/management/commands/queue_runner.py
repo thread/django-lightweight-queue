@@ -1,5 +1,6 @@
 import os
 import sys
+import signal
 import logging
 
 from optparse import make_option
@@ -47,7 +48,13 @@ class Command(NoArgsCommand):
                 become_daemon(our_home_dir='/')
                 print >>f, os.getpid()
 
-        while True:
+        self.should_run = True
+        def handle_term(signum, stack):
+            logging.info("Caught TERM signal; exiting")
+            self.should_run = False
+        signal.signal(signal.SIGTERM, handle_term)
+
+        while self.should_run:
             logging.debug("Checking backend for items")
             set_process_title("Waiting for items")
 
