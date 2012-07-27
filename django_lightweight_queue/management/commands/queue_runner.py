@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 
 from optparse import make_option
@@ -50,4 +51,4 @@ class Command(NoArgsCommand):
                     set_process_title("Running a job: %s" % job)
                     job.run()
             except KeyboardInterrupt:
-                return
+                sys.exit(1)
