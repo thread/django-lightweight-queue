@@ -28,6 +28,12 @@ def get_middleware():
 
     return middleware
 
+try:
+    from setproctitle import setproctitle
+except ImportError:
+    def setproctitle(title):
+        pass
+
 get_path = memoize(get_path, {}, 1)
 get_backend = memoize(get_backend, {}, 0)
 get_middleware = memoize(get_middleware, {}, 0)
