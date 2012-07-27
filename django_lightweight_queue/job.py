@@ -13,6 +13,9 @@ class Job(object):
 
         self._json = None
 
+    def __repr__(self):
+        return "<Job: %s(*%r, **%r)>" % (self.path, self.args, self.kwargs)
+
     @classmethod
     def from_json(cls, json):
         return cls(**simplejson.loads(json))

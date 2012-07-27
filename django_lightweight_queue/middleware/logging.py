@@ -2,17 +2,11 @@ import traceback
 
 class LoggingMiddleware(object):
     def process_job(self, job):
-        print "I: Running job %s(*%r, **%r)" % (
-            job.path,
-            job.args,
-            job.kwargs,
-        )
+        print "I: Running job %s" % job
 
     def process_result(self, job, result, duration):
-        print "I: Finished job %s(*%r, **%r) => %r (Time taken: %.2fs)" % (
-            job.path,
-            job.args,
-            job.kwargs,
+        print "I: Finished job %s => %r (Time taken: %.2fs)" % (
+            job,
             result,
             duration,
         )
