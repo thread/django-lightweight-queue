@@ -1,7 +1,9 @@
+import os
 import logging
 
 from optparse import make_option
 
+from django.utils.daemonize import become_daemon
 from django.core.management.base import NoArgsCommand
 
 from ...utils import get_backend, get_middleware
@@ -27,6 +29,13 @@ class Command(NoArgsCommand):
 
         get_middleware()
         logging.info("Loaded middleware")
+
+        # fork() only after we have started enough to catch failure, including
+        # being able to write to our pidfile.
+        if options['pidfile']:
+            with open(options['pidfile'], 'w') as f:
+                become_daemon(our_home_dir='/')
+                print >>f, os.getpid()
 
         while True:
             try:
