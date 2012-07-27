@@ -4,7 +4,7 @@ from optparse import make_option
 
 from django.core.management.base import NoArgsCommand
 
-from ...utils import get_backend
+from ...utils import get_backend, get_middleware
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -24,6 +24,9 @@ class Command(NoArgsCommand):
 
         backend = get_backend()
         logging.info("Started backend %s", backend)
+
+        get_middleware()
+        logging.info("Loaded middleware")
 
         while True:
             try:
