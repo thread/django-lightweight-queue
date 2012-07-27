@@ -6,7 +6,7 @@ from optparse import make_option
 from django.utils.daemonize import become_daemon
 from django.core.management.base import NoArgsCommand
 
-from ...utils import get_backend, get_middleware
+from ...utils import get_backend, get_middleware, set_process_title
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -20,6 +20,8 @@ class Command(NoArgsCommand):
             '1': logging.INFO,
             '2': logging.DEBUG,
         }[options['verbosity']]
+
+        set_process_title("Starting")
 
         logging.basicConfig(level=level, format='%(levelname).1s: %(message)s')
         logging.info("Starting queue runner")
@@ -38,11 +40,14 @@ class Command(NoArgsCommand):
                 print >>f, os.getpid()
 
         while True:
+            logging.debug("Checking backend for items")
+            set_process_title("Waiting for items")
+
             try:
-                logging.debug("Checking backend for items")
                 job = backend.dequeue(1)
             except KeyboardInterrupt:
                 return
 
             if job is not None:
+                set_process_title("Running a job: %s" % job)
                 job.run()
