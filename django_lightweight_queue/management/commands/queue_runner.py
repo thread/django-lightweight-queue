@@ -13,6 +13,8 @@ class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--pidfile', action='store', dest='pidfile', default=None,
             help="Fork and write pidfile to this file."),
+        make_option('--logfile', action='store', dest='logfile', default=None,
+            help="Log to the specified file."),
     )
 
     def handle_noargs(self, **options):
@@ -24,7 +26,12 @@ class Command(NoArgsCommand):
 
         set_process_title("Starting")
 
-        logging.basicConfig(level=level, format='%(levelname).1s: %(message)s')
+        logging.basicConfig(
+            level=level,
+            format='%(asctime)-15s %(process)d %(levelname).1s: %(message)s',
+            filename=options['logfile'],
+        )
+
         logging.info("Starting queue runner")
 
         backend = get_backend()
