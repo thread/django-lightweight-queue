@@ -11,6 +11,8 @@ class Job(object):
         self.args = args
         self.kwargs = kwargs
 
+        self._json = None
+
     @classmethod
     def from_json(cls, json):
         return cls(**simplejson.loads(json))
@@ -51,8 +53,10 @@ class Job(object):
         return get_path(self.path)
 
     def to_json(self):
-        return simplejson.dumps({
-            'path': self.path,
-            'args': self.args,
-            'kwargs': self.kwargs,
-        })
+        if self._json is None:
+            self._json = simplejson.dumps({
+                'path': self.path,
+                'args': self.args,
+                'kwargs': self.kwargs,
+            })
+        return self._json
