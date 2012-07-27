@@ -45,9 +45,9 @@ class Command(NoArgsCommand):
 
             try:
                 job = backend.dequeue(1)
+
+                if job is not None:
+                    set_process_title("Running a job: %s" % job)
+                    job.run()
             except KeyboardInterrupt:
                 return
-
-            if job is not None:
-                set_process_title("Running a job: %s" % job)
-                job.run()
