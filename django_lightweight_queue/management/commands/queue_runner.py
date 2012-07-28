@@ -63,8 +63,6 @@ class Command(NoArgsCommand):
 
                 if job is not None:
                     set_process_title("Running a job: %s" % job)
-                    logging.info("Running a job: %s" % job)
                     job.run()
-                    logging.info("Finished running a job: %s" % job)
             except KeyboardInterrupt:
                 sys.exit(1)
