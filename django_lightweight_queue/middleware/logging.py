@@ -1,15 +1,21 @@
-import traceback
+from __future__ import absolute_import
+
+import logging
 
 class LoggingMiddleware(object):
     def process_job(self, job):
-        print "I: Running job %s" % job
+        logging.info("Running job %s", job)
 
     def process_result(self, job, result, duration):
-        print "I: Finished job %s => %r (Time taken: %.2fs)" % (
+        logging.info("Finished job %s => %r (Time taken: %.2fs)",
             job,
             result,
             duration,
         )
 
-    def process_exception(self, job, time_taken, *exc_info):
-        traceback.print_exception(*exc_info)
+    def process_exception(self, job, duration, *exc_info):
+        logging.error("Exception when processing %r (duration: %.2fs): %s",
+            job,
+            duration,
+            traceback.format_exception(*exc_info),
+        )
