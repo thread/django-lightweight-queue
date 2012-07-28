@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import logging
+import traceback
 
 class LoggingMiddleware(object):
     def process_job(self, job):
