@@ -18,5 +18,5 @@ class LoggingMiddleware(object):
         logging.error("Exception when processing %r (duration: %.2fs): %s",
             job,
             duration,
-            traceback.format_exception(*exc_info),
+            ''.join(traceback.format_exception(*exc_info)),
         )
