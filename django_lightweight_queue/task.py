@@ -1,9 +1,12 @@
 from .job import Job
 from .utils import get_backend
 
+from . import app_settings
+
 class task(object):
     def __init__(self, *args, **kwargs):
         self.queue = kwargs.pop('queue', 'default')
+        app_settings.WORKERS.setdefault(self.queue, 1)
 
         self.args = args
         self.kwargs = kwargs
