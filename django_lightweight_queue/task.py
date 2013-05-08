@@ -3,6 +3,8 @@ from .utils import get_backend
 
 class task(object):
     def __init__(self, *args, **kwargs):
+        self.queue = kwargs.pop('queue', 'default')
+
         self.args = args
         self.kwargs = kwargs
 
