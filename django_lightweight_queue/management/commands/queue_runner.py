@@ -33,13 +33,15 @@ class Command(NoArgsCommand):
             filename=options['logfile'],
         )
 
-        logging.info("Starting queue runner")
+        log = logging.getLogger()
 
-        backend = get_backend()
-        logging.info("Started backend %s", backend)
+        log.info("Starting queue runner")
+
+        self.backend = get_backend()
+        log.info("Started backend %s", self.backend)
 
         get_middleware()
-        logging.info("Loaded middleware")
+        log.info("Loaded middleware")
 
         # fork() only after we have started enough to catch failure, including
         # being able to write to our pidfile.
