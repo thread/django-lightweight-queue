@@ -47,10 +47,13 @@ try:
 
     original_title = setproctitle.getproctitle()
 
-    def set_process_title(title):
-        setproctitle.setproctitle("%s [%s]" % (original_title, title))
+    def set_process_title(*titles):
+        setproctitle.setproctitle("%s %s" % (
+            original_title,
+            ' '.join('[%s]' % x for x in titles),
+        ))
 except ImportError:
-    def set_process_title(title):
+    def set_process_title(*titles):
         pass
 
 get_path = memoize(get_path, {}, 1)
