@@ -37,8 +37,8 @@ class Command(NoArgsCommand):
 
         log.info("Starting queue runner")
 
-        self.backend = get_backend()
-        log.info("Started backend %s", self.backend)
+        # Ensure we can import our backend
+        get_backend()
 
         get_middleware()
         log.info("Loaded middleware")
