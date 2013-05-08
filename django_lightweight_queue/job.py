@@ -37,7 +37,7 @@ class Job(object):
             for instance in middleware:
                 if hasattr(instance, 'process_result'):
                     instance.process_result(self, result, time_taken)
-        except Exception, exc:
+        except Exception:
             time_taken = time.time() - start
 
             exc_info = sys.exc_info()
