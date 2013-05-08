@@ -2,12 +2,14 @@ import os
 import sys
 import signal
 import logging
+import multiprocessing
 
 from optparse import make_option
 
 from django.utils.daemonize import become_daemon
 from django.core.management.base import NoArgsCommand
 
+from ... import app_settings
 from ...utils import get_backend, get_middleware, set_process_title
 
 class Command(NoArgsCommand):
@@ -50,21 +52,55 @@ class Command(NoArgsCommand):
                 become_daemon(our_home_dir='/')
                 print >>f, os.getpid()
 
-        self.should_run = True
+        set_process_title("Master process")
+
+        # Use shared memory to communicate "exit after next job"
+        should_run = multiprocessing.Value('d', 1)
+
+        processes = []
+        for queue, num_workers in app_settings.WORKERS.iteritems():
+            for x in range(1, num_workers + 1):
+                processes.append(multiprocessing.Process(
+                    target=worker,
+                    args=(queue, x, should_run),
+                ))
+
+        for x in processes:
+            x.start()
+
+        # Only setup the SIGTERM handler in the master process
         def handle_term(signum, stack):
-            logging.info("Caught TERM signal; exiting")
-            self.should_run = False
+            log.info("Caught TERM signal")
+            set_process_title("Master process exiting")
+            should_run.value = 0
         signal.signal(signal.SIGTERM, handle_term)
 
-        while self.should_run:
-            logging.debug("Checking backend for items")
-            set_process_title("Waiting for items")
+        for x in processes:
+            x.join()
 
-            try:
-                job = backend.dequeue(1)
+        log.info("No more child processes; exiting")
 
-                if job is not None:
-                    set_process_title("Running a job: %s" % job)
-                    job.run()
-            except KeyboardInterrupt:
-                sys.exit(1)
+def worker(queue, worker_num, should_run):
+    name = "%s/%d" % (queue, worker_num)
+
+    log = logging.getLogger()
+
+    log.debug("[%s] Starting", name)
+
+    # Each worker gets it own backend
+    backend = get_backend()
+    log.info("[%s] Loaded backend %s", name, backend)
+
+    while should_run.value:
+        log.debug("[%s] Checking backend for items", name)
+        set_process_title(name, "Waiting for items")
+
+        try:
+            job = backend.dequeue(queue, 1)
+
+            if job is not None:
+                log.debug("[%s] Running job %s", name, job)
+                set_process_title(name, "Running job %s" % job)
+                job.run()
+        except KeyboardInterrupt:
+            sys.exit(1)
