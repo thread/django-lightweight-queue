@@ -12,11 +12,12 @@ class task(object):
         self.kwargs = kwargs
 
     def __call__(self, fn):
-        return TaskWrapper(fn, *self.args, **self.kwargs)
+        return TaskWrapper(fn, self.queue, *self.args, **self.kwargs)
 
 class TaskWrapper(object):
-    def __init__(self, fn, *args, **kwargs):
+    def __init__(self, fn, queue, *args, **kwargs):
         self.fn = fn
+        self.queue = queue
         self.path = '%s.%s' % (fn.__module__, fn.__name__)
 
     def __repr__(self):
@@ -26,4 +27,4 @@ class TaskWrapper(object):
         job = Job(self.path, args, kwargs)
         job.validate()
 
-        get_backend().enqueue(job)
+        get_backend().enqueue(job, self.queue)
