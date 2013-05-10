@@ -4,20 +4,19 @@ from .utils import get_backend
 from . import app_settings
 
 class task(object):
-    def __init__(self, *args, **kwargs):
-        self.queue = kwargs.pop('queue', 'default')
+    def __init__(self, queue='default'):
+        self.queue = queue
+
         app_settings.WORKERS.setdefault(self.queue, 1)
 
-        self.args = args
-        self.kwargs = kwargs
-
     def __call__(self, fn):
-        return TaskWrapper(fn, self.queue, *self.args, **self.kwargs)
+        return TaskWrapper(fn, self.queue)
 
 class TaskWrapper(object):
-    def __init__(self, fn, queue, *args, **kwargs):
+    def __init__(self, fn, queue):
         self.fn = fn
         self.queue = queue
+
         self.path = '%s.%s' % (fn.__module__, fn.__name__)
 
     def __repr__(self):
