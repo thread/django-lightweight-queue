@@ -57,6 +57,12 @@ class Command(NoArgsCommand):
         # Use shared state to communicate "exit after next job" to the children
         shared_state = multiprocessing.Manager().dict(running=True)
 
+        def handle_term(signum, stack):
+            log.info("Caught TERM signal")
+            set_process_title("Master process exiting")
+            shared_state['running'] = False
+        signal.signal(signal.SIGTERM, handle_term)
+
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
                 multiprocessing.Process(
@@ -64,12 +70,6 @@ class Command(NoArgsCommand):
                     args=(queue, x, shared_state),
                 ).start()
 
-        # Only setup the SIGTERM handler in the master process
-        def handle_term(signum, stack):
-            log.info("Caught TERM signal")
-            set_process_title("Master process exiting")
-            shared_state['running'] = False
-        signal.signal(signal.SIGTERM, handle_term)
 
         for x in processes:
             x.join()
@@ -82,6 +82,10 @@ def worker(queue, worker_num, shared_state):
     log = logging.getLogger()
 
     log.debug("[%s] Starting", name)
+
+    # Always reset the signal handling; we could have been restarted by the
+    # master
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
     # Each worker gets it own backend
     backend = get_backend()
