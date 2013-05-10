@@ -62,14 +62,14 @@ class Command(NoArgsCommand):
         back_channel = multiprocessing.Queue()
 
         # Use shared state to communicate "exit after next job" to the children
-        shared_state = multiprocessing.Manager().dict(running=True)
+        running = multiprocessing.Value('d', 1)
 
         set_process_title("Master process")
 
         def handle_term(signum, stack):
             log.info("Caught TERM signal")
             set_process_title("Master process exiting")
-            shared_state['running'] = False
+            running.value = 0
         signal.signal(signal.SIGTERM, handle_term)
 
         # Start workers
@@ -77,11 +77,11 @@ class Command(NoArgsCommand):
             for x in range(1, num_workers + 1):
                 multiprocessing.Process(
                     target=worker,
-                    args=(queue, x, back_channel, shared_state),
+                    args=(queue, x, back_channel, running),
                 ).start()
 
         children = {}
-        while True:
+        while running.value:
             try:
                 log.debug("Checking back channel for items")
                 pid, queue, worker_num, kill_after = back_channel.get(timeout=1)
@@ -105,12 +105,12 @@ class Command(NoArgsCommand):
                 log.info("Starting replacement %s/%d worker", queue, worker_num)
                 multiprocessing.Process(
                     target=worker,
-                    args=(queue, worker_num, back_channel, shared_state),
+                    args=(queue, worker_num, back_channel, running),
                 ).start()
 
         log.info("Exiting")
 
-def worker(queue, worker_num, back_channel, shared_state):
+def worker(queue, worker_num, back_channel, running):
     name = "%s/%d" % (queue, worker_num)
 
     log = logging.getLogger()
@@ -125,7 +125,7 @@ def worker(queue, worker_num, back_channel, shared_state):
     backend = get_backend()
     log.info("[%s] Loaded backend %s", name, backend)
 
-    while shared_state['running']:
+    while running.value:
         log.debug("[%s] Checking backend for items", name)
         set_process_title(name, "Waiting for items")
 
