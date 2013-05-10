@@ -107,6 +107,8 @@ class Command(NoArgsCommand):
                     args=(queue, worker_num, back_channel, shared_state),
                 ).start()
 
+        log.info("Exiting")
+
 def worker(queue, worker_num, back_channel, shared_state):
     name = "%s/%d" % (queue, worker_num)
 
