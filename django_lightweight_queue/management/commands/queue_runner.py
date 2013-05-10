@@ -57,16 +57,12 @@ class Command(NoArgsCommand):
         # Use shared state to communicate "exit after next job" to the children
         shared_state = multiprocessing.Manager().dict(running=True)
 
-        processes = []
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
-                processes.append(multiprocessing.Process(
+                multiprocessing.Process(
                     target=worker,
                     args=(queue, x, shared_state),
-                ))
-
-        for x in processes:
-            x.start()
+                ).start()
 
         # Only setup the SIGTERM handler in the master process
         def handle_term(signum, stack):
