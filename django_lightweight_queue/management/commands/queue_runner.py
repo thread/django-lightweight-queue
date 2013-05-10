@@ -1,9 +1,11 @@
 import os
 import sys
+import time
 import signal
 import logging
 import multiprocessing
 
+from Queue import Empty
 from optparse import make_option
 
 from django.utils.daemonize import become_daemon
@@ -54,6 +56,10 @@ class Command(NoArgsCommand):
 
         set_process_title("Master process")
 
+        # Use a multiprocessing.Queue to communicate back to the master if/when
+        # children should be killed.
+        back_channel = multiprocessing.Queue()
+
         # Use shared state to communicate "exit after next job" to the children
         shared_state = multiprocessing.Manager().dict(running=True)
 
@@ -68,16 +74,37 @@ class Command(NoArgsCommand):
             for x in range(1, num_workers + 1):
                 multiprocessing.Process(
                     target=worker,
-                    args=(queue, x, shared_state),
+                    args=(queue, x, back_channel, shared_state),
                 ).start()
 
+        children = {}
+        while True:
+            try:
+                pid, queue, worker_num, kill_after = back_channel.get(timeout=1)
 
-        for x in processes:
-            x.join()
+                # A child is telling us if/when they should be killed
+                children.pop('pid', None)
+                if kill_after is not None:
+                    children[pid] = (queue, worker_num, kill_after)
+            except Empty:
+                pass
 
-        log.info("No more child processes; exiting")
+            # Check if any children need killing
+            for pid, (queue, worker_num, kill_after) in children.items():
+                if time.time() < kill_after:
+                    continue
 
-def worker(queue, worker_num, shared_state):
+                log.warning("Killing PID %d due to timeout", pid)
+                children.pop(pid, None)
+                os.kill(pid, signal.SIGKILL)
+
+                log.info("Starting replacement %s/%d worker", queue, worker_num)
+                multiprocessing.Process(
+                    target=worker,
+                    args=(queue, worker_num, back_channel, shared_state),
+                ).start()
+
+def worker(queue, worker_num, back_channel, shared_state):
     name = "%s/%d" % (queue, worker_num)
 
     log = logging.getLogger()
@@ -96,11 +123,23 @@ def worker(queue, worker_num, shared_state):
         log.debug("[%s] Checking backend for items", name)
         set_process_title(name, "Waiting for items")
 
-        try:
-            job = backend.dequeue(queue, 10)
+        # Tell master process that we are not doing anything anymore
+        back_channel.put((os.getpid(), queue, worker_num, None))
 
+        try:
+            job = backend.dequeue(queue, 1)
             if job is None:
                 continue
+
+            timeout = job.get_fn().timeout
+
+            # Tell master process if/when it should kill this child
+            if timeout is not None:
+                after = time.time() + timeout
+                log.debug(
+                    "[%s] Informing master I should be killed >%s", name, after,
+                )
+                back_channel.put((os.getpid(), queue, worker_num, after))
 
             log.debug("[%s] Running job %s", name, job)
             set_process_title(name, "Running job %s" % job)
