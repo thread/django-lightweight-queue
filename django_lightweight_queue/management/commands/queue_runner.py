@@ -54,15 +54,15 @@ class Command(NoArgsCommand):
 
         set_process_title("Master process")
 
-        # Use shared memory to communicate "exit after next job"
-        should_run = multiprocessing.Value('d', 1)
+        # Use shared state to communicate "exit after next job" to the children
+        shared_state = multiprocessing.Manager().dict(running=True)
 
         processes = []
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
                 processes.append(multiprocessing.Process(
                     target=worker,
-                    args=(queue, x, should_run),
+                    args=(queue, x, shared_state),
                 ))
 
         for x in processes:
@@ -72,7 +72,7 @@ class Command(NoArgsCommand):
         def handle_term(signum, stack):
             log.info("Caught TERM signal")
             set_process_title("Master process exiting")
-            should_run.value = 0
+            shared_state['running'] = False
         signal.signal(signal.SIGTERM, handle_term)
 
         for x in processes:
@@ -80,7 +80,7 @@ class Command(NoArgsCommand):
 
         log.info("No more child processes; exiting")
 
-def worker(queue, worker_num, should_run):
+def worker(queue, worker_num, shared_state):
     name = "%s/%d" % (queue, worker_num)
 
     log = logging.getLogger()
@@ -91,7 +91,7 @@ def worker(queue, worker_num, should_run):
     backend = get_backend()
     log.info("[%s] Loaded backend %s", name, backend)
 
-    while should_run.value:
+    while shared_state['running']:
         log.debug("[%s] Checking backend for items", name)
         set_process_title(name, "Waiting for items")
 
