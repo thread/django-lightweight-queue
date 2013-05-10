@@ -149,3 +149,5 @@ def worker(queue, worker_num, back_channel, shared_state):
             job.run()
         except KeyboardInterrupt:
             sys.exit(1)
+
+    log.info("[%s] Exiting", name)
