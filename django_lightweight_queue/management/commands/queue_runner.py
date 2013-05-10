@@ -98,9 +98,11 @@ def worker(queue, worker_num, should_run):
         try:
             job = backend.dequeue(queue, 1)
 
-            if job is not None:
-                log.debug("[%s] Running job %s", name, job)
-                set_process_title(name, "Running job %s" % job)
-                job.run()
+            if job is None:
+                continue
+
+            log.debug("[%s] Running job %s", name, job)
+            set_process_title(name, "Running job %s" % job)
+            job.run()
         except KeyboardInterrupt:
             sys.exit(1)
