@@ -63,6 +63,7 @@ class Command(NoArgsCommand):
             shared_state['running'] = False
         signal.signal(signal.SIGTERM, handle_term)
 
+        # Start workers
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
                 multiprocessing.Process(
