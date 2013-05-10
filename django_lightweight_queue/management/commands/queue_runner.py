@@ -82,9 +82,14 @@ class Command(NoArgsCommand):
 
         children = {}
         while running.value:
+            time.sleep(1)
+
             try:
                 log.debug("Checking back channel for items")
-                pid, queue, worker_num, kill_after = back_channel.get(timeout=1)
+
+                # We don't use the timeout kwarg so that when we get a TERM
+                # signal we don't have problems with interrupted system calls.
+                pid, queue, worker_num, kill_after = back_channel.get_nowait()
 
                 # A child is telling us if/when they should be killed
                 children.pop('pid', None)
