@@ -83,6 +83,7 @@ class Command(NoArgsCommand):
         children = {}
         while True:
             try:
+                log.debug("Checking back channel for items")
                 pid, queue, worker_num, kill_after = back_channel.get(timeout=1)
 
                 # A child is telling us if/when they should be killed
