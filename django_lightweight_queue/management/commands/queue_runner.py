@@ -96,7 +96,7 @@ def worker(queue, worker_num, should_run):
         set_process_title(name, "Waiting for items")
 
         try:
-            job = backend.dequeue(queue, 1)
+            job = backend.dequeue(queue, 10)
 
             if job is None:
                 continue
