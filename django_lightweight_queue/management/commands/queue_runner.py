@@ -54,7 +54,8 @@ class Command(NoArgsCommand):
                 become_daemon(our_home_dir='/')
                 print >>f, os.getpid()
 
-        set_process_title("Master process")
+        # Set the title now - multiprocessing will create an extra process
+        set_process_title("Internal master process")
 
         # Use a multiprocessing.Queue to communicate back to the master if/when
         # children should be killed.
@@ -62,6 +63,8 @@ class Command(NoArgsCommand):
 
         # Use shared state to communicate "exit after next job" to the children
         shared_state = multiprocessing.Manager().dict(running=True)
+
+        set_process_title("Master process")
 
         def handle_term(signum, stack):
             log.info("Caught TERM signal")
