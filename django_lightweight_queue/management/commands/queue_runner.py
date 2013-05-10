@@ -41,7 +41,7 @@ class Command(NoArgsCommand):
 
         log.info("Starting queue runner")
 
-        # Ensure we can import our backend
+        # Ensure children will be able to import our backend
         get_backend()
 
         get_middleware()
@@ -54,7 +54,8 @@ class Command(NoArgsCommand):
                 become_daemon(our_home_dir='/')
                 print >>f, os.getpid()
 
-        # Set the title now - multiprocessing will create an extra process
+        # Set a dummy title now; multiprocessing will create an extra process
+        # which will inherit it - we'll set the real title afterwards
         set_process_title("Internal master process")
 
         # Use a multiprocessing.Queue to communicate back to the master if/when
@@ -81,6 +82,7 @@ class Command(NoArgsCommand):
                 ).start()
 
         children = {}
+
         while running.value:
             time.sleep(1)
 
@@ -119,7 +121,6 @@ def worker(queue, worker_num, back_channel, running):
     name = "%s/%d" % (queue, worker_num)
 
     log = logging.getLogger()
-
     log.debug("[%s] Starting", name)
 
     # Always reset the signal handling; we could have been restarted by the
@@ -134,7 +135,7 @@ def worker(queue, worker_num, back_channel, running):
         log.debug("[%s] Checking backend for items", name)
         set_process_title(name, "Waiting for items")
 
-        # Tell master process that we are not doing anything anymore
+        # Tell master process that we are not processing anything.
         back_channel.put((os.getpid(), queue, worker_num, None))
 
         try:
@@ -147,9 +148,7 @@ def worker(queue, worker_num, back_channel, running):
             # Tell master process if/when it should kill this child
             if timeout is not None:
                 after = time.time() + timeout
-                log.debug(
-                    "[%s] Informing master I should be killed >%s", name, after,
-                )
+                log.debug("[%s] Should be killed after %s", name, after)
                 back_channel.put((os.getpid(), queue, worker_num, after))
 
             log.debug("[%s] Running job %s", name, job)
