@@ -147,6 +147,9 @@ class Worker(multiprocessing.Process):
 
         super(Worker, self).__init__()
 
+        # Setup @property.setter on Process
+        self.name = '%s/%s' % (queue, worker_num)
+
     def run(self):
         self.log = logging.getLogger()
         for x in self.log.handlers:
