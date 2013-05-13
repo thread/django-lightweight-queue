@@ -79,55 +79,66 @@ class Command(NoArgsCommand):
             running.value = 0
         signal.signal(signal.SIGTERM, handle_term)
 
-        # Start workers
+        workers = {}
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
-                Worker(
-                    queue,
-                    x,
-                    back_channel,
-                    running,
-                    level,
-                    log_filename('%s.%s' % (queue, x)),
-                ).start()
-
-        children = {}
+                workers[(queue, x)] = None
 
         while running.value:
+            for (queue, worker_num), worker in workers.items():
+
+                # Kill any workers that have exceeded their timeout
+                if worker and worker.kill_after and time.time() > worker.kill_after:
+                    log.warning("Killing %s due to timeout", worker.name)
+
+                    try:
+                        os.kill(worker.pid, signal.SIGKILL)
+
+                        # Sleep for a bit so we don't start workers constantly
+                        time.sleep(0.1)
+                    except OSError:
+                        pass
+
+                # Ensure that all workers are now running (idempotent)
+                if worker is None or not worker.is_alive():
+                    if worker is None:
+                        log.info("Starting worker #%d for %s", worker_num, queue)
+                    else:
+                        log.info(
+                            "Starting missing worker %s (exit code was: %s)",
+                            worker.name,
+                            worker.exitcode,
+                        )
+
+                    worker = Worker(
+                        queue,
+                        worker_num,
+                        back_channel,
+                        running,
+                        level,
+                        log_filename('%s.%s' % (queue, worker_num)),
+                    )
+
+                    workers[(queue, worker_num)] = worker
+                    worker.start()
+
+            while True:
+                try:
+                    log.debug("Checking back channel for items")
+
+                    # We don't use the timeout kwarg so that when we get a TERM
+                    # signal we don't have problems with interrupted system calls.
+                    queue, worker_num, kill_after = back_channel.get_nowait()
+                except Empty:
+                    break
+
+                worker = workers[(queue, worker_num)]
+                log.debug(
+                    "Setting kill_after for %s to %r", worker.name, kill_after,
+                )
+                worker.kill_after = kill_after
+
             time.sleep(1)
-
-            try:
-                log.debug("Checking back channel for items")
-
-                # We don't use the timeout kwarg so that when we get a TERM
-                # signal we don't have problems with interrupted system calls.
-                pid, queue, worker_num, kill_after = back_channel.get_nowait()
-
-                # A child is telling us if/when they should be killed
-                children.pop('pid', None)
-                if kill_after is not None:
-                    children[pid] = (queue, worker_num, kill_after)
-            except Empty:
-                pass
-
-            # Check if any children need killing
-            for pid, (queue, worker_num, kill_after) in children.items():
-                if time.time() < kill_after:
-                    continue
-
-                log.warning("Killing PID %d due to timeout", pid)
-                children.pop(pid, None)
-                os.kill(pid, signal.SIGKILL)
-
-                log.info("Starting replacement %s/%d worker", queue, worker_num)
-                Worker(
-                    queue,
-                    worker_num,
-                    back_channel,
-                    running,
-                    level,
-                    log_filename('%s.%s' % (queue, worker_num)),
-                ).start()
 
         log.info("Exiting")
 
@@ -144,6 +155,9 @@ class Worker(multiprocessing.Process):
 
         # Logfiles must be opened in child process
         self.log = None
+
+        # Used by the parent
+        self.kill_after = None
 
         super(Worker, self).__init__()
 
@@ -204,7 +218,7 @@ class Worker(multiprocessing.Process):
         job.run()
 
     def tell_master(self, value):
-        self.back_channel.put((os.getpid(), self.queue, self.worker_num, value))
+        self.back_channel.put((self.queue, self.worker_num, value))
 
     def set_process_title(self, *titles):
         set_process_title(self.name, *titles)
