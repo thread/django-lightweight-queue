@@ -157,11 +157,8 @@ class Worker(multiprocessing.Process):
 
         logging.basicConfig(
             level=self.log_level,
-            format='%%(asctime)-15s %%(process)d %(queue)s/%(worker_num)d '
-                    '%%(levelname).1s: %%(message)s' % {
-                'queue': self.queue,
-                'worker_num': self.worker_num,
-            },
+            format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
+                '%%(message)s' % self.name,
             filename=self.log_filename,
         )
 
@@ -210,7 +207,4 @@ class Worker(multiprocessing.Process):
         self.back_channel.put((os.getpid(), self.queue, self.worker_num, value))
 
     def set_process_title(self, *titles):
-        set_process_title(
-            '%s/%d' % (self.queue, self.worker_num),
-            *titles
-        )
+        set_process_title(self.name, *titles)
