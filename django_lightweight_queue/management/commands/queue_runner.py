@@ -31,10 +31,16 @@ class Command(NoArgsCommand):
 
         set_process_title("Starting")
 
+        def log_filename(name):
+            try:
+                return options['logfile'] % name
+            except TypeError:
+                return options['logfile']
+
         logging.basicConfig(
             level=level,
             format='%(asctime)-15s %(process)d %(levelname).1s: %(message)s',
-            filename=options['logfile'],
+            filename=log_filename('master'),
         )
 
         log = logging.getLogger()
@@ -78,7 +84,14 @@ class Command(NoArgsCommand):
             for x in range(1, num_workers + 1):
                 multiprocessing.Process(
                     target=worker,
-                    args=(queue, x, back_channel, running),
+                    args=(
+                        queue,
+                        x,
+                        back_channel,
+                        running,
+                        level,
+                        log_filename('%s.%s' % (queue, x)),
+                    ),
                 ).start()
 
         children = {}
@@ -112,16 +125,37 @@ class Command(NoArgsCommand):
                 log.info("Starting replacement %s/%d worker", queue, worker_num)
                 multiprocessing.Process(
                     target=worker,
-                    args=(queue, worker_num, back_channel, running),
+                    args=(
+                        queue,
+                        worker_num,
+                        back_channel,
+                        running,
+                        level,
+                        log_filename('%s.%s' % (queue, worker_num)),
+                    ),
                 ).start()
 
         log.info("Exiting")
 
-def worker(queue, worker_num, back_channel, running):
-    name = "%s/%d" % (queue, worker_num)
+def worker(queue, worker_num, back_channel, running, log_level, log_filename):
+    def set_worker_process_title(title):
+        set_process_title('%s/%d' % (queue, worker_num), title)
 
     log = logging.getLogger()
-    log.debug("[%s] Starting", name)
+    for x in log.handlers:
+        log.removeHandler(x)
+
+    logging.basicConfig(
+        level=log_level,
+        format='%%(asctime)-15s %%(process)d %(queue)s/%(worker_num)d '
+                '%%(levelname).1s: %%(message)s' % {
+            'queue': queue,
+            'worker_num': worker_num,
+        },
+        filename=log_filename,
+    )
+
+    log.debug("Starting")
 
     # Always reset the signal handling; we could have been restarted by the
     # master
@@ -129,11 +163,11 @@ def worker(queue, worker_num, back_channel, running):
 
     # Each worker gets it own backend
     backend = get_backend()
-    log.info("[%s] Loaded backend %s", name, backend)
+    log.info("Loaded backend %s", backend)
 
     while running.value:
-        log.debug("[%s] Checking backend for items", name)
-        set_process_title(name, "Waiting for items")
+        log.debug("Checking backend for items")
+        set_process_title("Waiting for items")
 
         # Tell master process that we are not processing anything.
         back_channel.put((os.getpid(), queue, worker_num, None))
@@ -148,13 +182,13 @@ def worker(queue, worker_num, back_channel, running):
             # Tell master process if/when it should kill this child
             if timeout is not None:
                 after = time.time() + timeout
-                log.debug("[%s] Should be killed after %s", name, after)
+                log.debug("Should be killed after %s", after)
                 back_channel.put((os.getpid(), queue, worker_num, after))
 
-            log.debug("[%s] Running job %s", name, job)
-            set_process_title(name, "Running job %s" % job)
+            log.debug("Running job %s", job)
+            set_process_title("Running job %s" % job)
             job.run()
         except KeyboardInterrupt:
             sys.exit(1)
 
-    log.info("[%s] Exiting", name)
+    log.info("Exiting")
