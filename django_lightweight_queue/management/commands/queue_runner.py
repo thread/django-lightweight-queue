@@ -82,16 +82,13 @@ class Command(NoArgsCommand):
         # Start workers
         for queue, num_workers in app_settings.WORKERS.iteritems():
             for x in range(1, num_workers + 1):
-                multiprocessing.Process(
-                    target=worker,
-                    args=(
-                        queue,
-                        x,
-                        back_channel,
-                        running,
-                        level,
-                        log_filename('%s.%s' % (queue, x)),
-                    ),
+                Worker(
+                    queue,
+                    x,
+                    back_channel,
+                    running,
+                    level,
+                    log_filename('%s.%s' % (queue, x)),
                 ).start()
 
         children = {}
@@ -123,72 +120,94 @@ class Command(NoArgsCommand):
                 os.kill(pid, signal.SIGKILL)
 
                 log.info("Starting replacement %s/%d worker", queue, worker_num)
-                multiprocessing.Process(
-                    target=worker,
-                    args=(
-                        queue,
-                        worker_num,
-                        back_channel,
-                        running,
-                        level,
-                        log_filename('%s.%s' % (queue, worker_num)),
-                    ),
+                Worker(
+                    queue,
+                    worker_num,
+                    back_channel,
+                    running,
+                    level,
+                    log_filename('%s.%s' % (queue, worker_num)),
                 ).start()
 
         log.info("Exiting")
 
-def worker(queue, worker_num, back_channel, running, log_level, log_filename):
-    def set_worker_process_title(title):
-        set_process_title('%s/%d' % (queue, worker_num), title)
+class Worker(multiprocessing.Process):
+    def __init__(self, queue, worker_num, back_channel, running, log_level, log_filename):
+        self.queue = queue
+        self.worker_num = worker_num
 
-    log = logging.getLogger()
-    for x in log.handlers:
-        log.removeHandler(x)
+        self.back_channel = back_channel
+        self.running = running
 
-    logging.basicConfig(
-        level=log_level,
-        format='%%(asctime)-15s %%(process)d %(queue)s/%(worker_num)d '
-                '%%(levelname).1s: %%(message)s' % {
-            'queue': queue,
-            'worker_num': worker_num,
-        },
-        filename=log_filename,
-    )
+        self.log_level = log_level
+        self.log_filename = log_filename
 
-    log.debug("Starting")
+        # Logfiles must be opened in child process
+        self.log = None
 
-    # Always reset the signal handling; we could have been restarted by the
-    # master
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        super(Worker, self).__init__()
 
-    # Each worker gets it own backend
-    backend = get_backend()
-    log.info("Loaded backend %s", backend)
+    def run(self):
+        self.log = logging.getLogger()
+        for x in self.log.handlers:
+            self.log.removeHandler(x)
 
-    while running.value:
-        log.debug("Checking backend for items")
-        set_process_title("Waiting for items")
+        logging.basicConfig(
+            level=self.log_level,
+            format='%%(asctime)-15s %%(process)d %(queue)s/%(worker_num)d '
+                    '%%(levelname).1s: %%(message)s' % {
+                'queue': self.queue,
+                'worker_num': self.worker_num,
+            },
+            filename=self.log_filename,
+        )
+
+        self.log.debug("Starting")
+
+        # Always reset the signal handling; we could have been restarted by the
+        # master
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
+        # Each worker gets it own backend
+        backend = get_backend()
+        self.log.info("Loaded backend %s", backend)
+
+        while self.running.value:
+            try:
+                self.process(backend)
+            except KeyboardInterrupt:
+                sys.exit(1)
+
+        self.log.info("Exiting")
+
+    def process(self, backend):
+        self.log.debug("Checking backend for items")
+        self.set_process_title("Waiting for items")
 
         # Tell master process that we are not processing anything.
-        back_channel.put((os.getpid(), queue, worker_num, None))
+        self.tell_master(None)
 
-        try:
-            job = backend.dequeue(queue, 1)
-            if job is None:
-                continue
+        job = backend.dequeue(self.queue, 1)
+        if job is None:
+            return
 
-            timeout = job.get_fn().timeout
+        timeout = job.get_fn().timeout
 
-            # Tell master process if/when it should kill this child
-            if timeout is not None:
-                after = time.time() + timeout
-                log.debug("Should be killed after %s", after)
-                back_channel.put((os.getpid(), queue, worker_num, after))
+        # Tell master process if/when it should kill this child
+        if timeout is not None:
+            after = time.time() + timeout
+            self.log.debug("Should be killed after %s", after)
+            self.tell_master(after)
 
-            log.debug("Running job %s", job)
-            set_process_title("Running job %s" % job)
-            job.run()
-        except KeyboardInterrupt:
-            sys.exit(1)
+        self.log.debug("Running job %s", job)
+        self.set_process_title("Running job %s" % job)
+        job.run()
 
-    log.info("Exiting")
+    def tell_master(self, value):
+        self.back_channel.put((os.getpid(), self.queue, self.worker_num, value))
+
+    def set_process_title(self, *titles):
+        set_process_title(
+            '%s/%d' % (self.queue, self.worker_num),
+            *titles
+        )
