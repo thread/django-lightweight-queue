@@ -1,11 +1,14 @@
-from django.db import transaction
+from django.db import transaction, connection
 
 class TransactionMiddleware(object):
     def process_job(self, job):
-        transaction.set_autocommit(False)
+        if not connection.in_atomic_block:
+            transaction.set_autocommit(False)
 
     def process_result(self, job, result, duration):
-        transaction.commit()
+        if not connection.in_atomic_block:
+            transaction.commit()
 
     def process_exception(self, job, time_taken, *exc_info):
-        transaction.rollback()
+        if not connection.in_atomic_block:
+            transaction.rollback()
