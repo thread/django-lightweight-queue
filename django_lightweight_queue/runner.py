@@ -32,6 +32,9 @@ def runner(log, log_filename_fn):
     workers = {}
     for queue, num_workers in app_settings.WORKERS.iteritems():
         for x in range(1, num_workers + 1):
+            # We don't go out of our way to start workers on startup - we let
+            # the "restart if they aren't already running" machinery do its
+            # job.
             workers[(queue, x)] = None
 
     while running.value:
