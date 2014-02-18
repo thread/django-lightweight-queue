@@ -49,7 +49,10 @@ class CronScheduler(multiprocessing.Process):
         while self.running.value:
             try:
                 self.tick(backend)
-                time.sleep(1)
+
+                # Sleep until the next second boundary. This corrects for skew
+                # caused by the accumulation of tick() runtime.
+                time.sleep((1 - time.time() % 1))
             except KeyboardInterrupt:
                 sys.exit(1)
 
