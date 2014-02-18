@@ -19,7 +19,7 @@ class RedisBackend(object):
 
     def dequeue(self, queue, timeout):
         try:
-            key, data = self.client.blpop(self.KEY % queue, timeout)
+            _, data = self.client.blpop(self.KEY % queue, timeout)
 
             return Job.from_json(data)
         except TypeError:
