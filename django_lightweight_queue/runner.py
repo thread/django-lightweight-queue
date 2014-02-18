@@ -8,6 +8,7 @@ from Queue import Empty
 from . import app_settings
 from .utils import set_process_title
 from .worker import Worker
+from .cron_scheduler import CronScheduler
 
 def runner(log, log_filename_fn):
     # Set a dummy title now; multiprocessing will create an extra process
@@ -36,6 +37,9 @@ def runner(log, log_filename_fn):
             # the "restart if they aren't already running" machinery do its
             # job.
             workers[(queue, x)] = None
+
+    # Start the cron scheduler
+    CronScheduler(running, log.level, log_filename_fn('cron_scheduler')).start()
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
