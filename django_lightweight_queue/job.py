@@ -1,7 +1,6 @@
 import sys
+import json
 import time
-
-from django.utils import simplejson
 
 from .utils import get_path, get_middleware
 
@@ -18,7 +17,7 @@ class Job(object):
 
     @classmethod
     def from_json(cls, json):
-        return cls(**simplejson.loads(json))
+        return cls(**json.loads(json))
 
     def run(self):
         start = time.time()
@@ -57,7 +56,7 @@ class Job(object):
 
     def to_json(self):
         if self._json is None:
-            self._json = simplejson.dumps({
+            self._json = json.dumps({
                 'path': self.path,
                 'args': self.args,
                 'kwargs': self.kwargs,
