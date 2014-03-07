@@ -16,8 +16,8 @@ class Job(object):
         return "<Job: %s(*%r, **%r)>" % (self.path, self.args, self.kwargs)
 
     @classmethod
-    def from_json(cls, json):
-        return cls(**json.loads(json))
+    def from_json(cls, val):
+        return cls(**json.loads(val))
 
     def run(self):
         start = time.time()
