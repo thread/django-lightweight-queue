@@ -10,15 +10,13 @@ class LoggingMiddleware(object):
         log.info("Running job %s", job)
 
     def process_result(self, job, result, duration):
-        log.info("Finished job %s => %r (Time taken: %.2fs)",
-            job,
+        log.info("Finished job => %r (Time taken: %.2fs)",
             result,
             duration,
         )
 
     def process_exception(self, job, duration, *exc_info):
-        log.error("Exception when processing %r (duration: %.2fs): %s",
-            job,
+        log.error("Exception when processing job (duration: %.2fs): %s",
             duration,
             ''.join(traceback.format_exception(*exc_info)),
         )
