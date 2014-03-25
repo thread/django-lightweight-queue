@@ -1,0 +1,8 @@
+/var/log/project-queues/*.log {
+	daily
+	rotate 21
+	compress
+	missingok
+	notifempty
+	create 644 www-data www-data
+}
