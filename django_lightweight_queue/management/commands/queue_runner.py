@@ -6,7 +6,7 @@ from optparse import make_option
 from django.utils.daemonize import become_daemon
 from django.core.management.base import NoArgsCommand
 
-from ...utils import get_backend, get_middleware
+from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
 
 class Command(NoArgsCommand):
@@ -30,7 +30,7 @@ class Command(NoArgsCommand):
             except TypeError:
                 return options['logfile']
 
-        logging.basicConfig(
+        configure_logging(
             level=level,
             format='%(asctime)-15s %(process)d %(levelname).1s: %(message)s',
             filename=log_filename('master'),

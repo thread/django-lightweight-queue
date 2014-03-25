@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.management import call_command
 
 from .task import task
-from .utils import set_process_title, get_backend
+from .utils import set_process_title, get_backend, configure_logging
 
 class CronScheduler(multiprocessing.Process):
     QUEUE = 'cron'
@@ -34,7 +34,7 @@ class CronScheduler(multiprocessing.Process):
         for x in self.log.handlers:
             self.log.removeHandler(x)
 
-        logging.basicConfig(
+        configure_logging(
             level=self.log_level,
             format='%(asctime)-15s %(process)d cron_scheduler %(levelname).1s: '
                 '%(message)s',

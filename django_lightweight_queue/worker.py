@@ -4,7 +4,7 @@ import signal
 import logging
 import multiprocessing
 
-from .utils import get_backend, set_process_title
+from .utils import get_backend, set_process_title, configure_logging
 
 class Worker(multiprocessing.Process):
     def __init__(self, queue, worker_num, back_channel, running, log_level, log_filename):
@@ -33,7 +33,7 @@ class Worker(multiprocessing.Process):
         for x in self.log.handlers:
             self.log.removeHandler(x)
 
-        logging.basicConfig(
+        configure_logging(
             level=self.log_level,
             format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
                 '%%(message)s' % self.name,

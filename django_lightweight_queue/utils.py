@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import get_apps
 from django.core.exceptions import MiddlewareNotUsed
 from django.utils.importlib import import_module
@@ -5,6 +7,26 @@ from django.utils.functional import memoize
 from django.utils.module_loading import module_has_submodule
 
 from . import app_settings
+
+def configure_logging(level, format, filename):
+    """
+    Like ``logging.basicConfig`` but we use WatchedFileHandler so that we play
+    nicely with logrotate and similar tools.
+    """
+
+    if logging.root.handlers:
+        return
+
+    handler = logging.StreamHandler()
+    if filename:
+        handler = logging.handlers.WatchedFileHandler(filename)
+
+    handler.setFormatter(logging.Formatter(format))
+
+    logging.root.addHandler(handler)
+
+    if level is not None:
+        logging.root.setLevel(level)
 
 def get_path(path):
     module_name, attr = path.rsplit('.', 1)
