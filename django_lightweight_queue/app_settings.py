@@ -13,3 +13,4 @@ MIDDLEWARE = setting('MIDDLEWARE', (
 # Backend-specific settings
 REDIS_HOST = setting('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = setting('REDIS_PORT', 6379)
+REDIS_PREFIX = setting('REDIS_PREFIX', '')
