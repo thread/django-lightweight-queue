@@ -60,7 +60,7 @@ case "${1:-}" in
 			# runners and I can't work out why. Thus, we ensure
 			# that we really have none left over running in the
 			# background.
-			pgrep -u ${USER} -f queue_runner | xargs -r kill
+			pgrep -u ${USER} -f "${DAEMON} queue_runner" | xargs -r kill
 		else
 			rm -rf ${RUNPATH}
 			log_end_msg $?
