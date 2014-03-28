@@ -12,10 +12,11 @@ def configure_logging(level, format, filename):
     """
     Like ``logging.basicConfig`` but we use WatchedFileHandler so that we play
     nicely with logrotate and similar tools.
+
+    We also unconditionally remove all existing handlers.
     """
 
-    if logging.root.handlers:
-        return
+    logging.root.handlers = []
 
     handler = logging.StreamHandler()
     if filename:
