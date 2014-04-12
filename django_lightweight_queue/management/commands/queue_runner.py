@@ -3,6 +3,7 @@ import logging
 
 from optparse import make_option
 
+from django.db import models
 from django.utils.daemonize import become_daemon
 from django.core.management.base import NoArgsCommand
 
@@ -45,6 +46,12 @@ class Command(NoArgsCommand):
 
         get_middleware()
         log.info("Loaded middleware")
+
+        # Ensure children will be able to import most things, but also try and
+        # save memory by importing as much as possible before the fork() as it
+        # has copy-on-write semantics.
+        models.get_models()
+        log.info("Loaded models")
 
         # fork() only after we have started enough to catch failure, including
         # being able to write to our pidfile.
