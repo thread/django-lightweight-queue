@@ -1,4 +1,5 @@
 import time
+import select
 import datetime
 
 from django.db import connection, models, ProgrammingError
@@ -14,6 +15,8 @@ class DatabaseBackend(object):
         models.TextField(name='data'),
         models.DateTimeField(name='created'),
     )
+
+    HAS_PUBSUB = bool(connection.vendor == 'postgresql')
 
     def __init__(self):
         qn = connection.ops.quote_name
@@ -56,6 +59,9 @@ class DatabaseBackend(object):
             datetime.datetime.utcnow(),
         ))
 
+        if self.HAS_PUBSUB:
+            cursor.execute('NOTIFY "%s:%s"' % (self.TABLE, queue))
+
     def dequeue(self, queue, timeout):
         cursor = connection.cursor()
         cursor.execute("""
@@ -66,7 +72,23 @@ class DatabaseBackend(object):
         try:
             id_, data = cursor.fetchall()[0]
         except (IndexError, ProgrammingError):
-            time.sleep(timeout)
+            if self.HAS_PUBSUB:
+                cursor.execute('LISTEN "%s:%s"' % (self.TABLE, queue))
+
+                c = cursor.connection
+
+                # Wait to see if we hear anything. If we do, we just return
+                # earlier than ``timeout`` rather than polling the DB again as
+                # we'll be called immediately anyway.
+                select.select([c], [], [], timeout)
+
+                # Empty notification queue.
+                c.poll()
+                while c.notifies:
+                    c.notifies.pop()
+            else:
+                time.sleep(timeout)
+
             return
 
         cursor.execute("""
