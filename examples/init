@@ -37,7 +37,7 @@ case "${1:-}" in
 			chown ${USER}:${GROUP} $(dirname ${FILE})
 		done
 
-                start-stop-daemon --start --oknodo --chuid ${USER}:${GROUP} \
+                start-stop-daemon --start --quiet --oknodo --chuid ${USER}:${GROUP} \
                     --pidfile ${PIDFILE} \
                     --startas ${DAEMON} -- \
 		    queue_runner \
