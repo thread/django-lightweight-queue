@@ -45,6 +45,10 @@ class Job(object):
                 if hasattr(instance, 'process_exception'):
                     instance.process_exception(self, time_taken, *exc_info)
 
+            return False
+
+        return True
+
     def validate(self):
         # Ensure these execute without exception so that we cannot enqueue
         # things that are impossible to dequeue.

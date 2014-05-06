@@ -16,6 +16,8 @@ class Command(NoArgsCommand):
             help="Fork and write pidfile to this file."),
         make_option('--logfile', action='store', dest='logfile', default=None,
             help="Log to the specified file."),
+        make_option('--touchfile', action='store', dest='touchfile', default=None,
+            help="touch(1) the specified file after running a job."),
     )
 
     def handle_noargs(self, **options):
@@ -30,6 +32,12 @@ class Command(NoArgsCommand):
                 return options['logfile'] % name
             except TypeError:
                 return options['logfile']
+
+        def touch_filename(name):
+            try:
+                return options['touchfile'] % name
+            except TypeError:
+                return None
 
         configure_logging(
             level=level,
@@ -60,4 +68,4 @@ class Command(NoArgsCommand):
                 become_daemon(our_home_dir='/')
                 print >>f, os.getpid()
 
-        runner(log, log_filename)
+        runner(log, log_filename, touch_filename)

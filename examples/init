@@ -20,6 +20,7 @@ GROUP=www-data
 RUNPATH=/var/run/${NAME}
 PIDFILE=${RUNPATH}/${NAME}.pid
 LOGFILE=/var/log/${NAME}/${NAME}.%s.log
+TOUCHFILE=${RUNPATH}/${NAME}.%s.success
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 

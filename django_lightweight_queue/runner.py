@@ -10,7 +10,7 @@ from .utils import set_process_title
 from .worker import Worker
 from .cron_scheduler import CronScheduler
 
-def runner(log, log_filename_fn):
+def runner(log, log_filename_fn, touch_filename_fn):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -74,6 +74,7 @@ def runner(log, log_filename_fn):
                     running,
                     log.level,
                     log_filename_fn('%s.%s' % (queue, worker_num)),
+                    touch_filename_fn(queue),
                 )
 
                 workers[(queue, worker_num)] = worker

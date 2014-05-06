@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import signal
@@ -7,7 +8,7 @@ import multiprocessing
 from .utils import get_backend, set_process_title, configure_logging
 
 class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_num, back_channel, running, log_level, log_filename):
+    def __init__(self, queue, worker_num, back_channel, running, log_level, log_filename, touch_filename):
         self.queue = queue
         self.worker_num = worker_num
 
@@ -16,6 +17,7 @@ class Worker(multiprocessing.Process):
 
         self.log_level = log_level
         self.log_filename = log_filename
+        self.touch_filename = touch_filename
 
         # Logfiles must be opened in child process
         self.log = None
@@ -79,7 +81,10 @@ class Worker(multiprocessing.Process):
 
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
-        job.run()
+
+        if job.run() and self.touch_filename:
+            with open(self.touch_filename, 'a'):
+                os.utime(self.touch_filename, None)
 
     def tell_master(self, value):
         self.back_channel.put((self.queue, self.worker_num, value))
