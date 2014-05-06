@@ -43,7 +43,8 @@ case "${1:-}" in
                     --startas ${DAEMON} -- \
 		    queue_runner \
 		    --pidfile ${PIDFILE} \
-		    --logfile ${LOGFILE}
+		    --logfile ${LOGFILE} \
+		    --touchfile ${TOUCHFILE}
 
 		log_end_msg $?
         ;;
