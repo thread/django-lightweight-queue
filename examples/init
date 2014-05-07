@@ -70,6 +70,10 @@ case "${1:-}" in
 		fi
 	;;
 
+	status)
+		status_of_proc -p ${PIDFILE} ${DAEMON} ${NAME}
+		;;
+
 	restart|force-reload)
 		${0} stop
 		${0} start
