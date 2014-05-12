@@ -5,6 +5,8 @@ import signal
 import logging
 import multiprocessing
 
+from django.db import connections, transaction
+
 from .utils import get_backend, set_process_title, configure_logging
 
 class Worker(multiprocessing.Process):
@@ -85,6 +87,13 @@ class Worker(multiprocessing.Process):
         if job.run() and self.touch_filename:
             with open(self.touch_filename, 'a'):
                 os.utime(self.touch_filename, None)
+
+        # Emulate Django's request_finished signal and close all of our
+        # connections. Django assumes that making a DB connection is cheap, so
+        # it's probably safe to assume that too.
+        for x in connections:
+            transaction.abort(x)
+            connections[x].close()
 
     def tell_master(self, value):
         self.back_channel.put((self.queue, self.worker_num, value))

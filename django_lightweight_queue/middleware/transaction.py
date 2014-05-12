@@ -1,4 +1,4 @@
-from django.db import transaction, connection, close_connection, DatabaseError
+from django.db import transaction, connection
 
 class TransactionMiddleware(object):
     def process_job(self, job):
@@ -12,9 +12,6 @@ class TransactionMiddleware(object):
     def process_exception(self, job, time_taken, *exc_info):
         if not connection.in_atomic_block:
             transaction.rollback()
-
-        if isinstance(exc_info[1], DatabaseError):
-            close_connection()
 
 # Legacy
 if not hasattr(connection, 'in_atomic_block'):
@@ -34,6 +31,3 @@ if not hasattr(connection, 'in_atomic_block'):
             if transaction.is_dirty():
                 transaction.rollback()
             transaction.leave_transaction_management()
-
-            if isinstance(exc_info[1], DatabaseError):
-                close_connection()
