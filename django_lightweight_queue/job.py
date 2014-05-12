@@ -43,7 +43,10 @@ class Job(object):
 
             for instance in middleware:
                 if hasattr(instance, 'process_exception'):
-                    instance.process_exception(self, time_taken, *exc_info)
+                    try:
+                        instance.process_exception(self, time_taken, *exc_info)
+                    except Exception:
+                        pass
 
             return False
 
