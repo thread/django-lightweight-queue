@@ -92,7 +92,11 @@ class Worker(multiprocessing.Process):
         # connections. Django assumes that making a DB connection is cheap, so
         # it's probably safe to assume that too.
         for x in connections:
-            transaction.abort(x)
+            try:
+                # Removed in recent versions
+                transaction.abort(x)
+            except AttributeError:
+                pass
             connections[x].close()
 
     def tell_master(self, value):
