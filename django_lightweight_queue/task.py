@@ -25,7 +25,10 @@ class TaskWrapper(object):
         return "<TaskWrapper: %s>" % self.path
 
     def __call__(self, *args, **kwargs):
+        # Allow us to override which queue at the last moment
+        queue = kwargs.pop('queue', self.queue)
+
         job = Job(self.path, args, kwargs)
         job.validate()
 
-        get_backend().enqueue(job, self.queue)
+        get_backend().enqueue(job, queue)
