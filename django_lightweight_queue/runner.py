@@ -30,6 +30,10 @@ def runner(log, log_filename_fn, touch_filename_fn):
         running.value = 0
     signal.signal(signal.SIGTERM, handle_term)
 
+    # Start the cron scheduler before setting up the workers so that it can
+    # populate app_settings.WORKERS
+    CronScheduler(running, log.level, log_filename_fn('cron_scheduler')).start()
+
     workers = {}
     for queue, num_workers in app_settings.WORKERS.iteritems():
         for x in range(1, num_workers + 1):
@@ -37,9 +41,6 @@ def runner(log, log_filename_fn, touch_filename_fn):
             # the "restart if they aren't already running" machinery do its
             # job.
             workers[(queue, x)] = None
-
-    # Start the cron scheduler
-    CronScheduler(running, log.level, log_filename_fn('cron_scheduler')).start()
 
     while running.value:
         for (queue, worker_num), worker in workers.items():

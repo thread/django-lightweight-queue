@@ -9,12 +9,11 @@ import multiprocessing
 from django.conf import settings
 from django.core.management import call_command
 
+from . import app_settings
 from .task import task
 from .utils import set_process_title, get_backend, configure_logging
 
 class CronScheduler(multiprocessing.Process):
-    QUEUE = 'cron'
-
     def __init__(self, running, log_level, log_filename):
         self.running = running
         self.log_level = log_level
@@ -79,6 +78,7 @@ class CronScheduler(multiprocessing.Process):
 
             execute(
                 row['command'],
+                queue=row['queue'],
                 *row.get('command_args', []),
                 **row.get('command_kwargs', {})
             )
@@ -122,10 +122,14 @@ class CronScheduler(multiprocessing.Process):
                 row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
                 row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
                 row['day_matcher'] = get_matcher(1,  7, row.get('days', '*'))
+                row['queue'] = row.get('queue', 'cron')
                 config.append(row)
+
+                # We must ensure we have at least one worker for this queue.
+                app_settings.WORKERS.setdefault(row['queue'], 1)
 
         return config
 
-@task(queue=CronScheduler.QUEUE)
+@task()
 def execute(name, *args, **kwargs):
     call_command(name, *args, **kwargs)
