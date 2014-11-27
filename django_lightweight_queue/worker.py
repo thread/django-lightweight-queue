@@ -26,6 +26,7 @@ class Worker(multiprocessing.Process):
 
         # Defaults for values dynamically updated when running a job
         self.kill_after = None # timestamp
+        self.kill_on_stop = False
 
         super(Worker, self).__init__()
 
@@ -67,13 +68,14 @@ class Worker(multiprocessing.Process):
         self.set_process_title("Waiting for items")
 
         # Tell master process that we are not processing anything.
-        self.tell_master(None)
+        self.tell_master(None, False)
 
         job = backend.dequeue(self.queue, 1)
         if job is None:
             return
 
         kill_after = None
+        kill_on_stop = job.get_fn().kill_on_stop
 
         # Calculate kill_after if we were set a timeout
         timeout = job.get_fn().timeout
@@ -107,6 +109,7 @@ class Worker(multiprocessing.Process):
             self.queue,
             self.worker_num,
             kill_after,
+            kill_on_stop,
         ))
 
     def set_process_title(self, *titles):

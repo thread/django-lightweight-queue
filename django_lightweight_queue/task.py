@@ -4,20 +4,22 @@ from .utils import get_backend
 from . import app_settings
 
 class task(object):
-    def __init__(self, queue='default', timeout=None):
+    def __init__(self, queue='default', timeout=None, kill_on_stop=False):
         self.queue = queue
         self.timeout = timeout
+        self.kill_on_stop = kill_on_stop
 
         app_settings.WORKERS.setdefault(self.queue, 1)
 
     def __call__(self, fn):
-        return TaskWrapper(fn, self.queue, self.timeout)
+        return TaskWrapper(fn, self.queue, self.timeout, self.kill_on_stop)
 
 class TaskWrapper(object):
-    def __init__(self, fn, queue, timeout):
+    def __init__(self, fn, queue, timeout, kill_on_stop):
         self.fn = fn
         self.queue = queue
         self.timeout = timeout
+        self.kill_on_stop = kill_on_stop
 
         self.path = '%s.%s' % (fn.__module__, fn.__name__)
 
