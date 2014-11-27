@@ -102,8 +102,12 @@ class Worker(multiprocessing.Process):
                 pass
             connections[x].close()
 
-    def tell_master(self, value):
-        self.back_channel.put((self.queue, self.worker_num, value))
+    def tell_master(self, kill_after):
+        self.back_channel.put((
+            self.queue,
+            self.worker_num,
+            kill_after,
+        ))
 
     def set_process_title(self, *titles):
         set_process_title(self.name, *titles)
