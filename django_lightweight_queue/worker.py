@@ -24,8 +24,8 @@ class Worker(multiprocessing.Process):
         # Logfiles must be opened in child process
         self.log = None
 
-        # Used by the parent
-        self.kill_after = None
+        # Defaults for values dynamically updated when running a job
+        self.kill_after = None # timestamp
 
         super(Worker, self).__init__()
 
