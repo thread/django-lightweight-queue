@@ -95,7 +95,9 @@ def runner(log, log_filename_fn, touch_filename_fn):
 
             worker = workers[(queue, worker_num)]
             log.debug(
-                "Setting kill_after for %s to %r", worker.name, kill_after,
+                "Setting kill_after=%r on the %s worker",
+                worker.name,
+                kill_after,
             )
             worker.kill_after = kill_after
 
