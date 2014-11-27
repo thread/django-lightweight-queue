@@ -73,13 +73,16 @@ class Worker(multiprocessing.Process):
         if job is None:
             return
 
-        timeout = job.get_fn().timeout
+        kill_after = None
 
-        # Tell master process if/when it should kill this child
+        # Calculate kill_after if we were set a timeout
+        timeout = job.get_fn().timeout
         if timeout is not None:
-            after = time.time() + timeout
+            kill_after = time.time() + timeout
             self.log.debug("Should be killed after %s", after)
-            self.tell_master(after)
+
+        # Update master what we are doing
+        self.tell_master(kill_after)
 
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
