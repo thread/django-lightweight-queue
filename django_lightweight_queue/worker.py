@@ -84,7 +84,7 @@ class Worker(multiprocessing.Process):
             self.log.debug("Should be killed after %s", after)
 
         # Update master what we are doing
-        self.tell_master(kill_after)
+        self.tell_master(kill_after, kill_on_stop)
 
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
