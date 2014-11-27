@@ -103,8 +103,8 @@ def runner(log, log_filename_fn, touch_filename_fn):
 
         time.sleep(1)
 
-    for x in workers.values():
-        log.info("Waiting for %s to terminate", x.name)
-        x.join()
+    for worker in workers.values():
+        log.info("Waiting for %s to terminate", worker.name)
+        worker.join()
 
     log.info("All processes finished; returning")
