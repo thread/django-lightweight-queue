@@ -104,7 +104,7 @@ class Worker(multiprocessing.Process):
                 pass
             connections[x].close()
 
-    def tell_master(self, kill_after):
+    def tell_master(self, kill_after, kill_on_stop):
         self.back_channel.put((
             self.queue,
             self.worker_num,
