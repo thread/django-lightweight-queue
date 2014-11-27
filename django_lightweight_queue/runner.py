@@ -87,7 +87,9 @@ def runner(log, log_filename_fn, touch_filename_fn):
 
                 # We don't use the timeout kwarg so that when we get a TERM
                 # signal we don't have problems with interrupted system calls.
-                queue, worker_num, kill_after = back_channel.get_nowait()
+                msg = back_channel.get_nowait()
+
+                queue, worker_num, kill_after = msg
             except Empty:
                 break
 
