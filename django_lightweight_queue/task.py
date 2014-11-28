@@ -28,7 +28,8 @@ class task(object):
             names; the worker's will be created automatically.
 
             `timeout` -- The task will be SIGKILL'd after it has run for *at
-            least* this many seconds.
+            least* this many seconds. Note that in most circumstances you want
+            `sigkill_on_stop` (below) instead.
 
             `sigkill_on_stop` -- The task will be SIGKILL'd when the queue
             processor is shut down. The default behaviour is to let it run to
