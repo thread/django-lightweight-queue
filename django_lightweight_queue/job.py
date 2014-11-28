@@ -5,10 +5,12 @@ import time
 from .utils import get_path, get_middleware
 
 class Job(object):
-    def __init__(self, path, args, kwargs):
+    def __init__(self, path, args, kwargs, timeout=None, sigkill_on_stop=False):
         self.path = path
         self.args = args
         self.kwargs = kwargs
+        self.timeout = timeout
+        self.sigkill_on_stop = sigkill_on_stop
 
         self._json = None
 
@@ -67,5 +69,7 @@ class Job(object):
                 'path': self.path,
                 'args': self.args,
                 'kwargs': self.kwargs,
+                'timeout': self.timeout,
+                'sigkill_on_stop': self.sigkill_on_stop,
             })
         return self._json

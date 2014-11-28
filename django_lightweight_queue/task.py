@@ -30,7 +30,7 @@ class TaskWrapper(object):
         # Allow us to override which queue at the last moment
         queue = kwargs.pop('queue', self.queue)
 
-        job = Job(self.path, args, kwargs)
+        job = Job(self.path, args, kwargs, self.timeout, self.sigkill_on_stop)
         job.validate()
 
         get_backend().enqueue(job, queue)

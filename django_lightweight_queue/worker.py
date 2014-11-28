@@ -76,8 +76,8 @@ class Worker(multiprocessing.Process):
 
         # Update master what we are doing
         self.tell_master(
-            job.get_fn().timeout,
-            job.get_fn().sigkill_on_stop,
+            job.timeout,
+            job.sigkill_on_stop,
         )
 
         self.log.debug("Running job %s", job)
