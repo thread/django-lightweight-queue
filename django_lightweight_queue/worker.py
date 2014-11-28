@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import signal
 import logging
 import multiprocessing
@@ -25,7 +24,7 @@ class Worker(multiprocessing.Process):
         self.log = None
 
         # Defaults for values dynamically updated when running a job
-        self.kill_after = None # timestamp
+        self.timeout = None
         self.kill_on_stop = False
 
         super(Worker, self).__init__()
@@ -74,17 +73,11 @@ class Worker(multiprocessing.Process):
         if job is None:
             return
 
-        kill_after = None
+        timeout = job.get_fn().timeout
         kill_on_stop = job.get_fn().kill_on_stop
 
-        # Calculate kill_after if we were set a timeout
-        timeout = job.get_fn().timeout
-        if timeout is not None:
-            kill_after = time.time() + timeout
-            self.log.debug("Should be killed after %s", after)
-
         # Update master what we are doing
-        self.tell_master(kill_after, kill_on_stop)
+        self.tell_master(timeout, kill_on_stop)
 
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
@@ -104,11 +97,11 @@ class Worker(multiprocessing.Process):
                 pass
             connections[x].close()
 
-    def tell_master(self, kill_after, kill_on_stop):
+    def tell_master(self, timeout, kill_on_stop):
         self.back_channel.put((
             self.queue,
             self.worker_num,
-            kill_after,
+            timeout,
             kill_on_stop,
         ))
 
