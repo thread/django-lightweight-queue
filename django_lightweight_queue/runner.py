@@ -47,7 +47,7 @@ def runner(log, log_filename_fn, touch_filename_fn):
 
             # Kill any workers that have exceeded their timeout
             if worker and worker.kill_after and time.time() > worker.kill_after:
-                log.warning("Killing %s due to timeout", worker.name)
+                log.warning("Sending SIGKILL to %s due to timeout", worker.name)
 
                 try:
                     os.kill(worker.pid, signal.SIGKILL)
