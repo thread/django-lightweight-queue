@@ -28,7 +28,7 @@ class TaskWrapper(object):
 
     def __call__(self, *args, **kwargs):
         # Allow us to override which queue at the last moment
-        queue = kwargs.pop('queue', self.queue)
+        queue = kwargs.pop('django_lightweight_queue_queue', self.queue)
 
         job = Job(self.path, args, kwargs, self.timeout, self.sigkill_on_stop)
         job.validate()

@@ -78,7 +78,7 @@ class CronScheduler(multiprocessing.Process):
 
             execute(
                 row['command'],
-                queue=row['queue'],
+                django_lightweight_queue_queue=row['queue'],
                 *row.get('command_args', []),
                 **row.get('command_kwargs', {})
             )
