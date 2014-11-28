@@ -100,7 +100,7 @@ def runner(log, log_filename_fn, touch_filename_fn):
                 kill_after = time.time() + timeout
 
             log.debug(
-                "Setting kill_after=%r and kill_on_stop=%s on the %s worker",
+                "Setting kill_after=%r and kill_on_stop=%s for %s",
                 worker.name,
                 kill_after,
             )
