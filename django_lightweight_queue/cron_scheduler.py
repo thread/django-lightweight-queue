@@ -79,6 +79,8 @@ class CronScheduler(multiprocessing.Process):
             execute(
                 row['command'],
                 django_lightweight_queue_queue=row['queue'],
+                django_lightweight_queue_timeout=row['timeout'],
+                django_lightweight_queue_sigkill_on_stop=row['sigkill_on_stop'],
                 *row.get('command_args', []),
                 **row.get('command_kwargs', {})
             )
@@ -123,6 +125,8 @@ class CronScheduler(multiprocessing.Process):
                 row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
                 row['day_matcher'] = get_matcher(1,  7, row.get('days', '*'))
                 row['queue'] = row.get('queue', 'cron')
+                row['timeout'] = row.get('timeout', None)
+                row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)
                 config.append(row)
 
                 # We must ensure we have at least one worker for this queue.
