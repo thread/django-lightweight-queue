@@ -73,11 +73,11 @@ class Worker(multiprocessing.Process):
         if job is None:
             return
 
-        timeout = job.get_fn().timeout
-        kill_on_stop = job.get_fn().kill_on_stop
-
         # Update master what we are doing
-        self.tell_master(timeout, kill_on_stop)
+        self.tell_master(
+            job.get_fn().timeout,
+            job.get_fn().kill_on_stop,
+        )
 
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
