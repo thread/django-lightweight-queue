@@ -27,10 +27,15 @@ class TaskWrapper(object):
         return "<TaskWrapper: %s>" % self.path
 
     def __call__(self, *args, **kwargs):
-        # Allow us to override which queue at the last moment
+        # Allow us to override the default values dynamically
         queue = kwargs.pop('django_lightweight_queue_queue', self.queue)
+        timeout = kwargs.pop('django_lightweight_queue_timeout', self.timeout)
+        sigkill_on_stop = kwargs.pop(
+            'django_lightweight_queue_sigkill_on_stop',
+            self.sigkill_on_stop,
+        )
 
-        job = Job(self.path, args, kwargs, self.timeout, self.sigkill_on_stop)
+        job = Job(self.path, args, kwargs, timeout, sigkill_on_stop)
         job.validate()
 
         get_backend().enqueue(job, queue)
