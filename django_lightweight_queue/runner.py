@@ -89,7 +89,7 @@ def runner(log, log_filename_fn, touch_filename_fn):
                 # signal we don't have problems with interrupted system calls.
                 msg = back_channel.get_nowait()
 
-                queue, worker_num, timeout, kill_on_stop = msg
+                queue, worker_num, timeout, sigkill_on_stop = msg
             except Empty:
                 break
 
@@ -105,12 +105,12 @@ def runner(log, log_filename_fn, touch_filename_fn):
                 kill_after,
             )
             worker.kill_after = kill_after
-            worker.kill_on_stop = kill_on_stop
+            worker.sigkill_on_stop = sigkill_on_stop
 
         time.sleep(1)
 
     for worker in workers.values():
-        if worker.kill_on_stop:
+        if worker.sigkill_on_stop:
             log.info("Sending SIGKILL to %s", worker.name)
             try:
                 os.kill(worker.pid, signal.SIGKILL)

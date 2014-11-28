@@ -25,7 +25,7 @@ class Worker(multiprocessing.Process):
 
         # Defaults for values dynamically updated when running a job
         self.timeout = None
-        self.kill_on_stop = False
+        self.sigkill_on_stop = False
 
         super(Worker, self).__init__()
 
@@ -76,7 +76,7 @@ class Worker(multiprocessing.Process):
         # Update master what we are doing
         self.tell_master(
             job.get_fn().timeout,
-            job.get_fn().kill_on_stop,
+            job.get_fn().sigkill_on_stop,
         )
 
         self.log.debug("Running job %s", job)
@@ -97,12 +97,12 @@ class Worker(multiprocessing.Process):
                 pass
             connections[x].close()
 
-    def tell_master(self, timeout, kill_on_stop):
+    def tell_master(self, timeout, sigkill_on_stop):
         self.back_channel.put((
             self.queue,
             self.worker_num,
             timeout,
-            kill_on_stop,
+            sigkill_on_stop,
         ))
 
     def set_process_title(self, *titles):
