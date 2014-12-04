@@ -1,7 +1,6 @@
 import os
 import logging
-
-from optparse import make_option
+import optparse
 
 from django.db import models
 from django.utils.daemonize import become_daemon
@@ -12,13 +11,13 @@ from ...runner import runner
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
-        make_option('--pidfile', action='store', dest='pidfile', default=None,
+        optparse.make_option('--pidfile', action='store', dest='pidfile', default=None,
             help="Fork and write pidfile to this file."),
-        make_option('--logfile', action='store', dest='logfile', default=None,
+        optparse.make_option('--logfile', action='store', dest='logfile', default=None,
             help="Log to the specified file."),
-        make_option('--touchfile', action='store', dest='touchfile', default=None,
+        optparse.make_option('--touchfile', action='store', dest='touchfile', default=None,
             help="touch(1) the specified file after running a job."),
-        make_option('--print-cron-config', action='store_true', dest='print_cron_config', default=False,
+        optparse.make_option('--print-cron-config', action='store_true', dest='print_cron_config', default=False,
             help="Print the cron configuraton and exit."),
     )
 
