@@ -8,7 +8,6 @@ from django.core.management.base import NoArgsCommand
 
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
-from ...cron_scheduler import get_config
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
@@ -18,8 +17,6 @@ class Command(NoArgsCommand):
             help="Log to the specified file."),
         optparse.make_option('--touchfile', action='store', dest='touchfile', default=None,
             help="touch(1) the specified file after running a job."),
-        optparse.make_option('--print-cron-config', action='store_true', dest='print_cron_config', default=False,
-            help="Print the cron configuraton and exit."),
     )
 
     def handle_noargs(self, **options):
@@ -40,20 +37,6 @@ class Command(NoArgsCommand):
                 return options['touchfile'] % name
             except TypeError:
                 return None
-
-        if options['print_cron_config']:
-            for x in get_config():
-                for k in (
-                    'command',
-                    'hours',
-                    'minutes',
-                    'queue',
-                    'timeout',
-                    'sigkill_on_stop',
-                ):
-                    print "% 20s: %s" % (k, x[k])
-                print
-            return
 
         configure_logging(
             level=level,
