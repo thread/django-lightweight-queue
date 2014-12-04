@@ -22,7 +22,7 @@ class CronScheduler(multiprocessing.Process):
         # Logfiles must be opened in child process
         self.log = None
 
-        self.config = self.get_config()
+        self.config = get_config()
 
         super(CronScheduler, self).__init__()
 
@@ -87,52 +87,52 @@ class CronScheduler(multiprocessing.Process):
 
             self.log.debug("Enqueued %s", row)
 
-    def get_config(self):
-        config = []
+def get_config():
+    config = []
 
-        def get_matcher(minval, maxval, t):
-            if t == '*':
-                return lambda x: True
-            parts = re.split(r'\s*,\s*', t)
-            if not parts:
-                return
-            t_parts = [int(x) for x in parts]
-            for num in t_parts:
-                assert num >= minval and num <= maxval, \
-                    "Invalid time specified in cron config. " \
-                    "Specified: %s, minval: %s, maxval: %s" % (
-                        num,
-                        minval,
-                        maxval,
-                    )
-            return lambda x: x in t_parts
+    def get_matcher(minval, maxval, t):
+        if t == '*':
+            return lambda x: True
+        parts = re.split(r'\s*,\s*', t)
+        if not parts:
+            return
+        t_parts = [int(x) for x in parts]
+        for num in t_parts:
+            assert num >= minval and num <= maxval, \
+                "Invalid time specified in cron config. " \
+                "Specified: %s, minval: %s, maxval: %s" % (
+                    num,
+                    minval,
+                    maxval,
+                )
+        return lambda x: x in t_parts
 
-        for app in settings.INSTALLED_APPS:
-            try:
-                app_path = __import__(app, {}, {}, [app.split('.')[-1]]).__path__
-            except AttributeError:
-                continue
+    for app in settings.INSTALLED_APPS:
+        try:
+            app_path = __import__(app, {}, {}, [app.split('.')[-1]]).__path__
+        except AttributeError:
+            continue
 
-            try:
-                imp.find_module('cron', app_path)
-            except ImportError:
-                continue
+        try:
+            imp.find_module('cron', app_path)
+        except ImportError:
+            continue
 
-            mod = __import__('%s.cron' % app, fromlist=(app,))
+        mod = __import__('%s.cron' % app, fromlist=(app,))
 
-            for row in mod.CONFIG:
-                row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
-                row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
-                row['day_matcher'] = get_matcher(1,  7, row.get('days', '*'))
-                row['queue'] = row.get('queue', 'cron')
-                row['timeout'] = row.get('timeout', None)
-                row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)
-                config.append(row)
+        for row in mod.CONFIG:
+            row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
+            row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
+            row['day_matcher'] = get_matcher(1,  7, row.get('days', '*'))
+            row['queue'] = row.get('queue', 'cron')
+            row['timeout'] = row.get('timeout', None)
+            row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)
+            config.append(row)
 
-                # We must ensure we have at least one worker for this queue.
-                app_settings.WORKERS.setdefault(row['queue'], 1)
+            # We must ensure we have at least one worker for this queue.
+            app_settings.WORKERS.setdefault(row['queue'], 1)
 
-        return config
+    return config
 
 @task()
 def execute(name, *args, **kwargs):
