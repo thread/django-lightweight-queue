@@ -8,6 +8,7 @@ from django.core.management.base import NoArgsCommand
 
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
+from ...cron_scheduler import get_config
 
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
