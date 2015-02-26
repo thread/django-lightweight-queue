@@ -3,7 +3,7 @@ import importlib
 
 from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
-from django.utils.functional import memoize
+from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
 
 from . import app_settings
@@ -79,6 +79,6 @@ except ImportError:
     def set_process_title(*titles):
         pass
 
-get_path = memoize(get_path, {}, 1)
-get_backend = memoize(get_backend, {}, 0)
-get_middleware = memoize(get_middleware, {}, 0)
+get_path = lru_cache(get_path)
+get_backend = lru_cache(get_backend)
+get_middleware = lru_cache(get_middleware)
