@@ -55,10 +55,7 @@ def import_all_submodules(name):
         app_module = app_config.module
 
         try:
-            importlib.import_module('%s.%s' % (
-                app_module.__name__,
-                name,
-            ))
+            importlib.import_module('%s.%s' % (app_module.__name__, name))
         except ImportError:
             if module_has_submodule(app_module, name):
                 raise
