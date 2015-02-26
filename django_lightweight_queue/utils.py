@@ -52,7 +52,8 @@ def get_middleware():
 
 def import_all_submodules(name):
     for app_config in apps.get_app_configs():
-        parts = app_config.module.__name__.split('.')
+        app_module = app_config.module
+        parts = app_module.__name__.split('.')
         prefix, last = parts[:-1], parts[-1]
 
         try:
