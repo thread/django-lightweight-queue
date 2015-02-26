@@ -1,7 +1,7 @@
 import logging
 import importlib
 
-from django.db.models import get_apps
+from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
 from django.utils.functional import memoize
 from django.utils.module_loading import module_has_submodule
@@ -51,8 +51,8 @@ def get_middleware():
     return middleware
 
 def import_all_submodules(name):
-    for app_module in get_apps():
-        parts = app_module.__name__.split('.')
+    for app_config in apps.get_app_configs():
+        parts = app_config.module.__name__.split('.')
         prefix, last = parts[:-1], parts[-1]
 
         try:
