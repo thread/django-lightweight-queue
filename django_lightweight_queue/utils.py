@@ -53,16 +53,13 @@ def get_middleware():
 def import_all_submodules(name):
     for app_config in apps.get_app_configs():
         app_module = app_config.module
-        parts = app_module.__name__.split('.')
-        prefix, last = parts[:-1], parts[-1]
 
         try:
-            importlib.import_module('.'.join(prefix + [name]))
+            importlib.import_module('%s.%s' % (
+                app_module.__name__,
+                name,
+            ))
         except ImportError:
-            # Distinguise between tasks.py existing and failing to import
-            if last == 'models':
-                app_module = importlib.import_module('.'.join(prefix))
-
             if module_has_submodule(app_module, name):
                 raise
 
