@@ -2,13 +2,13 @@ from django.db import transaction, connection
 
 class TransactionMiddleware(object):
     def process_job(self, job):
-        transaction.atomic(savepoint=False).__enter__()
+        transaction.atomic().__enter__()
 
     def process_result(self, job, result, duration):
-        transaction.atomic(savepoint=False).__exit__(None, None, None)
+        transaction.atomic().__exit__(None, None, None)
 
     def process_exception(self, job, time_taken, *exc_info):
-        transaction.atomic(savepoint=False).__exit__(*exc_info)
+        transaction.atomic().__exit__(*exc_info)
 
 # Legacy
 if not hasattr(connection, 'in_atomic_block'):
