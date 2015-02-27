@@ -29,6 +29,7 @@ def configure_logging(level, format, filename):
     if level is not None:
         logging.root.setLevel(level)
 
+@lru_cache
 def get_path(path):
     module_name, attr = path.rsplit('.', 1)
 
@@ -36,9 +37,11 @@ def get_path(path):
 
     return getattr(module, attr)
 
+@lru_cache
 def get_backend():
     return get_path(app_settings.BACKEND)()
 
+@lru_cache
 def get_middleware():
     middleware = []
 
@@ -73,7 +76,3 @@ try:
 except ImportError:
     def set_process_title(*titles):
         pass
-
-get_path = lru_cache(get_path)
-get_backend = lru_cache(get_backend)
-get_middleware = lru_cache(get_middleware)
