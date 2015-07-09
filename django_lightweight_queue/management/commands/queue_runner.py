@@ -20,11 +20,15 @@ class Command(NoArgsCommand):
     )
 
     def handle_noargs(self, **options):
+        # Django < 1.8.3 leaves options['verbosity'] as a string so we cast to
+        # ensure an int.
+        verbosity = int(options['verbosity'])
+
         level = {
-            '0': logging.WARNING,
-            '1': logging.INFO,
-            '2': logging.DEBUG,
-        }[options['verbosity']]
+            0: logging.WARNING,
+            1: logging.INFO,
+            2: logging.DEBUG,
+        }[verbosity]
 
         def log_filename(name):
             try:
