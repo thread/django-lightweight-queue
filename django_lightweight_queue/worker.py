@@ -70,7 +70,7 @@ class Worker(multiprocessing.Process):
         # Tell master process that we are not processing anything.
         self.tell_master(None, False)
 
-        job = backend.dequeue(self.queue, 300)
+        job = backend.dequeue(self.queue, 30*60)
         if job is None:
             return
 
