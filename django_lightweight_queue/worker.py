@@ -56,14 +56,14 @@ class Worker(multiprocessing.Process):
         backend = get_backend()
         self.log.info("Loaded backend %s", backend)
 
-        time_item_last_processed = datetime.datetime.now()
+        time_item_last_processed = datetime.datetime.utcnow()
 
         while self.running.value and not self.idle_time_reached(time_item_last_processed):
             try:
                 item_processed = self.process(backend)
 
                 if item_processed:
-                    time_item_last_processed = datetime.datetime.now()
+                    time_item_last_processed = datetime.datetime.utcnow()
 
             except KeyboardInterrupt:
                 sys.exit(1)
@@ -71,7 +71,7 @@ class Worker(multiprocessing.Process):
         self.log.info("Exiting")
 
     def idle_time_reached(self, time_item_last_processed):
-        return datetime.datetime.now() - time_item_last_processed > datetime.timedelta(minutes=30)
+        return datetime.datetime.utcnow() - time_item_last_processed > datetime.timedelta(minutes=30)
 
     def process(self, backend):
         self.log.debug("Checking backend for items")
