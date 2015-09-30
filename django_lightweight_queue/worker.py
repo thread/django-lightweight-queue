@@ -72,7 +72,7 @@ class Worker(multiprocessing.Process):
 
         job = backend.dequeue(self.queue, 15)
         if job is None:
-            return
+            return False
 
         # Update master what we are doing
         self.tell_master(
@@ -97,6 +97,8 @@ class Worker(multiprocessing.Process):
             except AttributeError:
                 pass
             connections[x].close()
+
+        return True
 
     def tell_master(self, timeout, sigkill_on_stop):
         self.back_channel.put((
