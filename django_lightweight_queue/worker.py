@@ -58,7 +58,13 @@ class Worker(multiprocessing.Process):
 
         time_item_last_processed = datetime.datetime.utcnow()
 
-        while self.running.value and not self.idle_time_reached(time_item_last_processed):
+        while True:
+            if not self.running.value:
+                break
+
+            if self.idle_time_reached(time_item_last_processed):
+                break
+
             try:
                 item_processed = self.process(backend)
 
