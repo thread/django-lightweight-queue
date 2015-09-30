@@ -3,6 +3,7 @@ import sys
 import signal
 import logging
 import datetime
+import itertools
 import multiprocessing
 
 from django.db import connections, transaction
@@ -58,11 +59,14 @@ class Worker(multiprocessing.Process):
 
         time_item_last_processed = datetime.datetime.utcnow()
 
-        while True:
+        for item_count in itertools.count():
             if not self.running.value:
                 break
 
             if self.idle_time_reached(time_item_last_processed):
+                break
+
+            if item_count > 1000:
                 break
 
             try:
