@@ -64,9 +64,11 @@ class Worker(multiprocessing.Process):
                 break
 
             if self.idle_time_reached(time_item_last_processed):
+                self.log.info("Exiting due to reaching idle time limit")
                 break
 
             if item_count > 1000:
+                self.log.info("Exiting due to reaching item limit")
                 break
 
             try:
