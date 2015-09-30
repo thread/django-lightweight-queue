@@ -2,6 +2,7 @@ import os
 import sys
 import signal
 import logging
+import datetime
 import multiprocessing
 
 from django.db import connections, transaction
@@ -55,13 +56,22 @@ class Worker(multiprocessing.Process):
         backend = get_backend()
         self.log.info("Loaded backend %s", backend)
 
-        while self.running.value:
+        time_item_last_processed = datetime.datetime.now()
+
+        while self.running.value and not self.idle_time_reached(time_item_last_processed):
             try:
-                self.process(backend)
+                item_processed = self.process(backend)
+
+                if item_processed:
+                    time_item_last_processed = datetime.datetime.now()
+
             except KeyboardInterrupt:
                 sys.exit(1)
 
         self.log.info("Exiting")
+
+    def idle_time_reached(self, time_item_last_processed):
+        return datetime.datetime.now() - time_item_last_processed > datetime.timedelta(minutes=30)
 
     def process(self, backend):
         self.log.debug("Checking backend for items")
