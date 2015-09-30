@@ -71,7 +71,8 @@ class Worker(multiprocessing.Process):
         self.log.info("Exiting")
 
     def idle_time_reached(self, time_item_last_processed):
-        return datetime.datetime.utcnow() - time_item_last_processed > datetime.timedelta(minutes=30)
+        return datetime.datetime.utcnow() - time_item_last_processed \
+            > datetime.timedelta(minutes=30)
 
     def process(self, backend):
         self.log.debug("Checking backend for items")
