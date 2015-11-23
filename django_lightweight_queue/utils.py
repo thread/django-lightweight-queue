@@ -3,7 +3,7 @@ import importlib
 
 from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
-from django.utils.functional import memoize
+from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
 
 from . import app_settings
@@ -29,6 +29,7 @@ def configure_logging(level, format, filename):
     if level is not None:
         logging.root.setLevel(level)
 
+@lru_cache()
 def get_path(path):
     module_name, attr = path.rsplit('.', 1)
 
@@ -36,9 +37,11 @@ def get_path(path):
 
     return getattr(module, attr)
 
+@lru_cache()
 def get_backend():
     return get_path(app_settings.BACKEND)()
 
+@lru_cache()
 def get_middleware():
     middleware = []
 
@@ -73,7 +76,3 @@ try:
 except ImportError:
     def set_process_title(*titles):
         pass
-
-get_path = memoize(get_path, {}, 1)
-get_backend = memoize(get_backend, {}, 0)
-get_middleware = memoize(get_middleware, {}, 0)
