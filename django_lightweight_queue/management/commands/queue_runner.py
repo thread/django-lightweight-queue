@@ -1,8 +1,7 @@
-import os
 import logging
 import optparse
+import daemonize
 
-from django.utils.daemonize import become_daemon
 from django.apps import apps
 from django.core.management.base import NoArgsCommand
 
@@ -42,7 +41,7 @@ class Command(NoArgsCommand):
             except TypeError:
                 return None
 
-        configure_logging(
+        log_fd = configure_logging(
             level=level,
             format='%(asctime)-15s %(process)d %(levelname).1s: %(message)s',
             filename=log_filename('master'),
@@ -64,11 +63,20 @@ class Command(NoArgsCommand):
         apps.get_models()
         log.info("Loaded models")
 
+        def run():
+            runner(log, log_filename, touch_filename)
+
         # fork() only after we have started enough to catch failure, including
         # being able to write to our pidfile.
         if options['pidfile']:
-            with open(options['pidfile'], 'w') as f:
-                become_daemon(our_home_dir='/')
-                print >>f, os.getpid()
+            daemon = daemonize.Daemonize(
+                app='queue_runner',
+                pid=options['pidfile'],
+                action=run,
+                keep_fds=[log_fd],
+            )
+            daemon.start()
 
-        runner(log, log_filename, touch_filename)
+        else:
+            # No pidfile, don't daemonize, run in foreground
+            run()
