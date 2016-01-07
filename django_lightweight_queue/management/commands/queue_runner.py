@@ -2,8 +2,8 @@ import os
 import logging
 import optparse
 
-from django.db import models
 from django.utils.daemonize import become_daemon
+from django.apps import apps
 from django.core.management.base import NoArgsCommand
 
 from ...utils import get_backend, get_middleware, configure_logging
@@ -61,7 +61,7 @@ class Command(NoArgsCommand):
         # Ensure children will be able to import most things, but also try and
         # save memory by importing as much as possible before the fork() as it
         # has copy-on-write semantics.
-        models.get_models()
+        apps.get_models()
         log.info("Loaded models")
 
         # fork() only after we have started enough to catch failure, including
