@@ -14,6 +14,9 @@ def configure_logging(level, format, filename):
     nicely with logrotate and similar tools.
 
     We also unconditionally remove all existing handlers.
+
+    Returns the file handle of the log file so that we can pass this on to a
+    daemon process.
     """
 
     logging.root.handlers = []
@@ -28,6 +31,8 @@ def configure_logging(level, format, filename):
 
     if level is not None:
         logging.root.setLevel(level)
+
+    return handler.stream.fileno()
 
 @lru_cache()
 def get_path(path):
