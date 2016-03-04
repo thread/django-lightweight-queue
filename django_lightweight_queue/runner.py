@@ -10,7 +10,7 @@ from .utils import set_process_title
 from .worker import Worker
 from .cron_scheduler import CronScheduler
 
-def runner(log, log_filename_fn, touch_filename_fn):
+def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -35,12 +35,19 @@ def runner(log, log_filename_fn, touch_filename_fn):
     CronScheduler(running, log.level, log_filename_fn('cron_scheduler')).start()
 
     workers = {}
-    for queue, num_workers in app_settings.WORKERS.iteritems():
+
+    # Used to determine the parallelism split
+    job_number = 1
+
+    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
         for x in range(1, num_workers + 1):
             # We don't go out of our way to start workers on startup - we let
             # the "restart if they aren't already running" machinery do its
             # job.
-            workers[(queue, x)] = None
+            if (job_number % machine_count) + 1 == machine_number:
+                workers[(queue, x)] = None
+
+            job_number += 1
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
