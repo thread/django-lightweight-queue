@@ -16,6 +16,10 @@ class Command(NoArgsCommand):
             help="Log to the specified file."),
         optparse.make_option('--touchfile', action='store', dest='touchfile', default=None,
             help="touch(1) the specified file after running a job."),
+        optparse.make_option('--machine', action='store', dest='machine_number', default='1',
+            help="Machine number, for parallelism"),
+        optparse.make_option('--of', action='store', dest='machine_count', default='1',
+            help="Total number of machines running the queues"),
     )
 
     def handle_noargs(self, **options):
@@ -64,7 +68,13 @@ class Command(NoArgsCommand):
         log.info("Loaded models")
 
         def run():
-            runner(log, log_filename, touch_filename)
+            runner(
+                log,
+                log_filename,
+                touch_filename,
+                machine_number=int(options['machine_number']),
+                machine_count=int(options['machine_count']),
+            )
 
         # fork() only after we have started enough to catch failure, including
         # being able to write to our pidfile.
