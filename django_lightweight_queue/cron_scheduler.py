@@ -6,7 +6,7 @@ import logging
 import datetime
 import multiprocessing
 
-from django.conf import settings
+from django.apps import apps
 from django.core.management import call_command
 
 from . import app_settings
@@ -107,7 +107,8 @@ def get_config():
                 )
         return lambda x: x in t_parts
 
-    for app in settings.INSTALLED_APPS:
+    for app_config in apps.get_app_configs():
+        app = app_config.name
         try:
             app_path = __import__(app, {}, {}, [app.split('.')[-1]]).__path__
         except AttributeError:
