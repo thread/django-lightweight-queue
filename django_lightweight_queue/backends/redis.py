@@ -23,6 +23,9 @@ class RedisBackend(object):
         except TypeError:
             pass
 
+    def length(self, queue):
+        return self.client.llen(self._key(queue))
+
     def _key(self, queue):
         if app_settings.REDIS_PREFIX:
             return '%s:django_lightweight_queue:%s' % (
