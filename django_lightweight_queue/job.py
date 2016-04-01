@@ -35,7 +35,7 @@ class Job(object):
 
             time_taken = time.time() - start
 
-            for instance in middleware:
+            for instance in reversed(middleware):
                 if hasattr(instance, 'process_result'):
                     instance.process_result(self, result, time_taken)
         except Exception:
@@ -43,7 +43,7 @@ class Job(object):
 
             exc_info = sys.exc_info()
 
-            for instance in middleware:
+            for instance in reversed(middleware):
                 if hasattr(instance, 'process_exception'):
                     try:
                         instance.process_exception(self, time_taken, *exc_info)
