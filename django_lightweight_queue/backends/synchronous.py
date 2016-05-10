@@ -13,3 +13,6 @@ class SynchronousBackend(object):
         # The length is the number of items waiting to be processed, which can
         # be defined as always 0 for the synchronous backend
         return 0
+
+    def processed_job(self, queue, worker_num, job):
+        pass

@@ -111,6 +111,8 @@ class Worker(multiprocessing.Process):
             with open(self.touch_filename, 'a'):
                 os.utime(self.touch_filename, None)
 
+        backend.processed_job(self.queue, self.worker_num, job)
+
         # Emulate Django's request_finished signal and close all of our
         # connections. Django assumes that making a DB connection is cheap, so
         # it's probably safe to assume that too.

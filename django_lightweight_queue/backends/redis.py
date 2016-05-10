@@ -26,6 +26,9 @@ class RedisBackend(object):
     def length(self, queue):
         return self.client.llen(self._key(queue))
 
+    def processed_job(self, queue, worker_num, job):
+        pass
+
     def _key(self, queue):
         if app_settings.REDIS_PREFIX:
             return '%s:django_lightweight_queue:%s' % (
