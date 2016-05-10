@@ -1,6 +1,9 @@
 import time
 
 class SynchronousBackend(object):
+    def startup(self, queue):
+        pass
+
     def enqueue(self, job, queue):
         job.run()
 

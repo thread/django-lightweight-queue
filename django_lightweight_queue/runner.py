@@ -6,7 +6,7 @@ import multiprocessing
 from Queue import Empty
 
 from . import app_settings
-from .utils import set_process_title
+from .utils import set_process_title, get_backend
 from .worker import Worker
 from .cron_scheduler import CronScheduler, get_config
 
@@ -47,6 +47,13 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
             cron_scheduler.start()
 
     workers = {}
+
+    # Some backends may require on-startup logic per-queue, initialise a dummy
+    # backend per queue to do so.
+    for queue in app_settings.WORKERS.keys():
+        if not only_queue or only_queue == queue:
+            backend = get_backend()
+            backend.startup(queue)
 
     # Used to determine the parallelism split
     job_number = 1

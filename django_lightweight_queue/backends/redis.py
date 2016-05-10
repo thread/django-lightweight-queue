@@ -12,6 +12,9 @@ class RedisBackend(object):
             port=app_settings.REDIS_PORT,
         )
 
+    def startup(self, queue):
+        pass
+
     def enqueue(self, job, queue):
         self.client.rpush(self._key(queue), job.to_json())
 
