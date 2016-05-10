@@ -43,7 +43,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
             log_filename_fn('cron_scheduler'),
         )
 
-        if only_queue == 'cron_scheduler':
+        if not only_queue or only_queue == 'cron_scheduler':
             cron_scheduler.start()
 
     workers = {}
@@ -52,7 +52,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     job_number = 1
 
     for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
-        if only_queue != queue:
+        if only_queue and only_queue != queue:
             continue
 
         for x in range(1, num_workers + 1):
