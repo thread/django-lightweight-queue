@@ -15,7 +15,7 @@ class RedisBackend(object):
     def enqueue(self, job, queue):
         self.client.rpush(self._key(queue), job.to_json())
 
-    def dequeue(self, queue, timeout):
+    def dequeue(self, queue, worker_num, timeout):
         try:
             _, data = self.client.blpop(self._key(queue), timeout)
 
