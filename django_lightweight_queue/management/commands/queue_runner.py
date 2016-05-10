@@ -20,6 +20,8 @@ class Command(NoArgsCommand):
             help="Machine number, for parallelism"),
         optparse.make_option('--of', action='store', dest='machine_count', default='1',
             help="Total number of machines running the queues"),
+        optparse.make_option('--only-queue', action='store', default=None,
+            help="Only run the given queue, useful for local debugging"),
     )
 
     def handle_noargs(self, **options):
@@ -74,6 +76,7 @@ class Command(NoArgsCommand):
                 touch_filename,
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
+                only_queue=options['only_queue'],
             )
 
         # fork() only after we have started enough to catch failure, including

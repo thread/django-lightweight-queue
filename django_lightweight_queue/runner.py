@@ -10,7 +10,7 @@ from .utils import set_process_title
 from .worker import Worker
 from .cron_scheduler import CronScheduler, get_config
 
-def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count):
+def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -35,13 +35,16 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     get_config()
 
     if machine_number == 1:
-        # Start the cron scheduler before setting up the workers so that it can
-        # populate app_settings.WORKERS
-        CronScheduler(
+        # Initialise the cron scheduler before setting up the workers so that
+        # it can populate app_settings.WORKERS
+        cron_scheduler = CronScheduler(
             running,
             log.level,
             log_filename_fn('cron_scheduler'),
-        ).start()
+        )
+
+        if only_queue == 'cron_scheduler':
+            cron_scheduler.start()
 
     workers = {}
 
@@ -49,6 +52,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     job_number = 1
 
     for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
+        if only_queue != queue:
+            continue
+
         for x in range(1, num_workers + 1):
             # We don't go out of our way to start workers on startup - we let
             # the "restart if they aren't already running" machinery do its
