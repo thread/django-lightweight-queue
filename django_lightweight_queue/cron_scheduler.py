@@ -110,7 +110,11 @@ def get_config():
     for app_config in apps.get_app_configs():
         app = app_config.name
         try:
-            app_path = __import__(app, {}, {}, [app.split('.')[-1]]).__path__
+            # __import__ will break with anything other than a str object(!),
+            # including e.g. unicode. So force to a str.
+            part = str(app.split('.')[-1])
+
+            app_path = __import__(app, {}, {}, [part]).__path__
         except AttributeError:
             continue
 
