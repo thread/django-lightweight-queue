@@ -23,6 +23,8 @@ class ReliableRedisBackend(object):
     (e.g. if we had 2 workers, both are processing a job, we kill the queues
     and lower the number of workers to 1, without doing this tidy up we would
     never process the job stuck in worker 2s processing queue.)
+
+    This backend has at-least-once semantics.
     """
 
     def __init__(self):

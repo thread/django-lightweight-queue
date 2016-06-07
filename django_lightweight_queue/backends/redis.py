@@ -6,6 +6,9 @@ from ..job import Job
 from .. import app_settings
 
 class RedisBackend(object):
+    """
+    This backend has at-most-once semantics.
+    """
     def __init__(self):
         self.client = redis.Redis(
             host=app_settings.REDIS_HOST,

@@ -1,6 +1,9 @@
 import time
 
 class SynchronousBackend(object):
+    """
+    This backend has at-most-once semantics.
+    """
     def startup(self, queue):
         pass
 
