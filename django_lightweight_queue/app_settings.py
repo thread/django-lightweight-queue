@@ -4,7 +4,7 @@ def setting(suffix, default):
     return getattr(settings, 'LIGHTWEIGHT_QUEUE_%s' % suffix, default)
 
 WORKERS = setting('WORKERS', {})
-DEFAULT_BACKEND = setting('DEFAULT_BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')
+BACKEND = setting('BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')
 
 # Allow per-queue overrides of the backend.
 BACKEND_OVERRIDES = setting('BACKEND_OVERRIDES', {})

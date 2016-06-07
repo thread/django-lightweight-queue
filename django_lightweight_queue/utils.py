@@ -46,7 +46,7 @@ def get_path(path):
 def get_backend(queue):
     return get_path(app_settings.BACKEND_OVERRIDES.get(
         queue,
-        app_settings.DEFAULT_BACKEND,
+        app_settings.BACKEND,
     ))()
 
 @lru_cache()
