@@ -48,11 +48,15 @@ class ReliableRedisBackend(object):
             for key in processing_queue_keys:
                 all_data.extend(pipe.lrange(key, 0, -1))
 
-            pipe.multi()
+            if all_data or processing_queue_keys:
+                pipe.multi()
 
             # NB we RPUSH, which means these jobs will get processed next
-            pipe.rpush(main_queue_key, *all_data)
-            pipe.delete(*processing_queue_keys)
+            if all_data:
+                pipe.rpush(main_queue_key, *all_data)
+
+            if processing_queue_keys:
+                pipe.delete(*processing_queue_keys)
 
         # Will run the above function, WATCH-ing the processing_queue_keys. If
         # any of them change prior to transaction execution, it will abort and
