@@ -43,8 +43,11 @@ def get_path(path):
     return getattr(module, attr)
 
 @lru_cache()
-def get_backend():
-    return get_path(app_settings.BACKEND)()
+def get_backend(queue):
+    return get_path(app_settings.BACKEND_OVERRIDES.get(
+        queue,
+        app_settings.DEFAULT_BACKEND,
+    ))()
 
 @lru_cache()
 def get_middleware():

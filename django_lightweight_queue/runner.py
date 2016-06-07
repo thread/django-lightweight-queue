@@ -52,7 +52,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     # backend per queue to do so.
     for queue in app_settings.WORKERS.keys():
         if not only_queue or only_queue == queue:
-            backend = get_backend()
+            backend = get_backend(queue)
             backend.startup(queue)
 
     # Used to determine the parallelism split

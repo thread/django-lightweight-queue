@@ -1,6 +1,7 @@
 from django.core.management.base import NoArgsCommand
 
 from ... import app_settings
+from ...utils import get_backend
 from ...cron_scheduler import get_config
 
 class Command(NoArgsCommand):
@@ -8,19 +9,20 @@ class Command(NoArgsCommand):
         print "django-lightweight-queue"
         print "========================"
         print
-        print "{0:<15} {1:>5}".format("Queue name", "Concurrency")
+        print "{0:<55} {1:<5} {2}".format("Queue name", "Concurrency", "Backend")
         print "-" * 27
 
         for k, v in app_settings.WORKERS.iteritems():
-            print " {0:<14} {1}".format(k, v)
+            print " {0:<54} {1:<5} {2}".format(
+                k,
+                v,
+                get_backend(k).__class__.__name__,
+            )
 
         print
         print "Middleware:"
         for x in app_settings.MIDDLEWARE:
             print " * %s" % x
-
-        print
-        print "Backend: %s" % app_settings.BACKEND
 
         print
         print "Cron configuration"
