@@ -91,4 +91,4 @@ class TaskWrapper(object):
         job = Job(self.path, args, kwargs, timeout, sigkill_on_stop)
         job.validate()
 
-        get_backend().enqueue(job, queue)
+        get_backend(queue).enqueue(job, queue)

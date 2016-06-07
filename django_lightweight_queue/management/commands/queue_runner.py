@@ -58,7 +58,7 @@ class Command(NoArgsCommand):
         log.info("Starting queue runner")
 
         # Ensure children will be able to import our backend
-        get_backend()
+        get_backend('dummy')
 
         get_middleware()
         log.info("Loaded middleware")

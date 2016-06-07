@@ -42,7 +42,7 @@ class CronScheduler(multiprocessing.Process):
 
         self.log.debug("Starting")
 
-        backend = get_backend()
+        backend = get_backend('cron_scheduler')
         self.log.info("Loaded backend %s", backend)
 
         while self.running.value:

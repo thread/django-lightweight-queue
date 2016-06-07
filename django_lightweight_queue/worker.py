@@ -54,7 +54,7 @@ class Worker(multiprocessing.Process):
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
         # Each worker gets it own backend
-        backend = get_backend()
+        backend = get_backend(self.queue)
         self.log.info("Loaded backend %s", backend)
 
         time_item_last_processed = datetime.datetime.utcnow()
@@ -94,7 +94,7 @@ class Worker(multiprocessing.Process):
         # Tell master process that we are not processing anything.
         self.tell_master(None, False)
 
-        job = backend.dequeue(self.queue, 15)
+        job = backend.dequeue(self.queue, self.worker_num, 15)
         if job is None:
             return False
 
@@ -110,6 +110,8 @@ class Worker(multiprocessing.Process):
         if job.run() and self.touch_filename:
             with open(self.touch_filename, 'a'):
                 os.utime(self.touch_filename, None)
+
+        backend.processed_job(self.queue, self.worker_num, job)
 
         # Emulate Django's request_finished signal and close all of our
         # connections. Django assumes that making a DB connection is cheap, so

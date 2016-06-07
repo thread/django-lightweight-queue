@@ -6,16 +6,22 @@ from ..job import Job
 from .. import app_settings
 
 class RedisBackend(object):
+    """
+    This backend has at-most-once semantics.
+    """
     def __init__(self):
         self.client = redis.Redis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
         )
 
+    def startup(self, queue):
+        pass
+
     def enqueue(self, job, queue):
         self.client.rpush(self._key(queue), job.to_json())
 
-    def dequeue(self, queue, timeout):
+    def dequeue(self, queue, worker_num, timeout):
         try:
             _, data = self.client.blpop(self._key(queue), timeout)
 
@@ -25,6 +31,9 @@ class RedisBackend(object):
 
     def length(self, queue):
         return self.client.llen(self._key(queue))
+
+    def processed_job(self, queue, worker_num, job):
+        pass
 
     def _key(self, queue):
         if app_settings.REDIS_PREFIX:
