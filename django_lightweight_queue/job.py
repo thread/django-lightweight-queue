@@ -19,7 +19,12 @@ class Job(object):
 
     @classmethod
     def from_json(cls, val):
-        return cls(**json.loads(val))
+        job = cls(**json.loads(val))
+
+        # Ensures that Job.from_json(x).to_json() == x
+        job._json = val
+
+        return job
 
     def run(self):
         start = time.time()
