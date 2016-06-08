@@ -75,11 +75,11 @@ class ReliableRedisBackend(object):
         main_queue_key = self._key(queue)
         processing_queue_key = self._processing_key(queue, worker_number)
 
-        # Pop any jobs off our 'processing' queue - but do not block doing so -
+        # Get any jobs off our 'processing' queue - but do not block doing so -
         # this is to catch the fact there may be a job already in our
         # processing queue if this worker crashed and has just been restarted.
         # NB different purpose than 'startup' method above.
-        data = self.client.rpop(processing_queue_key)
+        data = self.client.lindex(processing_queue_key, -1)
         if data:
             return Job.from_json(data)
 
