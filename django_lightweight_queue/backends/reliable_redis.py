@@ -85,7 +85,10 @@ class ReliableRedisBackend(object):
 
         # Otherwise, block trying to move a job from the main queue into our
         # processing queue, and process it.
-        data = self.client.brpoplpush(main_queue_key, processing_queue_key)
+        data = self.client.brpoplpush(
+            main_queue_key,
+            processing_queue_key,
+        )
         if data:
             return Job.from_json(data)
 
