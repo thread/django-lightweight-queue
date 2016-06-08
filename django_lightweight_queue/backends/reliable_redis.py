@@ -88,6 +88,7 @@ class ReliableRedisBackend(object):
         data = self.client.brpoplpush(
             main_queue_key,
             processing_queue_key,
+            timeout,
         )
         if data:
             return Job.from_json(data)
