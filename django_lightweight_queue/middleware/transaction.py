@@ -3,13 +3,14 @@ from django.db import transaction, connection
 from ..task import task
 
 class TransactionMiddleware(object):
-    _transaction_started = False
+    def __init__(self):
+        self._transaction_started = False
 
-    def _enable_transaction(job):
+    def _enable_transaction(self, job):
         return job.get_middleware_option('transaction.enabled', True)
 
     def process_job(self, job):
-        if _enable_transaction(job):
+        if self._enable_transaction(job):
             transaction.atomic().__enter__()
             self._transaction_started = True
 
