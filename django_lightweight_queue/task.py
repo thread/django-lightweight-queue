@@ -4,7 +4,12 @@ from .utils import get_backend
 from . import app_settings
 
 class task(object):
-    def __init__(self, queue='default', timeout=None, sigkill_on_stop=False):
+    def __init__(
+        self,
+        queue='default',
+        timeout=None,
+        sigkill_on_stop=False,
+    ):
         """
         Define a task to be run.
 
@@ -63,10 +68,15 @@ class task(object):
         app_settings.WORKERS.setdefault(self.queue, 1)
 
     def __call__(self, fn):
-        return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop)
+        return TaskWrapper(
+            fn,
+            self.queue,
+            self.timeout,
+            self.sigkill_on_stop,
+        )
 
 class TaskWrapper(object):
-    def __init__(self, fn, queue, timeout, sigkill_on_stop):
+    def __init__(self, fn, queue, timeout, sigkill_on_stop, middleware_options):
         self.fn = fn
         self.queue = queue
         self.timeout = timeout
@@ -88,7 +98,13 @@ class TaskWrapper(object):
         # Allow queue overrides, but you must ensure that this queue will exist
         queue = kwargs.pop('django_lightweight_queue_queue', self.queue)
 
-        job = Job(self.path, args, kwargs, timeout, sigkill_on_stop)
+        job = Job(
+            self.path,
+            args,
+            kwargs,
+            timeout,
+            sigkill_on_stop,
+        )
         job.validate()
 
         get_backend(queue).enqueue(job, queue)
