@@ -9,6 +9,7 @@ class task(object):
         queue='default',
         timeout=None,
         sigkill_on_stop=False,
+        middleware_options=None,
     ):
         """
         Define a task to be run.
@@ -40,6 +41,12 @@ class task(object):
             processor is shut down. The default behaviour is to let it run to
             completion.
 
+            `middleware_options` -- A `dict` of options for the middleware which
+            may be being used. Keys and values are determined entirely by the
+            middleware in question, though it is expected that top level keys
+            will correspond to the last name segment of a middleware and top
+            level values will be `dict`s of options for that middleware.
+
         For example::
 
             @task(sigkill_on_stop=True, timeout=60)
@@ -64,6 +71,7 @@ class task(object):
         self.queue = queue
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.middleware_options = middleware_options or {}
 
         app_settings.WORKERS.setdefault(self.queue, 1)
 
@@ -73,6 +81,7 @@ class task(object):
             self.queue,
             self.timeout,
             self.sigkill_on_stop,
+            self.middleware_options,
         )
 
 class TaskWrapper(object):
@@ -81,6 +90,7 @@ class TaskWrapper(object):
         self.queue = queue
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.middleware_options = middleware_options
 
         self.path = '%s.%s' % (fn.__module__, fn.__name__)
 
@@ -104,6 +114,7 @@ class TaskWrapper(object):
             kwargs,
             timeout,
             sigkill_on_stop,
+            middleware_options,
         )
         job.validate()
 

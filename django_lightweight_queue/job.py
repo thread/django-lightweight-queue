@@ -12,12 +12,14 @@ class Job(object):
         kwargs,
         timeout=None,
         sigkill_on_stop=False,
+        middleware_options=None,
     ):
         self.path = path
         self.args = args
         self.kwargs = kwargs
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.middleware_options = middleware_options or {}
 
         self._json = None
 
@@ -32,6 +34,27 @@ class Job(object):
         job._json = val
 
         return job
+
+    def get_middleware_option(dotted_name, default=None):
+        """
+        Fetch an option on this job for middleware.
+
+        Option names are generally expected to start with the name of the
+        middleware they relate to, but it is up to the middleware in question
+        to handle this.
+
+        The name of the option should be dot separated, the dots will be used to
+        separate the name of the middleware from the name of the option. At each
+        level the name is used as a key into the options dict, starting with the
+        middleware_options which was passed to the `task` decorator.
+        """
+
+        parts = dotted_name.split('.')
+        options = self.middleware_options
+        for part in parts[:-1]:
+            options = options.get(part, {})
+
+        return options.get(parts[-1], default)
 
     def run(self):
         start = time.time()
