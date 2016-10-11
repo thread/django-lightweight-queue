@@ -22,10 +22,6 @@ class TransactionMiddleware(object):
         if self._transaction_started:
             transaction.atomic().__exit__(*exc_info)
 
-def non_transactional_task(*args, **kwargs):
-    kwargs.setdefault('transaction', {}).setdefault('enabled', False)
-    return task(*args, **kwargs)
-
 # Legacy
 if not hasattr(connection, 'in_atomic_block'):
     class TransactionMiddleware(object):
