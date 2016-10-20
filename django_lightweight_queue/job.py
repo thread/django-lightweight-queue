@@ -5,7 +5,14 @@ import time
 from .utils import get_path, get_middleware
 
 class Job(object):
-    def __init__(self, path, args, kwargs, timeout=None, sigkill_on_stop=False):
+    def __init__(
+        self,
+        path,
+        args,
+        kwargs,
+        timeout=None,
+        sigkill_on_stop=False,
+    ):
         self.path = path
         self.args = args
         self.kwargs = kwargs
@@ -15,7 +22,11 @@ class Job(object):
         self._json = None
 
     def __repr__(self):
-        return "<Job: %s(*%r, **%r)>" % (self.path, self.args, self.kwargs)
+        return "<Job: %s(*%r, **%r)>" % (
+            self.path,
+            self.args,
+            self.kwargs,
+        )
 
     @classmethod
     def from_json(cls, val):
