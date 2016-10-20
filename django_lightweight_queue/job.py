@@ -1,6 +1,7 @@
 import sys
 import json
 import time
+import datetime
 
 from .utils import get_path, get_middleware
 
@@ -12,20 +13,25 @@ class Job(object):
         kwargs,
         timeout=None,
         sigkill_on_stop=False,
+        created_time=None,
     ):
         self.path = path
         self.args = args
         self.kwargs = kwargs
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.created_time = (
+            created_time or datetime.datetime.utcnow().isoformat(sep=' ')
+        )
 
         self._json = None
 
     def __repr__(self):
-        return "<Job: %s(*%r, **%r)>" % (
+        return "<Job: %s(*%r, **%r) @ %s>" % (
             self.path,
             self.args,
             self.kwargs,
+            self.created_time,
         )
 
     @classmethod
@@ -87,5 +93,6 @@ class Job(object):
                 'kwargs': self.kwargs,
                 'timeout': self.timeout,
                 'sigkill_on_stop': self.sigkill_on_stop,
+                'created_time': self.created_time,
             })
         return self._json
