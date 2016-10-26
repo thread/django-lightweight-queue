@@ -13,16 +13,13 @@ class Job(object):
         kwargs,
         timeout=None,
         sigkill_on_stop=False,
-        created_time=None,
     ):
         self.path = path
         self.args = args
         self.kwargs = kwargs
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
-        self.created_time = (
-            created_time or datetime.datetime.utcnow().isoformat(sep=' ')
-        )
+        self.created_time = datetime.datetime.utcnow().isoformat(sep=' ')
 
         self._json = None
 
@@ -36,7 +33,12 @@ class Job(object):
 
     @classmethod
     def from_json(cls, val):
-        job = cls(**json.loads(val))
+        as_dict = json.loads(val)
+
+        created_time = as_dict.pop('created_time')
+
+        job = cls(**as_dict)
+        job.created_time = created_time
 
         # Ensures that Job.from_json(x).to_json() == x
         job._json = val
