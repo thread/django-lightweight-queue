@@ -5,6 +5,8 @@ import datetime
 
 from .utils import get_path, get_middleware
 
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
+
 class Job(object):
     def __init__(
         self,
@@ -19,7 +21,7 @@ class Job(object):
         self.kwargs = kwargs
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
-        self.created_time = datetime.datetime.utcnow().isoformat(sep=' ')
+        self.created_time = datetime.datetime.utcnow()
 
         self._json = None
 
@@ -28,7 +30,7 @@ class Job(object):
             self.path,
             self.args,
             self.kwargs,
-            self.created_time,
+            self.created_time_str,
         )
 
     @classmethod
@@ -38,12 +40,16 @@ class Job(object):
         created_time = as_dict.pop('created_time')
 
         job = cls(**as_dict)
-        job.created_time = created_time
+        job.created_time = datetime.datetime.strptime(created_time, TIME_FORMAT)
 
         # Ensures that Job.from_json(x).to_json() == x
         job._json = val
 
         return job
+
+    @property
+    def created_time_str(self):
+        return self.created_time.strftime(TIME_FORMAT)
 
     def run(self):
         start = time.time()
@@ -95,6 +101,6 @@ class Job(object):
                 'kwargs': self.kwargs,
                 'timeout': self.timeout,
                 'sigkill_on_stop': self.sigkill_on_stop,
-                'created_time': self.created_time,
+                'created_time': self.created_time_str,
             })
         return self._json
