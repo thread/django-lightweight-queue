@@ -8,14 +8,7 @@ from .utils import get_path, get_middleware
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 class Job(object):
-    def __init__(
-        self,
-        path,
-        args,
-        kwargs,
-        timeout=None,
-        sigkill_on_stop=False,
-    ):
+    def __init__(self, path, args, kwargs, timeout=None, sigkill_on_stop=False):
         self.path = path
         self.args = args
         self.kwargs = kwargs
