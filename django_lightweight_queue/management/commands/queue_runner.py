@@ -3,7 +3,7 @@ import optparse
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import CommandError, NoArgsCommand
 
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
@@ -35,7 +35,7 @@ class Command(NoArgsCommand):
             options['num_queue_workers'] is not None and
             options['only_queue'] is None
         ):
-            raise ValueError(
+            raise CommandError(
                 "A value for 'queue-workers' without a value for 'only-queue' "
                 "has no meaning.",
             )
@@ -46,10 +46,10 @@ class Command(NoArgsCommand):
             only_queue_workers = None
         else:
             if only_queue_workers == 0:
-                raise ValueError("Nothing to do! (queue-workers is zero)")
+                raise CommandError("Nothing to do! (queue-workers is zero)")
 
             if only_queue_workers < 0:
-                raise ValueError("Cannot have negative queue-workers")
+                raise CommandError("Cannot have negative queue-workers")
 
         level = {
             0: logging.WARNING,
