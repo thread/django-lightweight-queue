@@ -11,14 +11,14 @@ from .worker import Worker
 from .cron_scheduler import CronScheduler, get_config
 
 def runner(
-        log,
-        log_filename_fn,
-        touch_filename_fn,
-        machine_number,
-        machine_count,
-        only_queue=None,
-        only_queue_workers=None,
-    ):
+    log,
+    log_filename_fn,
+    touch_filename_fn,
+    machine_number,
+    machine_count,
+    only_queue=None,
+    only_queue_workers=None,
+):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
