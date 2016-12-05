@@ -17,7 +17,7 @@ def runner(
     machine_number,
     machine_count,
     only_queue=None,
-    only_queue_workers=None,
+    num_only_queue_workers=None,
 ):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
@@ -70,8 +70,8 @@ def runner(
         if only_queue and only_queue != queue:
             continue
 
-        if only_queue and only_queue_workers is not None:
-            num_workers = only_queue_workers
+        if only_queue and num_only_queue_workers is not None:
+            num_workers = num_only_queue_workers
 
         for x in range(1, num_workers + 1):
             # We don't go out of our way to start workers on startup - we let

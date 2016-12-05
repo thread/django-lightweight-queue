@@ -41,14 +41,14 @@ class Command(NoArgsCommand):
             )
 
         try:
-            only_queue_workers = int(options['num_queue_workers'])
+            num_only_queue_workers = int(options['num_queue_workers'])
         except TypeError:
-            only_queue_workers = None
+            num_only_queue_workers = None
         else:
-            if only_queue_workers == 0:
+            if num_only_queue_workers == 0:
                 raise CommandError("Nothing to do! (queue-workers is zero)")
 
-            if only_queue_workers < 0:
+            if num_only_queue_workers < 0:
                 raise CommandError("Cannot have negative queue-workers")
 
         level = {
@@ -99,7 +99,7 @@ class Command(NoArgsCommand):
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
                 only_queue=options['only_queue'],
-                only_queue_workers=only_queue_workers,
+                num_only_queue_workers=num_only_queue_workers,
             )
 
         # fork() only after we have started enough to catch failure, including
