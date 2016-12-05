@@ -22,12 +22,34 @@ class Command(NoArgsCommand):
             help="Total number of machines running the queues"),
         optparse.make_option('--only-queue', action='store', default=None,
             help="Only run the given queue, useful for local debugging"),
+        optparse.make_option('--num-queue-workers', action='store', default=None,
+            help="The number of queue workers to run, only valid when running a specific queue"),
     )
 
     def handle_noargs(self, **options):
         # Django < 1.8.3 leaves options['verbosity'] as a string so we cast to
         # ensure an int.
         verbosity = int(options['verbosity'])
+
+        if (
+            options['num_queue_workers'] is not None and
+            options['only_queue'] is None
+        ):
+            raise ValueError(
+                "A value for 'queue-workers' without a value for 'only-queue' "
+                "has no meaning.",
+            )
+
+        try:
+            only_queue_workers = int(options['num_queue_workers'])
+        except TypeError:
+            only_queue_workers = None
+        else:
+            if only_queue_workers == 0:
+                raise ValueError("Nothing to do! (queue-workers is zero)")
+
+            if only_queue_workers < 0:
+                raise ValueError("Cannot have negative queue-workers")
 
         level = {
             0: logging.WARNING,
@@ -77,6 +99,7 @@ class Command(NoArgsCommand):
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
                 only_queue=options['only_queue'],
+                only_queue_workers=only_queue_workers,
             )
 
         # fork() only after we have started enough to catch failure, including
