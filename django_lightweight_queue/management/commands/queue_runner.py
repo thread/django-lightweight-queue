@@ -5,6 +5,7 @@ import daemonize
 from django.apps import apps
 from django.core.management.base import CommandError, NoArgsCommand
 
+from ... import app_settings
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
 
@@ -85,6 +86,11 @@ class Command(NoArgsCommand):
         get_middleware()
         log.info("Loaded middleware")
 
+        try:
+            app_settings.WORKERS[only_queue] = num_only_queue_workers
+        except KeyError:
+            pass
+
         # Ensure children will be able to import most things, but also try and
         # save memory by importing as much as possible before the fork() as it
         # has copy-on-write semantics.
@@ -99,7 +105,6 @@ class Command(NoArgsCommand):
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
                 only_queue=options['only_queue'],
-                num_only_queue_workers=num_only_queue_workers,
             )
 
         # fork() only after we have started enough to catch failure, including
