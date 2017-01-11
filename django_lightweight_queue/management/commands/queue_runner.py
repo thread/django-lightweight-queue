@@ -34,7 +34,7 @@ class Command(BaseCommand):
         only_queue = options['only_queue']
         if (
             options['num_queue_workers'] is not None and
-            only_queue
+            only_queue is None
         ):
             raise CommandError(
                 "A value for 'queue-workers' without a value for 'only-queue' "
