@@ -87,6 +87,7 @@ class Command(NoArgsCommand):
         get_middleware()
         log.info("Loaded middleware")
 
+        # Configuration overrides
         try:
             app_settings.WORKERS[only_queue] = num_only_queue_workers
         except KeyError:
