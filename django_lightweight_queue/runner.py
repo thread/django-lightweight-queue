@@ -8,7 +8,7 @@ from Queue import Empty
 from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
-from .cron_scheduler import CronScheduler, get_cron_config, ensure_queue_workers_for_config
+from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
 
 def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None, num_only_queue_workers=None):
     # Set a dummy title now; multiprocessing will create an extra process
@@ -39,11 +39,11 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         cron_scheduler = CronScheduler(
             running,
             log.level,
-            log_filename_fn('cron_scheduler'),
+            log_filename_fn(CRON_QUEUE_NAME),
             cron_config,
         )
 
-        if not only_queue or only_queue == 'cron_scheduler':
+        if not only_queue or only_queue == CRON_QUEUE_NAME:
             cron_scheduler.start()
 
     workers = {}

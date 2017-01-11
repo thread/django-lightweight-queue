@@ -13,6 +13,8 @@ from . import app_settings
 from .task import task
 from .utils import set_process_title, get_backend, configure_logging
 
+CRON_QUEUE_NAME = 'cron_scheduler'
+
 
 class CronScheduler(multiprocessing.Process):
     def __init__(self, running, log_level, log_filename, config):
@@ -35,14 +37,14 @@ class CronScheduler(multiprocessing.Process):
 
         configure_logging(
             level=self.log_level,
-            format='%(asctime)-15s %(process)d cron_scheduler %(levelname).1s: '
-                '%(message)s',
+            format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
+                '%%(message)s' % (CRON_QUEUE_NAME,),
             filename=self.log_filename,
         )
 
         self.log.debug("Starting")
 
-        backend = get_backend('cron_scheduler')
+        backend = get_backend(CRON_QUEUE_NAME)
         self.log.info("Loaded backend %s", backend)
 
         while self.running.value:
