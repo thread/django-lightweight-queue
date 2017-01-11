@@ -33,27 +33,6 @@ class Command(BaseCommand):
         # ensure an int.
         verbosity = int(options['verbosity'])
 
-        only_queue = options['only_queue']
-        if (
-            options['num_queue_workers'] is not None and
-            only_queue
-        ):
-            raise CommandError(
-                "A value for 'queue-workers' without a value for 'only-queue' "
-                "has no meaning.",
-            )
-
-        try:
-            num_only_queue_workers = int(options['num_queue_workers'])
-        except TypeError:
-            num_only_queue_workers = None
-        else:
-            if num_only_queue_workers == 0:
-                raise CommandError("Nothing to do! (queue-workers is zero)")
-
-            if num_only_queue_workers < 0:
-                raise CommandError("Cannot have negative queue-workers")
-
         level = {
             0: logging.WARNING,
             1: logging.INFO,
@@ -81,9 +60,6 @@ class Command(BaseCommand):
         log = logging.getLogger()
 
         # Configuration overrides
-        if num_only_queue_workers is not None:
-            app_settings.WORKERS[only_queue] = num_only_queue_workers
-
         extra_config = options['config']
         if extra_config is not None:
             load_extra_config(extra_config)
@@ -109,7 +85,7 @@ class Command(BaseCommand):
                 touch_filename,
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
-                only_queue=only_queue,
+                only_queue=options['only_queue'],
             )
 
         # fork() only after we have started enough to catch failure, including
