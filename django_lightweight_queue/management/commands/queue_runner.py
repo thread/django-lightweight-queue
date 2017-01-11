@@ -22,8 +22,6 @@ class Command(BaseCommand):
             help="Total number of machines running the queues")
         parser.add_argument('--only-queue', action='store', default=None,
             help="Only run the given queue, useful for local debugging")
-        parser.add_argument('--num-queue-workers', action='store', default=None,
-            help="The number of queue workers to run, only valid when running a specific queue")
         parser.add_argument('--config', action='store', default=None,
             help="The path to an additional django-style config file to load")
 
