@@ -8,7 +8,7 @@ from Queue import Empty
 from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
-from .cron_scheduler import CronScheduler, get_config
+from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
 
 
 def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
@@ -31,21 +31,19 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         running.value = 0
     signal.signal(signal.SIGTERM, handle_term)
 
-    # For the cron scheduling configuration, even if we're not running
-    # cronjobs, as it changes the queue count.
-    get_config()
+    # Load the cron scheduling configuration and setup the worker numbers for it,
+    # even if we're not running cronjobs, as it changes the queue count.
+    cron_config = get_cron_config()
+    ensure_queue_workers_for_config(cron_config)
 
-    if machine_number == 1:
-        # Initialise the cron scheduler before setting up the workers so that
-        # it can populate app_settings.WORKERS
+    if machine_number == 1 and (not only_queue or only_queue == CRON_QUEUE_NAME):
         cron_scheduler = CronScheduler(
             running,
             log.level,
-            log_filename_fn('cron_scheduler'),
+            log_filename_fn(CRON_QUEUE_NAME),
+            cron_config,
         )
-
-        if not only_queue or only_queue == 'cron_scheduler':
-            cron_scheduler.start()
+        cron_scheduler.start()
 
     worker_names = get_workers_names(machine_number, machine_count, only_queue)
 

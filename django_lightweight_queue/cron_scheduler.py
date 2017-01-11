@@ -13,16 +13,18 @@ from . import app_settings
 from .task import task
 from .utils import set_process_title, get_backend, configure_logging
 
+CRON_QUEUE_NAME = 'cron_scheduler'
+
+
 class CronScheduler(multiprocessing.Process):
-    def __init__(self, running, log_level, log_filename):
+    def __init__(self, running, log_level, log_filename, config):
         self.running = running
         self.log_level = log_level
         self.log_filename = log_filename
+        self.config = config
 
         # Logfiles must be opened in child process
         self.log = None
-
-        self.config = get_config()
 
         super(CronScheduler, self).__init__()
 
@@ -35,14 +37,14 @@ class CronScheduler(multiprocessing.Process):
 
         configure_logging(
             level=self.log_level,
-            format='%(asctime)-15s %(process)d cron_scheduler %(levelname).1s: '
-                '%(message)s',
+            format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
+                '%%(message)s' % (CRON_QUEUE_NAME,),
             filename=self.log_filename,
         )
 
         self.log.debug("Starting")
 
-        backend = get_backend('cron_scheduler')
+        backend = get_backend(CRON_QUEUE_NAME)
         self.log.info("Loaded backend %s", backend)
 
         while self.running.value:
@@ -87,7 +89,8 @@ class CronScheduler(multiprocessing.Process):
 
             self.log.debug("Enqueued %s", row)
 
-def get_config():
+
+def get_cron_config():
     config = []
 
     def get_matcher(minval, maxval, t):
@@ -134,10 +137,14 @@ def get_config():
             row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)
             config.append(row)
 
-            # We must ensure we have at least one worker for this queue.
-            app_settings.WORKERS.setdefault(row['queue'], 1)
-
     return config
+
+
+def ensure_queue_workers_for_config(config):
+    for row in config:
+        # We must ensure we have at least one worker for this queue.
+        app_settings.WORKERS.setdefault(row['queue'], 1)
+
 
 @task()
 def execute(name, *args, **kwargs):
