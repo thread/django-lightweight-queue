@@ -9,6 +9,7 @@ from ... import app_settings
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
 
+
 class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         optparse.make_option('--pidfile', action='store', dest='pidfile', default=None,

@@ -4,6 +4,7 @@ from ... import app_settings
 from ...utils import get_backend
 from ...cron_scheduler import get_config
 
+
 class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         print "django-lightweight-queue"
