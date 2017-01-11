@@ -4,7 +4,34 @@ from .cron_scheduler import CRON_QUEUE_NAME
 from .runner import get_workers_names
 
 
-class PooledMachine(object):
+class Machine(object):
+    """
+    Dummy machine class to contain documentation.
+
+    Implementations may extend this class if desired, though this
+    is not required.
+    """
+
+    @property
+    def run_cron(self):
+        """
+        Returns a `bool` for whether or not a runner on this machine should
+        run the cron queue.
+        """
+        raise NotImplementedError()
+
+    @property
+    def worker_names(self):
+        """
+        Returns a list of tuples of (queue_name, worker_num) for the workers
+        which should run on this machine. Worker numbers start at 1.
+
+        Implemetations should be efficient even if this is called several times.
+        """
+        raise NotImplementedError()
+
+
+class PooledMachine(Machine):
     """
     A machine which behaves as part of a pool.
 
