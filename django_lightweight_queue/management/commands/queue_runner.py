@@ -88,10 +88,7 @@ class Command(NoArgsCommand):
         log.info("Loaded middleware")
 
         # Configuration overrides
-        try:
-            app_settings.WORKERS[only_queue] = num_only_queue_workers
-        except KeyError:
-            pass
+        app_settings.WORKERS[only_queue] = num_only_queue_workers
 
         # Ensure children will be able to import most things, but also try and
         # save memory by importing as much as possible before the fork() as it
