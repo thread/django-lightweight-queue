@@ -13,6 +13,7 @@ from . import app_settings
 from .task import task
 from .utils import set_process_title, get_backend, configure_logging
 
+
 class CronScheduler(multiprocessing.Process):
     def __init__(self, running, log_level, log_filename):
         self.running = running
@@ -87,6 +88,7 @@ class CronScheduler(multiprocessing.Process):
 
             self.log.debug("Enqueued %s", row)
 
+
 def get_config():
     config = []
 
@@ -138,6 +140,7 @@ def get_config():
             app_settings.WORKERS.setdefault(row['queue'], 1)
 
     return config
+
 
 @task()
 def execute(name, *args, **kwargs):
