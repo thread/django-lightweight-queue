@@ -47,29 +47,15 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         if not only_queue or only_queue == 'cron_scheduler':
             cron_scheduler.start()
 
-    workers = {}
-
-    # Used to determine the parallelism split
-    job_number = 1
-
-    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
-        if only_queue and only_queue != queue:
-            continue
-
-        for x in range(1, num_workers + 1):
-            # We don't go out of our way to start workers on startup - we let
-            # the "restart if they aren't already running" machinery do its
-            # job.
-            if (job_number % machine_count) + 1 == machine_number:
-                workers[(queue, x)] = None
-
-            job_number += 1
+    worker_names = get_workers_names(machine_number, machine_count, only_queue)
 
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so.
-    for queue, _ in workers.keys():
+    for queue, _ in worker_names:
         backend = get_backend(queue)
         backend.startup(queue)
+
+    workers = {x: None for x in worker_names}
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
@@ -150,3 +136,29 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         worker.join()
 
     log.info("All processes finished; returning")
+
+
+def get_workers_names(machine_number, machine_count, only_queue):
+    """
+    Returns a list of tuples of (queue_name, worker_num) for the workers
+    which should run on this machine.
+    """
+    worker_names = []
+
+    # Used to determine the parallelism split
+    job_number = 1
+
+    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
+        if only_queue and only_queue != queue:
+            continue
+
+        for worker_num in range(1, num_workers + 1):
+            # We don't go out of our way to start workers on startup - we let
+            # the "restart if they aren't already running" machinery do its
+            # job.
+            if (job_number % machine_count) + 1 == machine_number:
+                worker_names.append((queue, worker_num))
+
+            job_number += 1
+
+    return worker_names
