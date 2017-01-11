@@ -58,6 +58,11 @@ class Command(BaseCommand):
                 except TypeError:
                     options[name] = default
 
+            if options['machine_count'] < options['machine_number']:
+                raise CommandError(
+                    "Machine number must be less than or equal to machine count!",
+                )
+
     def handle(self, **options):
         # Django < 1.8.3 leaves options['verbosity'] as a string so we cast to
         # ensure an int.
