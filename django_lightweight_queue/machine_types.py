@@ -79,3 +79,23 @@ class PooledMachine(Machine):
             self.machine_count,
             self.only_queue,
         )
+
+
+class DirectlyConfiguredMachine(object):
+    """
+    A machine which is configured by an explicitly passed in configuration file.
+
+    This class assumes that the loading of the settings from that configuration
+    file has already been handled.
+    """
+    @property
+    def run_cron(self):
+        return False
+
+    @cached_property
+    def worker_names(self):
+        return [
+            (queue, worker_number)
+            for queue, num_workers in sorted(app_settings.WORKERS.iteritems())
+            for worker_number in range(num_workers)
+        ]
