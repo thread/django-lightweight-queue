@@ -15,15 +15,14 @@ from .utils import set_process_title, get_backend, configure_logging
 
 
 class CronScheduler(multiprocessing.Process):
-    def __init__(self, running, log_level, log_filename):
+    def __init__(self, running, log_level, log_filename, config):
         self.running = running
         self.log_level = log_level
         self.log_filename = log_filename
+        self.config = config
 
         # Logfiles must be opened in child process
         self.log = None
-
-        self.config = get_cron_config()
 
         super(CronScheduler, self).__init__()
 
@@ -136,10 +135,13 @@ def get_cron_config():
             row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)
             config.append(row)
 
-            # We must ensure we have at least one worker for this queue.
-            app_settings.WORKERS.setdefault(row['queue'], 1)
-
     return config
+
+
+def ensure_queue_workers_for_config(config):
+    for row in config:
+        # We must ensure we have at least one worker for this queue.
+        app_settings.WORKERS.setdefault(row['queue'], 1)
 
 
 @task()
