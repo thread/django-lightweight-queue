@@ -4,6 +4,7 @@ import daemonize
 from django.apps import apps
 from django.core.management.base import BaseCommand
 
+from ...machine_types import PooledMachine
 from ...utils import get_backend, get_middleware, load_extra_config, configure_logging
 from ...runner import runner
 
@@ -75,14 +76,18 @@ class Command(BaseCommand):
         apps.get_models()
         log.info("Loaded models")
 
+        machine = PooledMachine(
+            machine_number=int(options['machine_number']),
+            machine_count=int(options['machine_count']),
+            only_queue=options['only_queue'],
+        )
+
         def run():
             runner(
                 log,
                 log_filename,
                 touch_filename,
-                machine_number=int(options['machine_number']),
-                machine_count=int(options['machine_count']),
-                only_queue=options['only_queue'],
+                machine,
             )
 
         # fork() only after we have started enough to catch failure, including

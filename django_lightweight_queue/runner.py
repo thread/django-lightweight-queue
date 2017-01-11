@@ -11,7 +11,7 @@ from .worker import Worker
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
 
 
-def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
+def runner(log, log_filename_fn, touch_filename_fn, machine):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -36,7 +36,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     cron_config = get_cron_config()
     ensure_queue_workers_for_config(cron_config)
 
-    if machine_number == 1 and (not only_queue or only_queue == CRON_QUEUE_NAME):
+    if machine.run_cron:
         cron_scheduler = CronScheduler(
             running,
             log.level,
@@ -45,15 +45,13 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         )
         cron_scheduler.start()
 
-    worker_names = get_workers_names(machine_number, machine_count, only_queue)
-
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so.
-    for queue, _ in worker_names:
+    for queue, _ in machine.worker_names:
         backend = get_backend(queue)
         backend.startup(queue)
 
-    workers = {x: None for x in worker_names}
+    workers = {x: None for x in machine.worker_names}
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
