@@ -23,7 +23,7 @@ class CronScheduler(multiprocessing.Process):
         # Logfiles must be opened in child process
         self.log = None
 
-        self.config = get_config()
+        self.config = get_cron_config()
 
         super(CronScheduler, self).__init__()
 
@@ -89,7 +89,7 @@ class CronScheduler(multiprocessing.Process):
             self.log.debug("Enqueued %s", row)
 
 
-def get_config():
+def get_cron_config():
     config = []
 
     def get_matcher(minval, maxval, t):

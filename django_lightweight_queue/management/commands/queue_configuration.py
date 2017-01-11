@@ -2,7 +2,7 @@ from django.core.management.base import NoArgsCommand
 
 from ... import app_settings
 from ...utils import get_backend
-from ...cron_scheduler import get_config
+from ...cron_scheduler import get_cron_config
 
 class Command(NoArgsCommand):
     def handle_noargs(self, **options):
@@ -27,7 +27,7 @@ class Command(NoArgsCommand):
         print
         print "Cron configuration"
 
-        for x in get_config():
+        for x in get_cron_config():
             print
             for k in (
                 'command',
