@@ -5,7 +5,6 @@ import multiprocessing
 
 from Queue import Empty
 
-from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
@@ -132,29 +131,3 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         worker.join()
 
     log.info("All processes finished; returning")
-
-
-def get_workers_names(machine_number, machine_count, only_queue):
-    """
-    Returns a list of tuples of (queue_name, worker_num) for the workers
-    which should run on this machine.
-    """
-    worker_names = []
-
-    # Used to determine the parallelism split
-    job_number = 1
-
-    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
-        if only_queue and only_queue != queue:
-            continue
-
-        for worker_num in range(1, num_workers + 1):
-            # We don't go out of our way to start workers on startup - we let
-            # the "restart if they aren't already running" machinery do its
-            # job.
-            if (job_number % machine_count) + 1 == machine_number:
-                worker_names.append((queue, worker_num))
-
-            job_number += 1
-
-    return worker_names

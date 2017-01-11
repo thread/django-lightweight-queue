@@ -1,7 +1,7 @@
 from django.utils.functional import cached_property
 
+from . import app_settings
 from .cron_scheduler import CRON_QUEUE_NAME
-from .runner import get_workers_names
 
 
 class Machine(object):
@@ -29,6 +29,28 @@ class Machine(object):
         Implemetations should be efficient even if this is called several times.
         """
         raise NotImplementedError()
+
+
+def get_workers_names(machine_number, machine_count, only_queue):
+    worker_names = []
+
+    # Used to determine the parallelism split
+    job_number = 1
+
+    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
+        if only_queue and only_queue != queue:
+            continue
+
+        for worker_num in range(1, num_workers + 1):
+            # We don't go out of our way to start workers on startup - we let
+            # the "restart if they aren't already running" machinery do its
+            # job.
+            if (job_number % machine_count) + 1 == machine_number:
+                worker_names.append((queue, worker_num))
+
+            job_number += 1
+
+    return worker_names
 
 
 class PooledMachine(Machine):
