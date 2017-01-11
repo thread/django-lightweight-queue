@@ -1,34 +1,32 @@
 import logging
-import optparse
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import CommandError, NoArgsCommand
+from django.core.management.base import CommandError, BaseCommand
 
 from ... import app_settings
 from ...utils import get_backend, get_middleware, configure_logging
 from ...runner import runner
 
 
-class Command(NoArgsCommand):
-    option_list = NoArgsCommand.option_list + (
-        optparse.make_option('--pidfile', action='store', dest='pidfile', default=None,
-            help="Fork and write pidfile to this file."),
-        optparse.make_option('--logfile', action='store', dest='logfile', default=None,
-            help="Log to the specified file."),
-        optparse.make_option('--touchfile', action='store', dest='touchfile', default=None,
-            help="touch(1) the specified file after running a job."),
-        optparse.make_option('--machine', action='store', dest='machine_number', default='1',
-            help="Machine number, for parallelism"),
-        optparse.make_option('--of', action='store', dest='machine_count', default='1',
-            help="Total number of machines running the queues"),
-        optparse.make_option('--only-queue', action='store', default=None,
-            help="Only run the given queue, useful for local debugging"),
-        optparse.make_option('--num-queue-workers', action='store', default=None,
-            help="The number of queue workers to run, only valid when running a specific queue"),
-    )
+class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument('--pidfile', action='store', dest='pidfile', default=None,
+            help="Fork and write pidfile to this file.")
+        parser.add_argument('--logfile', action='store', dest='logfile', default=None,
+            help="Log to the specified file.")
+        parser.add_argument('--touchfile', action='store', dest='touchfile', default=None,
+            help="touch(1) the specified file after running a job.")
+        parser.add_argument('--machine', action='store', dest='machine_number', default='1',
+            help="Machine number, for parallelism")
+        parser.add_argument('--of', action='store', dest='machine_count', default='1',
+            help="Total number of machines running the queues")
+        parser.add_argument('--only-queue', action='store', default=None,
+            help="Only run the given queue, useful for local debugging")
+        parser.add_argument('--num-queue-workers', action='store', default=None,
+            help="The number of queue workers to run, only valid when running a specific queue")
 
-    def handle_noargs(self, **options):
+    def handle(self, **options):
         # Django < 1.8.3 leaves options['verbosity'] as a string so we cast to
         # ensure an int.
         verbosity = int(options['verbosity'])

@@ -1,12 +1,12 @@
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from ... import app_settings
 from ...utils import get_backend
 from ...cron_scheduler import get_config
 
 
-class Command(NoArgsCommand):
-    def handle_noargs(self, **options):
+class Command(BaseCommand):
+    def handle(self, **options):
         print "django-lightweight-queue"
         print "========================"
         print
