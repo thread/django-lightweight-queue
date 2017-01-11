@@ -36,8 +36,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     ensure_queue_workers_for_config(cron_config)
 
     if machine_number == 1:
-        # Initialise the cron scheduler before setting up the workers so that
-        # it can populate app_settings.WORKERS
         cron_scheduler = CronScheduler(
             running,
             log.level,
