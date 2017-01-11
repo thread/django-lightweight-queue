@@ -1,8 +1,11 @@
 import sys
 import json
 import time
+import datetime
 
 from .utils import get_path, get_middleware
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 class Job(object):
     def __init__(self, path, args, kwargs, timeout=None, sigkill_on_stop=False):
@@ -11,20 +14,35 @@ class Job(object):
         self.kwargs = kwargs
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.created_time = datetime.datetime.utcnow()
 
         self._json = None
 
     def __repr__(self):
-        return "<Job: %s(*%r, **%r)>" % (self.path, self.args, self.kwargs)
+        return "<Job: %s(*%r, **%r) @ %s>" % (
+            self.path,
+            self.args,
+            self.kwargs,
+            self.created_time_str,
+        )
 
     @classmethod
     def from_json(cls, val):
-        job = cls(**json.loads(val))
+        as_dict = json.loads(val)
+
+        created_time = as_dict.pop('created_time')
+
+        job = cls(**as_dict)
+        job.created_time = datetime.datetime.strptime(created_time, TIME_FORMAT)
 
         # Ensures that Job.from_json(x).to_json() == x
         job._json = val
 
         return job
+
+    @property
+    def created_time_str(self):
+        return self.created_time.strftime(TIME_FORMAT)
 
     def run(self):
         start = time.time()
@@ -76,5 +94,6 @@ class Job(object):
                 'kwargs': self.kwargs,
                 'timeout': self.timeout,
                 'sigkill_on_stop': self.sigkill_on_stop,
+                'created_time': self.created_time_str,
             })
         return self._json
