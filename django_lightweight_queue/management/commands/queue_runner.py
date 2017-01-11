@@ -32,9 +32,10 @@ class Command(NoArgsCommand):
         # ensure an int.
         verbosity = int(options['verbosity'])
 
+        only_queue = options['only_queue']
         if (
             options['num_queue_workers'] is not None and
-            options['only_queue'] is None
+            only_queue
         ):
             raise CommandError(
                 "A value for 'queue-workers' without a value for 'only-queue' "
@@ -104,7 +105,7 @@ class Command(NoArgsCommand):
                 touch_filename,
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
-                only_queue=options['only_queue'],
+                only_queue=only_queue,
             )
 
         # fork() only after we have started enough to catch failure, including
