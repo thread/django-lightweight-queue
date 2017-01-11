@@ -78,6 +78,10 @@ class Command(BaseCommand):
 
         log = logging.getLogger()
 
+        # Configuration overrides
+        if num_only_queue_workers is not None:
+            app_settings.WORKERS[only_queue] = num_only_queue_workers
+
         log.info("Starting queue runner")
 
         # Ensure children will be able to import our backend
@@ -85,10 +89,6 @@ class Command(BaseCommand):
 
         get_middleware()
         log.info("Loaded middleware")
-
-        # Configuration overrides
-        if num_only_queue_workers is not None:
-            app_settings.WORKERS[only_queue] = num_only_queue_workers
 
         # Ensure children will be able to import most things, but also try and
         # save memory by importing as much as possible before the fork() as it
