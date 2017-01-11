@@ -35,16 +35,14 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     cron_config = get_cron_config()
     ensure_queue_workers_for_config(cron_config)
 
-    if machine_number == 1:
+    if machine_number == 1 and (not only_queue or only_queue == CRON_QUEUE_NAME):
         cron_scheduler = CronScheduler(
             running,
             log.level,
             log_filename_fn(CRON_QUEUE_NAME),
             cron_config,
         )
-
-        if not only_queue or only_queue == CRON_QUEUE_NAME:
-            cron_scheduler.start()
+        cron_scheduler.start()
 
     workers = {}
 
