@@ -2,9 +2,8 @@ import logging
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import CommandError, BaseCommand
+from django.core.management.base import BaseCommand
 
-from ... import app_settings
 from ...utils import get_backend, get_middleware, load_extra_config, configure_logging
 from ...runner import runner
 
