@@ -49,13 +49,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
 
     workers = {}
 
-    # Some backends may require on-startup logic per-queue, initialise a dummy
-    # backend per queue to do so.
-    for queue in app_settings.WORKERS.keys():
-        if not only_queue or only_queue == queue:
-            backend = get_backend(queue)
-            backend.startup(queue)
-
     # Used to determine the parallelism split
     job_number = 1
 
@@ -71,6 +64,12 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
                 workers[(queue, x)] = None
 
             job_number += 1
+
+    # Some backends may require on-startup logic per-queue, initialise a dummy
+    # backend per queue to do so.
+    for queue, _ in workers.keys():
+        backend = get_backend(queue)
+        backend.startup(queue)
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
