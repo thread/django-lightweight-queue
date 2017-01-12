@@ -32,9 +32,14 @@ class Machine(object):
 
 
 def get_workers_names(machine_number, machine_count, only_queue):
+    """
+    Determine the workers to run on a given machine in a pool of a known size.
+    """
+
     worker_names = []
 
-    # Used to determine the parallelism split
+    # Iterate over all the possible workers which will be run in the pool,
+    # choosing only those which should be run on this machine.
     job_number = 1
 
     for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
