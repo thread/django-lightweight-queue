@@ -42,9 +42,6 @@ def get_workers_names(machine_number, machine_count, only_queue):
             continue
 
         for worker_num in range(1, num_workers + 1):
-            # We don't go out of our way to start workers on startup - we let
-            # the "restart if they aren't already running" machinery do its
-            # job.
             if (job_number % machine_count) + 1 == machine_number:
                 worker_names.append((queue, worker_num))
 
