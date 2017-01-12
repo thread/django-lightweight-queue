@@ -20,7 +20,10 @@ def load_extra_config(file_path):
         return set(name for name in dir(module) if name.isupper())
 
     def with_prefix(names):
-        return set('%s%s' % (SETTING_NAME_PREFIX, name) for name in names)
+        return set(
+            '%s%s' % (SETTING_NAME_PREFIX, name)
+            for name in names
+        )
 
     setting_names = get_setting_names(app_settings)
     extra_names = get_setting_names(extra_settings)
