@@ -141,8 +141,15 @@ def get_cron_config():
 
 
 def ensure_queue_workers_for_config(config):
+    """
+    Modify the ``WORKERS`` setting such that each of the queues in the given
+    cron configuration have some queue workers specified.
+
+    Queues explicitly configured will not be changed, so it is possible that
+    a queue mentioned in the cron configuration will actually (still) have no
+    workers after this function is run.
+    """
     for row in config:
-        # We must ensure we have at least one worker for this queue.
         app_settings.WORKERS.setdefault(row['queue'], 1)
 
 
