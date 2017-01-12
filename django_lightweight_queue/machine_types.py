@@ -23,7 +23,7 @@ class Machine(object):
     @property
     def worker_names(self):
         """
-        Returns a list of tuples of (queue_name, worker_num) for the workers
+        Returns a sequence of tuples of (queue_name, worker_num) for the workers
         which should run on this machine. Worker numbers start at 1.
 
         Implemetations should be efficient even if this is called several times.
@@ -96,8 +96,8 @@ class DirectlyConfiguredMachine(Machine):
 
     @cached_property
     def worker_names(self):
-        return [
+        return tuple(
             (queue, worker_number)
             for queue, num_workers in sorted(app_settings.WORKERS.iteritems())
             for worker_number in range(num_workers)
-        ]
+        )
