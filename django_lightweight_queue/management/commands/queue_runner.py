@@ -5,7 +5,8 @@ from django.apps import apps
 from django.core.management.base import BaseCommand, CommandError
 
 from ...machine_types import PooledMachine, DirectlyConfiguredMachine
-from ...utils import get_backend, get_middleware, load_extra_config, configure_logging
+from ...utils import get_backend, get_middleware, load_extra_config, \
+    configure_logging
 from ...runner import runner
 
 
