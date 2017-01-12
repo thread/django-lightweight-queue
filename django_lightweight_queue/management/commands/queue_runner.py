@@ -2,10 +2,9 @@ import logging
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import CommandError, BaseCommand
+from django.core.management.base import BaseCommand
 
-from ... import app_settings
-from ...utils import get_backend, get_middleware, configure_logging
+from ...utils import get_backend, get_middleware, load_extra_config, configure_logging
 from ...runner import runner
 
 
@@ -23,34 +22,13 @@ class Command(BaseCommand):
             help="Total number of machines running the queues")
         parser.add_argument('--only-queue', action='store', default=None,
             help="Only run the given queue, useful for local debugging")
-        parser.add_argument('--num-queue-workers', action='store', default=None,
-            help="The number of queue workers to run, only valid when running a specific queue")
+        parser.add_argument('--config', action='store', default=None,
+            help="The path to an additional django-style config file to load")
 
     def handle(self, **options):
         # Django < 1.8.3 leaves options['verbosity'] as a string so we cast to
         # ensure an int.
         verbosity = int(options['verbosity'])
-
-        only_queue = options['only_queue']
-        if (
-            options['num_queue_workers'] is not None and
-            only_queue is None
-        ):
-            raise CommandError(
-                "A value for 'queue-workers' without a value for 'only-queue' "
-                "has no meaning.",
-            )
-
-        try:
-            num_only_queue_workers = int(options['num_queue_workers'])
-        except TypeError:
-            num_only_queue_workers = None
-        else:
-            if num_only_queue_workers == 0:
-                raise CommandError("Nothing to do! (queue-workers is zero)")
-
-            if num_only_queue_workers < 0:
-                raise CommandError("Cannot have negative queue-workers")
 
         level = {
             0: logging.WARNING,
@@ -78,6 +56,11 @@ class Command(BaseCommand):
 
         log = logging.getLogger()
 
+        # Configuration overrides
+        extra_config = options['config']
+        if extra_config is not None:
+            load_extra_config(extra_config)
+
         log.info("Starting queue runner")
 
         # Ensure children will be able to import our backend
@@ -85,10 +68,6 @@ class Command(BaseCommand):
 
         get_middleware()
         log.info("Loaded middleware")
-
-        # Configuration overrides
-        if num_only_queue_workers is not None:
-            app_settings.WORKERS[only_queue] = num_only_queue_workers
 
         # Ensure children will be able to import most things, but also try and
         # save memory by importing as much as possible before the fork() as it
@@ -103,7 +82,7 @@ class Command(BaseCommand):
                 touch_filename,
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
-                only_queue=only_queue,
+                only_queue=options['only_queue'],
             )
 
         # fork() only after we have started enough to catch failure, including
