@@ -1,7 +1,9 @@
 from django.conf import settings
 
+from . import constants
+
 def setting(suffix, default):
-    attr_name = 'LIGHTWEIGHT_QUEUE_%s' % suffix
+    attr_name = '%s%s' % (constants.SETTING_NAME_PREFIX, suffix)
     return getattr(settings, attr_name, default)
 
 WORKERS = setting('WORKERS', {})

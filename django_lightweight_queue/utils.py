@@ -8,9 +8,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
 
-from . import app_settings
-
-SETTING_NAME_PREFIX = 'LIGHTWEIGHT_QUEUE_'
+from . import constants, app_settings
 
 
 def load_extra_config(file_path):
@@ -21,7 +19,7 @@ def load_extra_config(file_path):
 
     def with_prefix(names):
         return set(
-            '%s%s' % (SETTING_NAME_PREFIX, name)
+            '%s%s' % (constants.SETTING_NAME_PREFIX, name)
             for name in names
         )
 
@@ -35,7 +33,7 @@ def load_extra_config(file_path):
 
     override_names = extra_names - unexpected_names
     for name in override_names:
-        short_name = name[len(SETTING_NAME_PREFIX):]
+        short_name = name[len(constants.SETTING_NAME_PREFIX):]
         setattr(app_settings, short_name, getattr(extra_settings, name))
 
 def configure_logging(level, format, filename):
