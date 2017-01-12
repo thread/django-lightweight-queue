@@ -1,7 +1,7 @@
-import logging
-import importlib
 import imp
+import logging
 import warnings
+import importlib
 
 from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
