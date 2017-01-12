@@ -83,7 +83,7 @@ class PooledMachine(Machine):
         )
 
 
-class DirectlyConfiguredMachine(object):
+class DirectlyConfiguredMachine(Machine):
     """
     A machine which is configured by an explicitly passed in configuration file.
 
