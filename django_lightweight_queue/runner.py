@@ -10,7 +10,7 @@ from .utils import set_process_title, get_backend
 from .worker import Worker
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
 
-def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None, num_only_queue_workers=None):
+def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -59,9 +59,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
         if only_queue and only_queue != queue:
             continue
-
-        if only_queue and num_only_queue_workers is not None:
-            num_workers = num_only_queue_workers
 
         for x in range(1, num_workers + 1):
             # We don't go out of our way to start workers on startup - we let

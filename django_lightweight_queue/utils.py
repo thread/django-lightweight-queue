@@ -1,4 +1,6 @@
+import imp
 import logging
+import warnings
 import importlib
 
 from django.apps import apps
@@ -6,7 +8,33 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
 
-from . import app_settings
+from . import constants, app_settings
+
+
+def load_extra_config(file_path):
+    extra_settings = imp.load_source('extra_settings', file_path)
+
+    def get_setting_names(module):
+        return set(name for name in dir(module) if name.isupper())
+
+    def with_prefix(names):
+        return set(
+            '%s%s' % (constants.SETTING_NAME_PREFIX, name)
+            for name in names
+        )
+
+    setting_names = get_setting_names(app_settings)
+    extra_names = get_setting_names(extra_settings)
+
+    unexpected_names = extra_names - with_prefix(setting_names)
+    if unexpected_names:
+        unexpected_str = "' ,'".join(unexpected_names)
+        warnings.warn("Ignoring unexpected setting(s) '%s'." % (unexpected_str,))
+
+    override_names = extra_names - unexpected_names
+    for name in override_names:
+        short_name = name[len(constants.SETTING_NAME_PREFIX):]
+        setattr(app_settings, short_name, getattr(extra_settings, name))
 
 def configure_logging(level, format, filename):
     """
