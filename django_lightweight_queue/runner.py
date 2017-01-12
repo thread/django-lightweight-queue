@@ -8,7 +8,8 @@ from Queue import Empty
 from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
-from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, ensure_queue_workers_for_config
+from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
+    ensure_queue_workers_for_config
 
 def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
     # Set a dummy title now; multiprocessing will create an extra process
