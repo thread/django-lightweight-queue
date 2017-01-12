@@ -1,7 +1,8 @@
 from django.conf import settings
 
 def setting(suffix, default):
-    return getattr(settings, 'LIGHTWEIGHT_QUEUE_%s' % suffix, default)
+    attr_name = 'LIGHTWEIGHT_QUEUE_%s' % suffix
+    return getattr(settings, attr_name, default)
 
 WORKERS = setting('WORKERS', {})
 BACKEND = setting('BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')
