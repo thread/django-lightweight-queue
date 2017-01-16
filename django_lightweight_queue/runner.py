@@ -5,13 +5,13 @@ import multiprocessing
 
 from Queue import Empty
 
-from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
     ensure_queue_workers_for_config
 
-def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_count, only_queue=None):
+
+def runner(log, log_filename_fn, touch_filename_fn, machine):
     # Set a dummy title now; multiprocessing will create an extra process
     # which will inherit it - we'll set the real title afterwards
     set_process_title("Internal master process")
@@ -36,7 +36,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
     cron_config = get_cron_config()
     ensure_queue_workers_for_config(cron_config)
 
-    if machine_number == 1 and (not only_queue or only_queue == CRON_QUEUE_NAME):
+    if machine.run_cron:
         cron_scheduler = CronScheduler(
             running,
             log.level,
@@ -45,30 +45,13 @@ def runner(log, log_filename_fn, touch_filename_fn, machine_number, machine_coun
         )
         cron_scheduler.start()
 
-    workers = {}
-
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so.
-    for queue in app_settings.WORKERS.keys():
-        if not only_queue or only_queue == queue:
-            backend = get_backend(queue)
-            backend.startup(queue)
+    for queue, _ in machine.worker_names:
+        backend = get_backend(queue)
+        backend.startup(queue)
 
-    # Used to determine the parallelism split
-    job_number = 1
-
-    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
-        if only_queue and only_queue != queue:
-            continue
-
-        for x in range(1, num_workers + 1):
-            # We don't go out of our way to start workers on startup - we let
-            # the "restart if they aren't already running" machinery do its
-            # job.
-            if (job_number % machine_count) + 1 == machine_number:
-                workers[(queue, x)] = None
-
-            job_number += 1
+    workers = {x: None for x in machine.worker_names}
 
     while running.value:
         for (queue, worker_num), worker in workers.items():
