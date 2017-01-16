@@ -31,30 +31,6 @@ class Machine(object):
         raise NotImplementedError()
 
 
-def get_workers_names(machine_number, machine_count, only_queue):
-    """
-    Determine the workers to run on a given machine in a pool of a known size.
-    """
-
-    worker_names = []
-
-    # Iterate over all the possible workers which will be run in the pool,
-    # choosing only those which should be run on this machine.
-    job_number = 1
-
-    for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
-        if only_queue and only_queue != queue:
-            continue
-
-        for worker_num in range(1, num_workers + 1):
-            if (job_number % machine_count) + 1 == machine_number:
-                worker_names.append((queue, worker_num))
-
-            job_number += 1
-
-    return worker_names
-
-
 class PooledMachine(Machine):
     """
     A machine which behaves as part of a pool.
@@ -76,11 +52,27 @@ class PooledMachine(Machine):
 
     @cached_property
     def worker_names(self):
-        return get_workers_names(
-            self.machine_number,
-            self.machine_count,
-            self.only_queue,
-        )
+        """
+        Determine the workers to run on a given machine in a pool of a known size.
+        """
+
+        worker_names = []
+
+        # Iterate over all the possible workers which will be run in the pool,
+        # choosing only those which should be run on this machine.
+        job_number = 1
+
+        for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
+            if self.only_queue and self.only_queue != queue:
+                continue
+
+            for worker_num in range(1, num_workers + 1):
+                if (job_number % self.machine_count) + 1 == self.machine_number:
+                    worker_names.append((queue, worker_num))
+
+                job_number += 1
+
+        return worker_names
 
 
 class DirectlyConfiguredMachine(Machine):
