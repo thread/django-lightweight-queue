@@ -30,10 +30,15 @@ class Job(object):
     def from_json(cls, val):
         as_dict = json.loads(val)
 
-        created_time = as_dict.pop('created_time')
+        # Historic jobs won't have a created_time, so have a default
+        created_time = as_dict.pop('created_time', None)
 
         job = cls(**as_dict)
-        job.created_time = datetime.datetime.strptime(created_time, TIME_FORMAT)
+        if created_time is not None:
+            job.created_time = datetime.datetime.strptime(
+                created_time,
+                TIME_FORMAT,
+            )
 
         # Ensures that Job.from_json(x).to_json() == x
         job._json = val
