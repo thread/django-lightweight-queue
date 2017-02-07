@@ -50,6 +50,10 @@ class PooledMachine(Machine):
             not self.only_queue or self.only_queue == CRON_QUEUE_NAME
         )
 
+    @property
+    def configure_cron(self):
+        return True
+
     @cached_property
     def worker_names(self):
         """
@@ -84,6 +88,10 @@ class DirectlyConfiguredMachine(Machine):
     """
     @property
     def run_cron(self):
+        return False
+
+    @property
+    def configure_cron(self):
         return False
 
     @cached_property

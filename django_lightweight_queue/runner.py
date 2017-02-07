@@ -31,10 +31,11 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         running.value = 0
     signal.signal(signal.SIGTERM, handle_term)
 
-    # Load the cron scheduling configuration and setup the worker numbers for it,
-    # even if we're not running cronjobs, as it changes the queue count.
-    cron_config = get_cron_config()
-    ensure_queue_workers_for_config(cron_config)
+    if machine.configure_cron:
+        # Load the cron scheduling configuration and setup the worker numbers for it,
+        # even if we're not running cronjobs, as it changes the queue count.
+        cron_config = get_cron_config()
+        ensure_queue_workers_for_config(cron_config)
 
     if machine.run_cron:
         cron_scheduler = CronScheduler(
