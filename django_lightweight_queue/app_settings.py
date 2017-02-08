@@ -21,3 +21,7 @@ MIDDLEWARE = setting('MIDDLEWARE', (
 REDIS_HOST = setting('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = setting('REDIS_PORT', 6379)
 REDIS_PREFIX = setting('REDIS_PREFIX', '')
+
+ENABLE_PROMETHEUS = setting('ENABLE_PROMETHEUS', True)
+# Workers will export metrics on this port, and ports following it
+PROMETHEUS_START_PORT = setting('PROMETHEUS_START_PORT', 9300)
