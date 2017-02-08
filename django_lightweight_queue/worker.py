@@ -1,17 +1,25 @@
 import os
 import sys
+import time
 import signal
 import logging
 import datetime
 import itertools
 import multiprocessing
 
-from prometheus_client import start_http_server
+from prometheus_client import start_http_server, Summary
 
 from django.db import connections, transaction
 
 from . import app_settings
 from .utils import get_backend, set_process_title, configure_logging
+
+if app_settings.ENABLE_PROMETHEUS:
+    job_time = Summary(
+        'item_processed_seconds',
+        "Item processing time",
+        ['queue'],
+    )
 
 class Worker(multiprocessing.Process):
     def __init__(self, queue, worker_index, worker_num, back_channel, running, log_level, log_filename, touch_filename):
@@ -81,7 +89,15 @@ class Worker(multiprocessing.Process):
                 break
 
             try:
+                pre_process_time = time.time()
                 item_processed = self.process(backend)
+                post_process_time = time.time()
+
+                if app_settings.ENABLE_PROMETHEUS:
+                    job_time.observe(
+                        post_process_time - pre_process_time,
+                        self.queue,
+                    )
 
                 if item_processed:
                     time_item_last_processed = datetime.datetime.utcnow()
