@@ -15,7 +15,7 @@ from . import app_settings
 from .utils import get_backend, set_process_title, configure_logging
 
 if app_settings.ENABLE_PROMETHEUS:
-    job_time = Summary(
+    job_duration = Summary(
         'item_processed_seconds',
         "Item processing time",
         ['queue'],
@@ -94,7 +94,7 @@ class Worker(multiprocessing.Process):
                 post_process_time = time.time()
 
                 if app_settings.ENABLE_PROMETHEUS:
-                    job_time.observe(
+                    job_duration.observe(
                         post_process_time - pre_process_time,
                         self.queue,
                     )
