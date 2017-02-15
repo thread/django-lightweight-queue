@@ -28,6 +28,21 @@ prefixed with `LIGHTWEIGHT_QUEUE_`, for example:
 LIGHTWEIGHT_QUEUE_BACKEND = 'django_lightweight_queue.backends.redis.RedisBackend'
 ```
 
+If desired, specific configuration overrides can be placed in a standalone python
+file which passed on the command line.
+
+For example, given a `special.py` containing:
+``` python
+LIGHTWEIGHT_QUEUE_REDIS_PORT = 12345
+```
+and then running:
+```
+$ python manage.py queue_runner --config=special.py
+```
+will result in the runner to use the settings from the specified configuration
+file in preference to settings from the Django environment. Any settings not
+present in the specified file are inherited from the global configuration.
+
 ### Backends
 
 There are three built-in backends:
@@ -57,9 +72,35 @@ Alternatively a runner can be told explicitly which configuration to use:
 ```
 $ python manage.py queue_runner --exact-configuration --config=special.py
 ```
-When using `--exact-configuration` the settings from Django are overwritten with
-any in the specified configuration file, settings not present in the specified
-file are inherited from the global configuration.
+When using `--exact-configuration` the number of workers is configured exactly,
+rather than being treated as the configuration for a pool. Additionally,
+exactly-configured runners will _not_ run any cron workers.
+
+### Example
+
+Given a Django configuration containing:
+``` python
+LIGHTWEIGHT_QUEUE_WORKERS = {
+    'queue1': 3,
+}
+```
+and a `special.py` containing:
+``` python
+LIGHTWEIGHT_QUEUE_WORKERS = {
+    'queue1': 2,
+}
+```
+Running:
+```
+$ python manage.py queue_runner --machine 1 --of 3 # or,
+$ python manage.py queue_runner --machine 2 --of 3 # or,
+$ python manage.py queue_runner --machine 3 --of 3
+```
+will result in one worker for `queue1` on the current machine, while:
+```
+$ python manage.py queue_runner --exact-configuration --config=special.py
+```
+will result in two workers on the current machine.
 
 ## Cron Tasks
 
