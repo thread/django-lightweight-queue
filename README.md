@@ -119,7 +119,7 @@ CONFIG = (
         'days': '*',
         'hours': '*',
         'minutes': '*',
-        # Equivalent the kwarg to `task` of the same name
+        # Equivalent behaviour to the kwarg to `task` of the same name
         'sigkill_on_stop': True,
     },
 )
