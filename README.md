@@ -90,7 +90,7 @@ LIGHTWEIGHT_QUEUE_WORKERS = {
     'queue1': 2,
 }
 ```
-Running:
+Running any of:
 ```
 $ python manage.py queue_runner --machine 1 --of 3 # or,
 $ python manage.py queue_runner --machine 2 --of 3 # or,
