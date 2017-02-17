@@ -5,8 +5,10 @@ import multiprocessing
 
 from Queue import Empty
 
+from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
+from .exposition import start_master_http_server
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
     ensure_queue_workers_for_config
 
@@ -54,8 +56,12 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
     workers = {x: None for x in machine.worker_names}
 
+    if app_settings.ENABLE_PROMETHEUS:
+        start_master_http_server(running, machine.worker_names)
+
     while running.value:
-        for (queue, worker_num), worker in workers.items():
+        for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
+            worker = workers[(queue, worker_num)]
 
             # Kill any workers that have exceeded their timeout
             if worker and worker.kill_after and time.time() > worker.kill_after:
@@ -82,6 +88,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
                 worker = Worker(
                     queue,
+                    index,
                     worker_num,
                     back_channel,
                     running,

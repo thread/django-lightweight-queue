@@ -1,18 +1,30 @@
 import os
 import sys
+import time
 import signal
 import logging
 import datetime
 import itertools
 import multiprocessing
 
+from prometheus_client import start_http_server, Summary
+
 from django.db import connections, transaction
 
+from . import app_settings
 from .utils import get_backend, set_process_title, configure_logging
 
+if app_settings.ENABLE_PROMETHEUS:
+    job_duration = Summary(
+        'item_processed_seconds',
+        "Item processing time",
+        ['queue'],
+    )
+
 class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_num, back_channel, running, log_level, log_filename, touch_filename):
+    def __init__(self, queue, worker_index, worker_num, back_channel, running, log_level, log_filename, touch_filename):
         self.queue = queue
+        self.worker_index = worker_index
         self.worker_num = worker_num
 
         self.back_channel = back_channel
@@ -47,6 +59,11 @@ class Worker(multiprocessing.Process):
             filename=self.log_filename,
         )
 
+        if app_settings.ENABLE_PROMETHEUS:
+            metrics_port = app_settings.PROMETHEUS_START_PORT + self.worker_index
+            self.log.info("Exporting metrics on port %d" % metrics_port)
+            start_http_server(metrics_port)
+
         self.log.debug("Starting")
 
         # Always reset the signal handling; we could have been restarted by the
@@ -72,7 +89,15 @@ class Worker(multiprocessing.Process):
                 break
 
             try:
+                pre_process_time = time.time()
                 item_processed = self.process(backend)
+                post_process_time = time.time()
+
+                if app_settings.ENABLE_PROMETHEUS:
+                    job_duration.observe(
+                        post_process_time - pre_process_time,
+                        self.queue,
+                    )
 
                 if item_processed:
                     time_item_last_processed = datetime.datetime.utcnow()
