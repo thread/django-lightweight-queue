@@ -22,8 +22,9 @@ for more details.
 
 ## Configuration
 
-Configuration options should be placed in the usual Django settings files,
-prefixed with `LIGHTWEIGHT_QUEUE_`, for example:
+All automatically picked up configuration options begin with `LIGHTWEIGHT_QUEUE_`
+and can be found in `app_settings.py`. They should be placed in the usual Django
+settings files, for example:
 ``` python
 LIGHTWEIGHT_QUEUE_BACKEND = 'django_lightweight_queue.backends.redis.RedisBackend'
 ```
