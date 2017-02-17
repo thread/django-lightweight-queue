@@ -61,8 +61,8 @@ The queue runner is implemented as a Django management command:
 $ python manage.py queue_runner
 ```
 
-Workers can be shared over multiple hosts by telling each runner that it is part
-of a pool:
+Workers can be distributed over multiple hosts by telling each runner that it is
+part of a pool:
 
 ```
 $ python manage.py queue_runner --machine 2 --of 4
