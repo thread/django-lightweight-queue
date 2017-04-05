@@ -40,6 +40,9 @@ class CronScheduler(multiprocessing.Process):
             format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
                 '%%(message)s' % (CRON_QUEUE_NAME,),
             filename=self.log_filename,
+            extra={
+                'queue': CRON_QUEUE_NAME,
+            },
         )
 
         self.log.debug("Starting")

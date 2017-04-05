@@ -2,3 +2,4 @@ Django>=1.9.0,<1.10.0
 daemonize
 redis
 prometheus-client
+fluent-logger>=0.4.6
