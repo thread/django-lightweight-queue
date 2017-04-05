@@ -93,6 +93,9 @@ class Command(BaseCommand):
             level=level,
             format='%(asctime)-15s %(process)d %(levelname).1s: %(message)s',
             filename=log_filename('master'),
+            extra={
+                'queue': 'master',
+            },
         )
 
         log = logging.getLogger()

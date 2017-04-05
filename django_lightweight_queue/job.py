@@ -91,14 +91,17 @@ class Job(object):
     def get_fn(self):
         return get_path(self.path)
 
+    def as_dict(self):
+        return {
+            'path': self.path,
+            'args': self.args,
+            'kwargs': self.kwargs,
+            'timeout': self.timeout,
+            'sigkill_on_stop': self.sigkill_on_stop,
+            'created_time': self.created_time_str,
+        }
+
     def to_json(self):
         if self._json is None:
-            self._json = json.dumps({
-                'path': self.path,
-                'args': self.args,
-                'kwargs': self.kwargs,
-                'timeout': self.timeout,
-                'sigkill_on_stop': self.sigkill_on_stop,
-                'created_time': self.created_time_str,
-            })
+            self._json = json.dumps(self.as_dict())
         return self._json

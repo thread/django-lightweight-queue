@@ -57,6 +57,10 @@ class Worker(multiprocessing.Process):
             format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
                 '%%(message)s' % self.name,
             filename=self.log_filename,
+            extra={
+                'queue': self.queue,
+                'worker_num': '%s' % self.worker_num,
+            },
         )
 
         if app_settings.ENABLE_PROMETHEUS:

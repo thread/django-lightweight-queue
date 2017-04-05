@@ -8,6 +8,8 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
 
+from fluent import handler as fluent_handler
+
 from . import constants, app_settings
 
 
@@ -36,7 +38,25 @@ def load_extra_config(file_path):
         short_name = name[len(constants.SETTING_NAME_PREFIX):]
         setattr(app_settings, short_name, getattr(extra_settings, name))
 
-def configure_logging(level, format, filename):
+class NoFluentFilter(logging.Filter):
+    def filter(self, record):
+        # We try to exclude log messages that are 'definitely' fluent-only log
+        # messages from the regular logs. This is done by excluding messages
+        # which are a dict _and_ have a key 'fluent_log' present.
+        #
+        # We cannot do the opposite, and exclude non-fluent-log messages from
+        # Fluent, as we want the fluent logs to capture all output from the
+        # actual task, and cannot reasonably expect tasks to log both fluent
+        # and non-fluent formatted messages. So we end up with some duplicated
+        # log messages in Fluent for the benefit of completeness.
+        is_dict = isinstance(record.msg, dict)
+
+        if is_dict:
+            return 'fluent_log' not in record.msg
+
+        return True
+
+def configure_logging(level, format, filename, extra=None):
     """
     Like ``logging.basicConfig`` but we use WatchedFileHandler so that we play
     nicely with logrotate and similar tools.
@@ -46,10 +66,35 @@ def configure_logging(level, format, filename):
     Returns the file handle of the log file so that we can pass this on to a
     daemon process.
     """
+    if extra is None:
+        extra = {}
 
     logging.root.handlers = []
 
+    if app_settings.ENABLE_FLUENT_LOGGING:
+        handler = fluent_handler.FluentHandler(
+            'django_lightweight_queue',
+            host=app_settings.FLUENT_HOST,
+            port=app_settings.FLUENT_PORT,
+        )
+
+        fluent_format = {
+            'host': '%(hostname)s',
+            'process': '%(process)s',
+            'level': '%(levelname)s',
+        }
+        fluent_format.update(extra)
+
+        handler.setFormatter(fluent_handler.FluentRecordFormatter(
+            fluent_format,
+            fill_missing_fmt_key=True,
+        ))
+        logging.root.addHandler(handler)
+
     handler = logging.StreamHandler()
+
+    handler.addFilter(NoFluentFilter())
+
     if filename:
         handler = logging.handlers.WatchedFileHandler(filename)
 
