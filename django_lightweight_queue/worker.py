@@ -98,9 +98,8 @@ class Worker(multiprocessing.Process):
                 post_process_time = time.time()
 
                 if app_settings.ENABLE_PROMETHEUS:
-                    job_duration.observe(
+                    job_duration.labels(self.queue).observe(
                         post_process_time - pre_process_time,
-                        self.queue,
                     )
 
                 if item_processed:
