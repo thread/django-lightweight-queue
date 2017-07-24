@@ -2,7 +2,11 @@ import json
 import multiprocessing
 
 from socket import gethostname
-from BaseHTTPServer import HTTPServer
+
+try:
+    from http.server import HTTPServer
+except ImportError:
+    from BaseHTTPServer import HTTPServer
 
 from prometheus_client.exposition import MetricsHandler
 

@@ -3,7 +3,10 @@ import time
 import signal
 import multiprocessing
 
-from Queue import Empty
+try:
+    from queue import Empty
+except ImportError:
+    from Queue import Empty
 
 from . import app_settings
 from .utils import set_process_title, get_backend
