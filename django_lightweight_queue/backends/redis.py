@@ -19,13 +19,13 @@ class RedisBackend(object):
         pass
 
     def enqueue(self, job, queue):
-        self.client.rpush(self._key(queue), job.to_json())
+        self.client.rpush(self._key(queue), job.to_json().encode('utf-8'))
 
     def dequeue(self, queue, worker_num, timeout):
         try:
             _, data = self.client.blpop(self._key(queue), timeout)
 
-            return Job.from_json(data)
+            return Job.from_json(data.decode('utf-8'))
         except TypeError:
             pass
 

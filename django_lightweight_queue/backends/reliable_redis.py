@@ -69,7 +69,7 @@ class ReliableRedisBackend(object):
         )
 
     def enqueue(self, job, queue):
-        self.client.lpush(self._key(queue), job.to_json())
+        self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
     def dequeue(self, queue, worker_number, timeout):
         main_queue_key = self._key(queue)
@@ -81,7 +81,7 @@ class ReliableRedisBackend(object):
         # NB different purpose than 'startup' method above.
         data = self.client.lindex(processing_queue_key, -1)
         if data:
-            return Job.from_json(data)
+            return Job.from_json(data.decode('utf-8'))
 
         # Otherwise, block trying to move a job from the main queue into our
         # processing queue, and process it.
@@ -91,10 +91,10 @@ class ReliableRedisBackend(object):
             timeout,
         )
         if data:
-            return Job.from_json(data)
+            return Job.from_json(data.decode('utf-8'))
 
     def processed_job(self, queue, worker_number, job):
-        data = job.to_json()
+        data = job.to_json().encode('utf-8')
 
         self.client.lrem(self._processing_key(queue, worker_number), data)
 
