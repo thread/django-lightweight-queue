@@ -66,7 +66,7 @@ class PooledMachine(Machine):
         # choosing only those which should be run on this machine.
         job_number = 1
 
-        for queue, num_workers in sorted(app_settings.WORKERS.iteritems()):
+        for queue, num_workers in sorted(app_settings.WORKERS.items()):
             if self.only_queue and self.only_queue != queue:
                 continue
 
@@ -98,6 +98,6 @@ class DirectlyConfiguredMachine(Machine):
     def worker_names(self):
         return tuple(
             (queue, worker_number)
-            for queue, num_workers in sorted(app_settings.WORKERS.iteritems())
+            for queue, num_workers in sorted(app_settings.WORKERS.items())
             for worker_number in range(num_workers)
         )

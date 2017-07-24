@@ -22,7 +22,7 @@ class Command(BaseCommand):
         print "{0:<55} {1:<5} {2}".format("Queue name", "Concurrency", "Backend")
         print "-" * 27
 
-        for k, v in app_settings.WORKERS.iteritems():
+        for k, v in app_settings.WORKERS.items():
             print " {0:<54} {1:<5} {2}".format(
                 k,
                 v,
