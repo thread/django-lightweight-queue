@@ -16,29 +16,29 @@ class Command(BaseCommand):
         if extra_config is not None:
             load_extra_config(extra_config)
 
-        print "django-lightweight-queue"
-        print "========================"
-        print
-        print "{0:<55} {1:<5} {2}".format("Queue name", "Concurrency", "Backend")
-        print "-" * 27
+        print("django-lightweight-queue")
+        print("========================")
+        print("")
+        print("{0:<55} {1:<5} {2}".format("Queue name", "Concurrency", "Backend"))
+        print("-" * 27)
 
         for k, v in app_settings.WORKERS.items():
-            print " {0:<54} {1:<5} {2}".format(
+            print(" {0:<54} {1:<5} {2}".format(
                 k,
                 v,
                 get_backend(k).__class__.__name__,
-            )
+            ))
 
-        print
-        print "Middleware:"
+        print("")
+        print("Middleware:")
         for x in app_settings.MIDDLEWARE:
-            print " * %s" % x
+            print(" * %s" % x)
 
-        print
-        print "Cron configuration"
+        print("")
+        print("Cron configuration")
 
         for x in get_cron_config():
-            print
+            print("")
             for k in (
                 'command',
                 'command_args',
@@ -48,4 +48,4 @@ class Command(BaseCommand):
                 'timeout',
                 'sigkill_on_stop',
             ):
-                print "% 20s: %s" % (k, x.get(k, '-'))
+                print("% 20s: %s" % (k, x.get(k, '-')))
