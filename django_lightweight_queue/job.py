@@ -94,8 +94,8 @@ class Job(object):
     def as_dict(self):
         return {
             'path': self.path,
-            'args': self.args,
-            'kwargs': self.kwargs,
+            'args': [str(arg) for arg in self.args],
+            'kwargs': {k: str(v) for k, v in self.kwargs.items()},
             'timeout': self.timeout,
             'sigkill_on_stop': self.sigkill_on_stop,
             'created_time': self.created_time_str,
