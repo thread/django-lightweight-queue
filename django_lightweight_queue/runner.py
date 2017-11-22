@@ -112,7 +112,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                 msg = back_channel.get_nowait()
 
                 queue, worker_num, timeout, sigkill_on_stop = msg
-            except Empty:
+            except (Empty, EOFError):
                 break
 
             worker = workers[(queue, worker_num)]
