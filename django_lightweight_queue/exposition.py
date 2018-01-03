@@ -1,4 +1,6 @@
 import json
+import time
+import threading
 import multiprocessing
 
 from socket import gethostname
@@ -61,11 +63,17 @@ def start_master_http_server(running, worker_queue_and_counts):
             set_process_title("Root Prometheus metrics server")
             httpd = HTTPServer(('0.0.0.0', app_settings.PROMETHEUS_START_PORT), RequestHandler)
 
-            # Required as handle_request blocks without this
-            httpd.timeout = 5
+            thread = threading.Thread(
+                target=httpd.serve_forever,
+                kwargs={'poll_interval': 0.1},
+            )
+            thread.daemon = True
+            thread.start()
 
             while self.running.value:
-                httpd.handle_one_request()
+                time.sleep(0.1)
+
+            httpd.shutdown()
 
     t = MetricsServer(running, name="Master Prometheus metrics server")
     t.daemon = True
