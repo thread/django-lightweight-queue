@@ -101,6 +101,28 @@ class ReliableRedisBackend(object):
     def length(self, queue):
         return self.client.llen(self._key(queue))
 
+    def deduplicate(self, queue):
+        main_queue_key = self._key(queue)
+
+        original_size = self.client.llen(main_queue_key)
+
+        if not original_size:
+            return 0, 0
+
+        jobs = {}
+
+        for raw_data in self.client.lrange(main_queue_key, 0, -1):
+            job_id = Job.from_json(raw_data).identity_without_created()
+
+            jobs.setdefault(job_id, []).append(raw_data)
+
+        for raw_jobs in jobs.values():
+            # Leave the first one in the queue
+            for raw_data in raw_jobs[1:]:
+                self.client.lrem(raw_data)
+
+        return original_size, self.client.llen(main_queue_key)
+
     def _key(self, queue):
         key = 'django_lightweight_queue:%s' % queue
 

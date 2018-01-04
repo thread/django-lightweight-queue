@@ -105,3 +105,7 @@ class Job(object):
         if self._json is None:
             self._json = json.dumps(self.as_dict())
         return self._json
+
+    def identity_without_created(self):
+        """Returns an object which can be used to identify equivalent jobs"""
+        return json.dumps(self.as_dict(), sort_keys=True)
