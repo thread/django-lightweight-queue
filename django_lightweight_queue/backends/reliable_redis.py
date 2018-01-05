@@ -102,6 +102,13 @@ class ReliableRedisBackend(object):
         return self.client.llen(self._key(queue))
 
     def deduplicate(self, queue):
+        """
+        Deduplicate the given queue by comparing the jobs in a manner which
+        ignores their created timestamps.
+
+        Returns a tuple of (original_size, new_size) of the queue.
+        """
+
         main_queue_key = self._key(queue)
 
         original_size = self.client.llen(main_queue_key)
