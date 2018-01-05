@@ -108,8 +108,7 @@ class ReliableRedisBackend(object):
 
         We use ``Job.identity_without_created`` to collect up jobs which would
         be identical when run but potentially different by timestamp. We then
-        remove all but the first (oldest) of those jobs, relying on the
-        assumption that the created timestamp of the oldest job is unique.
+        remove all but the first (oldest) of those jobs one at a time.
 
         Returns a tuple of (original_size, new_size) of the queue.
         """
