@@ -27,7 +27,7 @@ class Command(BaseCommand):
         original_size, new_size = backend.deduplicate(queue)
 
         self.stdout.write(
-            "Deduplication reduced the queue from %d jobs to %d jobs" % (
+            "Deduplication reduced the queue from %d jobs to %d job(s)" % (
                 original_size,
                 new_size,
             ),
