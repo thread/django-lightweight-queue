@@ -122,7 +122,7 @@ class ReliableRedisBackend(object):
             return 0, 0
 
         # A mapping of job_identity -> list of raw_job data; the entries in the
-        # latter lists are assumed to be unique due to their created timestamps
+        # latter list are ordered from newest to oldest
         jobs = {}
 
         for raw_data in self.client.lrange(main_queue_key, 0, -1):
