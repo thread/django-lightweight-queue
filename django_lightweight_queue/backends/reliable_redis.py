@@ -131,10 +131,11 @@ class ReliableRedisBackend(object):
             jobs.setdefault(job_identity, []).append(raw_data)
 
         for raw_jobs in jobs.values():
-            # Leave the oldest in the queue (relying on the assumption that its
-            # timestamp is unique)
-            for raw_data in raw_jobs[1:]:
-                self.client.lrem(raw_data)
+            # Leave the oldest in the queue
+            for raw_data in raw_jobs[:-1]:
+                # Remove only one instance of this data (thus coping with
+                # unlikely but possible non-unique entries)
+                self.client.lrem(main_queue_key, raw_data, 1)
 
         return original_size, self.client.llen(main_queue_key)
 
