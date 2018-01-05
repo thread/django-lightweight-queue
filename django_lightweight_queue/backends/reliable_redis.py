@@ -101,6 +101,43 @@ class ReliableRedisBackend(object):
     def length(self, queue):
         return self.client.llen(self._key(queue))
 
+    def deduplicate(self, queue):
+        """
+        Deduplicate the given queue by comparing the jobs in a manner which
+        ignores their created timestamps.
+
+        We use ``Job.identity_without_created`` to collect up jobs which would
+        be identical when run but potentially different by timestamp. We then
+        remove all but the first (oldest) of those jobs one at a time.
+
+        Returns a tuple of (original_size, new_size) of the queue.
+        """
+
+        main_queue_key = self._key(queue)
+
+        original_size = self.client.llen(main_queue_key)
+
+        if not original_size:
+            return 0, 0
+
+        # A mapping of job_identity -> list of raw_job data; the entries in the
+        # latter list are ordered from newest to oldest
+        jobs = {}
+
+        for raw_data in self.client.lrange(main_queue_key, 0, -1):
+            job_identity = Job.from_json(raw_data).identity_without_created()
+
+            jobs.setdefault(job_identity, []).append(raw_data)
+
+        for raw_jobs in jobs.values():
+            # Leave the oldest in the queue
+            for raw_data in raw_jobs[:-1]:
+                # Remove only one instance of this data (thus coping with
+                # unlikely but possible non-unique entries)
+                self.client.lrem(main_queue_key, raw_data, 1)
+
+        return original_size, self.client.llen(main_queue_key)
+
     def _key(self, queue):
         key = 'django_lightweight_queue:%s' % queue
 
