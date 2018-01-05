@@ -2,7 +2,8 @@ import datetime
 import unittest
 
 from django_lightweight_queue.job import Job
-from django_lightweight_queue.backends.reliable_redis import ReliableRedisBackend
+from django_lightweight_queue.backends.reliable_redis import \
+    ReliableRedisBackend
 
 from . import settings
 from .mixins import RedisCleanupMixin
