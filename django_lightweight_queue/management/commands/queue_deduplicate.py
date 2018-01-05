@@ -7,7 +7,11 @@ class Command(BaseCommand):
     help = "Command to deduplicate tasks in a redis-backed queue"
 
     def add_arguments(self, parser):
-        parser.add_argument('queue', action='store', help="The queue to deduplicate")
+        parser.add_argument(
+            'queue',
+            action='store',
+            help="The queue to deduplicate",
+        )
 
     def handle(self, queue, **options):
         backend = get_backend(queue)
