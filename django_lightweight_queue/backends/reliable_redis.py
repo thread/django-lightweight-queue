@@ -119,9 +119,9 @@ class ReliableRedisBackend(object):
         jobs = {}
 
         for raw_data in self.client.lrange(main_queue_key, 0, -1):
-            job_id = Job.from_json(raw_data).identity_without_created()
+            job_identity = Job.from_json(raw_data).identity_without_created()
 
-            jobs.setdefault(job_id, []).append(raw_data)
+            jobs.setdefault(job_identity, []).append(raw_data)
 
         for raw_jobs in jobs.values():
             # Leave the first one in the queue
