@@ -108,4 +108,6 @@ class Job(object):
 
     def identity_without_created(self):
         """Returns an object which can be used to identify equivalent jobs"""
-        return json.dumps(self.as_dict(), sort_keys=True)
+        self_dict = self.as_dict()
+        del self_dict['created_time']
+        return json.dumps(self_dict, sort_keys=True)
