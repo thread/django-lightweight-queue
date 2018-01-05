@@ -26,9 +26,16 @@ class Command(BaseCommand):
 
         original_size, new_size = backend.deduplicate(queue)
 
-        self.stdout.write(
-            "Deduplication reduced the queue from %d jobs to %d job(s)" % (
-                original_size,
-                new_size,
-            ),
-        )
+        if original_size == new_size:
+            self.stdout.write(
+                "No duplicate jobs detected (queue length remains %d)" % (
+                    original_size,
+                ),
+            )
+        else:
+            self.stdout.write(
+                "Deduplication reduced the queue from %d jobs to %d job(s)" % (
+                    original_size,
+                    new_size,
+                ),
+            )
