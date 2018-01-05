@@ -106,6 +106,11 @@ class ReliableRedisBackend(object):
         Deduplicate the given queue by comparing the jobs in a manner which
         ignores their created timestamps.
 
+        We use ``Job.identity_without_created`` to collect up jobs which would
+        be identical when run but potentially different by timestamp. We then
+        remove all but the first (oldest) of those jobs, relying on the
+        assumption that the created timestamp of the oldest job is unique.
+
         Returns a tuple of (original_size, new_size) of the queue.
         """
 
@@ -116,6 +121,8 @@ class ReliableRedisBackend(object):
         if not original_size:
             return 0, 0
 
+        # A mapping of job_identity -> list of raw_job data; the entries in the
+        # latter lists are assumed to be unique due to their created timestamps
         jobs = {}
 
         for raw_data in self.client.lrange(main_queue_key, 0, -1):
@@ -124,7 +131,8 @@ class ReliableRedisBackend(object):
             jobs.setdefault(job_identity, []).append(raw_data)
 
         for raw_jobs in jobs.values():
-            # Leave the first one in the queue
+            # Leave the oldest in the queue (relying on the assumption that its
+            # timestamp is unique)
             for raw_data in raw_jobs[1:]:
                 self.client.lrem(raw_data)
 
