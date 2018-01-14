@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
-from .utils import import_all_submodules
+from .utils import load_all_tasks
 
 class DjangoLightweightQueueConfig(AppConfig):
     name = 'django_lightweight_queue'
 
     def ready(self):
-        import_all_submodules('tasks')
+        load_all_tasks()

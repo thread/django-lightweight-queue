@@ -144,6 +144,9 @@ def import_all_submodules(name):
             if module_has_submodule(app_module, name):
                 raise
 
+def load_all_tasks():
+    import_all_submodules('tasks')
+
 try:
     import setproctitle
 
