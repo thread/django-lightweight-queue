@@ -134,18 +134,23 @@ def get_middleware():
 
     return middleware
 
-def import_all_submodules(name):
+def import_all_submodules(name, exclude=()):
     for app_config in apps.get_app_configs():
         app_module = app_config.module
 
+        module_name = app_module.__name__
+
+        if module_name in exclude:
+            continue
+
         try:
-            importlib.import_module('%s.%s' % (app_module.__name__, name))
+            importlib.import_module('%s.%s' % (module_name, name))
         except ImportError:
             if module_has_submodule(app_module, name):
                 raise
 
 def load_all_tasks():
-    import_all_submodules('tasks')
+    import_all_submodules('tasks', app_settings.IGNORE_APPS)
 
 try:
     import setproctitle
