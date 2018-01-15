@@ -125,7 +125,9 @@ class ReliableRedisBackend(object):
         jobs = {}
 
         for raw_data in self.client.lrange(main_queue_key, 0, -1):
-            job_identity = Job.from_json(raw_data).identity_without_created()
+            job_identity = Job.from_json(
+                raw_data.decode('utf-8'),
+            ).identity_without_created()
 
             jobs.setdefault(job_identity, []).append(raw_data)
 
