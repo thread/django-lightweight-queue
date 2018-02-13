@@ -1,7 +1,7 @@
-from .utils import import_all_submodules
+from .utils import load_all_tasks
 
 try:
-    import_all_submodules('tasks')
+    load_all_tasks()
 except RuntimeError:
     # Initialisation tasks in latest versions of Django get run in AppConfig
     # (see apps.py).

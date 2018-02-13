@@ -17,6 +17,13 @@ MIDDLEWARE = setting('MIDDLEWARE', (
     'django_lightweight_queue.middleware.transaction.TransactionMiddleware',
 ))
 
+# Apps to ignore when looking for tasks. Apps must be specified as the dotted
+# name used in `INSTALLED_APPS`. This is expected to be useful when you need to
+# have a file called `tasks.py` within an app, but don't want
+# django-lightweight-queue to import that file.
+# Note: this _doesn't_ prevent tasks being registered from these apps.
+IGNORE_APPS = setting('IGNORE_APPS', ())
+
 # Backend-specific settings
 REDIS_HOST = setting('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = setting('REDIS_PORT', 6379)
