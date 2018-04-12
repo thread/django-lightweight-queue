@@ -54,6 +54,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so.
     for queue, _ in machine.worker_names:
+        log.info("Running startup for queue %s", queue)
         backend = get_backend(queue)
         backend.startup(queue)
 
