@@ -34,7 +34,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         ensure_queue_workers_for_config(cron_config)
 
     # Some backends may require on-startup logic per-queue, initialise a dummy
-    # backend per queue to do so.
+    # backend per queue to do so. Note: we need to do this after any potential
+    # calls to `ensure_queue_workers_for_config` so that all the workers
+    # (including the implicit cron ones) have been configured.
     for queue, _ in machine.worker_names:
         backend = get_backend(queue)
         backend.startup(queue)
