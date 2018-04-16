@@ -37,7 +37,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # backend per queue to do so. Note: we need to do this after any potential
     # calls to `ensure_queue_workers_for_config` so that all the workers
     # (including the implicit cron ones) have been configured.
-    for queue, _ in machine.worker_names:
+    queues_to_startup = set(queue for queue, _ in machine.worker_names)
+    for queue in queues_to_startup:
+        log.info("Running startup for queue %s", queue)
         backend = get_backend(queue)
         backend.startup(queue)
 
@@ -138,6 +140,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         time.sleep(1)
 
     for worker in workers.values():
+        if worker is None:
+            # the master was killed before this worker was even started
+            continue
+
         if worker.sigkill_on_stop:
             log.info("Sending SIGKILL to %s", worker.name)
             try:
