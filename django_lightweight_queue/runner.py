@@ -46,9 +46,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # Use shared state to communicate "exit after next job" to the children
     running = multiprocessing.Value('d', 1)
 
-    # Note: we deliberately configure our hanling of SIGTERM _after_ the startup
-    # processes have happened; this ensures that the startup processes (which
-    # could take a long time) are naturally interupted by the signal.
+    # Note: we deliberately configure our hanling of SIGTERM _after_ the
+    # startup processes have happened; this ensures that the startup processes
+    # (which could take a long time) are naturally interupted by the signal.
     def handle_term(signum, stack):
         log.info("Caught TERM signal")
         set_process_title("Master process exiting")
