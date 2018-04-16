@@ -25,22 +25,35 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # children should be killed.
     back_channel = multiprocessing.Queue()
 
-    # Use shared state to communicate "exit after next job" to the children
-    running = multiprocessing.Value('d', 1)
-
     set_process_title("Master process")
-
-    def handle_term(signum, stack):
-        log.info("Caught TERM signal")
-        set_process_title("Master process exiting")
-        running.value = 0
-    signal.signal(signal.SIGTERM, handle_term)
 
     if machine.configure_cron:
         # Load the cron scheduling configuration and setup the worker numbers for it,
         # even if we're not running cronjobs, as it changes the queue count.
         cron_config = get_cron_config()
         ensure_queue_workers_for_config(cron_config)
+
+    # Some backends may require on-startup logic per-queue, initialise a dummy
+    # backend per queue to do so. Note: we need to do this after any potential
+    # calls to `ensure_queue_workers_for_config` so that all the workers
+    # (including the implicit cron ones) have been configured.
+    queues_to_startup = set(queue for queue, _ in machine.worker_names)
+    for queue in queues_to_startup:
+        log.info("Running startup for queue %s", queue)
+        backend = get_backend(queue)
+        backend.startup(queue)
+
+    # Use shared state to communicate "exit after next job" to the children
+    running = multiprocessing.Value('d', 1)
+
+    # Note: we deliberately configure our handling of SIGTERM _after_ the
+    # startup processes have happened; this ensures that the startup processes
+    # (which could take a long time) are naturally interupted by the signal.
+    def handle_term(signum, stack):
+        log.info("Caught TERM signal")
+        set_process_title("Master process exiting")
+        running.value = 0
+    signal.signal(signal.SIGTERM, handle_term)
 
     if machine.run_cron:
         cron_scheduler = CronScheduler(
@@ -50,14 +63,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             cron_config,
         )
         cron_scheduler.start()
-
-    # Some backends may require on-startup logic per-queue, initialise a dummy
-    # backend per queue to do so.
-    queues_to_startup = set(queue for queue, _ in machine.worker_names)
-    for queue in queues_to_startup:
-        log.info("Running startup for queue %s", queue)
-        backend = get_backend(queue)
-        backend.startup(queue)
 
     workers = {x: None for x in machine.worker_names}
 
