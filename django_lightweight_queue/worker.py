@@ -120,7 +120,7 @@ class Worker(multiprocessing.Process):
         self.set_process_title("Waiting for items")
 
         # Tell master process that we are not processing anything.
-        self.tell_master(None, False)
+        self.tell_master(None, True)
 
         job = backend.dequeue(self.queue, self.worker_num, 15)
         if job is None:
