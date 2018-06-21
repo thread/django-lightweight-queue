@@ -2,6 +2,9 @@ import sys
 import json
 import time
 import datetime
+import warnings
+
+from django.db import transaction
 
 from .utils import get_path, get_middleware
 
@@ -59,7 +62,13 @@ class Job(object):
                 instance.process_job(self)
 
         try:
-            result = self.get_fn().fn(*self.args, **self.kwargs)
+            task = self.get_task_instance()
+
+            if task.atomic:
+                with transaction.atomic():
+                    result = task.fn(*self.args, **self.kwargs)
+            else:
+                result = task.fn(*self.args, **self.kwargs)
 
             time_taken = time.time() - start
 
@@ -85,11 +94,18 @@ class Job(object):
     def validate(self):
         # Ensure these execute without exception so that we cannot enqueue
         # things that are impossible to dequeue.
-        self.get_fn()
+        self.get_task_instance()
         self.to_json()
 
-    def get_fn(self):
+    def get_task_instance(self):
         return get_path(self.path)
+
+    def get_fn(self):
+        warnings.warn(
+            "Job.get_fn is deprecated, call Job.get_task_instance instead.",
+            DeprecationWarning,
+        )
+        return self.get_task_instance()
 
     def as_dict(self):
         return {
