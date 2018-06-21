@@ -60,7 +60,9 @@ class Job(object):
                 instance.process_job(self)
 
         try:
-            result = self.get_task_instance().fn(*self.args, **self.kwargs)
+            task = self.get_task_instance()
+
+            result = task.fn(*self.args, **self.kwargs)
 
             time_taken = time.time() - start
 
