@@ -69,14 +69,15 @@ class task(object):
         app_settings.WORKERS.setdefault(self.queue, 1)
 
     def __call__(self, fn):
-        return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop)
+        return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop, self.atomic)
 
 class TaskWrapper(object):
-    def __init__(self, fn, queue, timeout, sigkill_on_stop):
+    def __init__(self, fn, queue, timeout, sigkill_on_stop, atomic):
         self.fn = fn
         self.queue = queue
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.atomic = atomic
 
         self.path = '%s.%s' % (fn.__module__, fn.__name__)
 
