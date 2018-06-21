@@ -4,6 +4,8 @@ import time
 import datetime
 import warnings
 
+from django.db import transaction
+
 from .utils import get_path, get_middleware
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
@@ -62,7 +64,11 @@ class Job(object):
         try:
             task = self.get_task_instance()
 
-            result = task.fn(*self.args, **self.kwargs)
+            if task.atomic:
+                with transaction.atomic():
+                    result = task.fn(*self.args, **self.kwargs)
+            else:
+                result = task.fn(*self.args, **self.kwargs)
 
             time_taken = time.time() - start
 
