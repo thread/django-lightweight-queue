@@ -35,6 +35,8 @@ class task(object):
             processor is shut down. The default behaviour is to let it run to
             completion.
 
+            `atomic` -- The task will be run inside a database transaction.
+
         For example::
 
             @task(sigkill_on_stop=True, timeout=60)
