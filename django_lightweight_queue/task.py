@@ -4,7 +4,7 @@ from .utils import get_backend
 from . import app_settings
 
 class task(object):
-    def __init__(self, queue='default', timeout=None, sigkill_on_stop=False):
+    def __init__(self, queue='default', timeout=None, sigkill_on_stop=False, atomic=None):
         """
         Define a task to be run.
 
@@ -56,9 +56,13 @@ class task(object):
         name must already be running.)
         """
 
+        if atomic is None:
+            atomic = app_settings.ATOMIC_JOBS
+
         self.queue = queue
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
+        self.atomic = atomic
 
         app_settings.WORKERS.setdefault(self.queue, 1)
 
