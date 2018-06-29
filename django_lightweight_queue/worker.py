@@ -132,6 +132,10 @@ class Worker(multiprocessing.Process):
             job.sigkill_on_stop,
         )
 
+        # Avoid race condition around whether we can be killed
+        if not self.running.value:
+            return False
+
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
 
