@@ -142,6 +142,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # Filter out workers which might not have yet been started
     alive_workers = [x for x in workers.values() if x is not None]
 
+    # Kill all the killable workers. While we could do this second and thus give
+    # these workers a bit more time while we wait for the others, the extra time
+    # these workers would get is likely small and not worth the trade-off that
+    # the master could be killed while we're trying to tidy up.
     for worker in alive_workers:
         if worker.sigkill_on_stop:
             log.info("Sending SIGKILL to %s", worker.name)
@@ -150,6 +154,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             except OSError:
                 pass
 
+    for worker in alive_workers:
         log.info("Waiting for %s to terminate", worker.name)
         worker.join()
 
