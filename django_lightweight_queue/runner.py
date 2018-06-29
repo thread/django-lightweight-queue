@@ -139,11 +139,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
         time.sleep(1)
 
-    for worker in workers.values():
-        if worker is None:
-            # the master was killed before this worker was even started
-            continue
+    # Filter out workers which might not have yet been started
+    alive_workers = [x for x in workers.values() if x is not None]
 
+    for worker in alive_workers:
         if worker.sigkill_on_stop:
             log.info("Sending SIGKILL to %s", worker.name)
             try:
