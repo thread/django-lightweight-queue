@@ -40,7 +40,7 @@ def start_master_http_server(running, worker_queue_and_counts):
         get_config_response(worker_queue_and_counts),
         sort_keys=True,
         indent=4,
-    )
+    ).encode('utf-8')
 
     class RequestHandler(MetricsHandler, object):
         def do_GET(self):
