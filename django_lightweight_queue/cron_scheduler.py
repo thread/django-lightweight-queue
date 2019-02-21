@@ -17,8 +17,7 @@ CRON_QUEUE_NAME = 'cron_scheduler'
 
 
 class CronScheduler(multiprocessing.Process):
-    def __init__(self, running, log_level, log_filename, config):
-        self.running = running
+    def __init__(self, log_level, log_filename, config):
         self.log_level = log_level
         self.log_filename = log_filename
         self.config = config
@@ -50,7 +49,7 @@ class CronScheduler(multiprocessing.Process):
         backend = get_backend(CRON_QUEUE_NAME)
         self.log.info("Loaded backend %s", backend)
 
-        while self.running.value:
+        while True:
             try:
                 self.tick(backend)
 

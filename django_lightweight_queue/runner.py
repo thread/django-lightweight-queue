@@ -57,7 +57,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
     if machine.run_cron:
         cron_scheduler = CronScheduler(
-            running,
             log.level,
             log_filename_fn(CRON_QUEUE_NAME),
             cron_config,
@@ -138,6 +137,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             worker.sigkill_on_stop = sigkill_on_stop
 
         time.sleep(1)
+
+    # The cron scheduler is always safe to kill
+    os.kill(cron_scheduler.pid, signal.SIGKILL)
+    cron_scheduler.join()
 
     # Filter out workers which might not have yet been started
     alive_workers = [x for x in workers.values() if x is not None]
