@@ -1,5 +1,8 @@
 import datetime
 import unittest
+import unittest.mock
+
+import fakeredis
 
 from django_lightweight_queue.job import Job
 from django_lightweight_queue.backends.reliable_redis import \
@@ -28,7 +31,8 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         return job
 
     def setUp(self):
-        self.backend = ReliableRedisBackend()
+        with unittest.mock.patch('redis.StrictRedis', fakeredis.FakeStrictRedis):
+            self.backend = ReliableRedisBackend()
         self.client = self.backend.client
 
         super(ReliableRedisDeduplicationTests, self).setUp()
