@@ -59,7 +59,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     workers = {x: None for x in machine.worker_names}
 
     if app_settings.ENABLE_PROMETHEUS:
-        start_master_http_server(running, machine.worker_names)
+        start_master_http_server(machine.worker_names)
 
     while running:
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
