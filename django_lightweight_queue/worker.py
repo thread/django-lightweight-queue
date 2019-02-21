@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 import time
 import signal
 import logging
@@ -73,6 +74,7 @@ class Worker(multiprocessing.Process):
         # Always reset the signal handling; we could have been restarted by the
         # master
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
         # Each worker gets it own backend
         backend = get_backend(self.queue)
@@ -166,6 +168,14 @@ class Worker(multiprocessing.Process):
             # SIGUSR2 indicates we should shut down after handling the
             # next entry.
             signal.signal(signal.SIGUSR2, self._handle_sigusr2)
+
+        if timeout is not None:
+            # alarm(3) takes whole seconds
+            alarm_duration = int(math.ceil(timeout))
+            signal.alarm(alarm_duration)
+        else:
+            # Cancel any scheduled alarms
+            signal.alarm(0)
 
         self.back_channel.put((
             self.queue,
