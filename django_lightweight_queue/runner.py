@@ -138,7 +138,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
         time.sleep(1)
 
-    # The cron scheduler is always safe to kill
+    # The cron scheduler is always safe to kill.
     os.kill(cron_scheduler.pid, signal.SIGKILL)
     cron_scheduler.join()
 
