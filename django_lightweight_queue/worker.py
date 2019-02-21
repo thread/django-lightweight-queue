@@ -124,16 +124,16 @@ class Worker(multiprocessing.Process):
         self.set_process_title("Waiting for items")
 
         # Tell master process that we are not processing anything.
-        self.tell_master(None, True)
+        self.configure_cancellation(timeout=None, sigkill_on_stop=True)
 
         job = backend.dequeue(self.queue, self.worker_num, 15)
         if job is None:
             return False
 
         # Update master what we are doing
-        self.tell_master(
-            job.timeout,
-            job.sigkill_on_stop,
+        self.configure_cancellation(
+            timeout=job.timeout,
+            sigkill_on_stop=job.sigkill_on_stop,
         )
 
         self.log.debug("Running job %s", job)
@@ -158,7 +158,7 @@ class Worker(multiprocessing.Process):
 
         return True
 
-    def tell_master(self, timeout, sigkill_on_stop):
+    def configure_cancellation(self, timeout, sigkill_on_stop):
         if sigkill_on_stop:
             # SIGUSR2 can be taken to just cause the process to die
             # immediately. This is the default action for SIGUSR2.
