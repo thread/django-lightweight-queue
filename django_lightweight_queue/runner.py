@@ -77,7 +77,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
                 worker = Worker(
                     queue,
-                    index,
+                    app_settings.PROMETHEUS_START_PORT + index,
                     worker_num,
                     running,
                     log.level,
