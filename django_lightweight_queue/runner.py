@@ -1,7 +1,8 @@
 import os
+import sys
 import time
 import signal
-import multiprocessing
+import subprocess
 
 try:
     from queue import Empty
@@ -75,18 +76,24 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                         worker.exitcode,
                     )
 
-                worker = Worker(
+                worker = subprocess.Popen([
+                    sys.executable,
+                    sys.args[0],
+                    'queue_worker',
                     queue,
-                    app_settings.PROMETHEUS_START_PORT + index,
-                    worker_num,
-                    running,
-                    log.level,
+                    str(worker_num),
+                    '--prometheus-port',
+                    str(app_settings.PROMETHEUS_START_PORT + index),
+                    '--log-level',
+                    logging._levelToName[log.level].lower(),
+                    '--log-file',
                     log_filename_fn('%s.%s' % (queue, worker_num)),
+                    '--touch-file',
                     touch_filename_fn(queue),
-                )
+                ])
+                worker.name = "%s/%s" % (queue, worker_num)
 
                 workers[(queue, worker_num)] = worker
-                worker.start()
 
         time.sleep(1)
 
@@ -100,7 +107,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                 continue
 
             try:
-                os.kill(worker.pid, signum)
+                worker.send_signal(signum)
             except OSError:
                 pass
 
@@ -113,6 +120,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         if worker is None:
             continue
         log.info("Waiting for %s to terminate", worker.name)
-        worker.join()
+        worker.wait()
 
     log.info("All processes finished; returning")
