@@ -142,9 +142,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     os.kill(cron_scheduler.pid, signal.SIGKILL)
     cron_scheduler.join()
 
-    # Filter out workers which might not have yet been started
-    alive_workers = [x for x in workers.values() if x is not None]
-
     def signal_workers(signum, condition):
         for worker in workers.values():
             if worker is None:
@@ -162,7 +159,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # the master could be killed while we're trying to tidy up.
     signal_workers(signal.SIGKILL, lambda worker: worker.sigkill_on_stop)
 
-    for worker in alive_workers:
+    for worker in workers.values():
+        if worker is None:
+            continue
         log.info("Waiting for %s to terminate", worker.name)
         worker.join()
 
