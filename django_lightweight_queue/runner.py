@@ -33,6 +33,8 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         cron_config = get_cron_config()
         ensure_queue_workers_for_config(cron_config)
 
+    running = True
+
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so. Note: we need to do this after any potential
     # calls to `ensure_queue_workers_for_config` so that all the workers
@@ -43,16 +45,14 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         backend = get_backend(queue)
         backend.startup(queue)
 
-    # Use shared state to communicate "exit after next job" to the children
-    running = multiprocessing.Value('d', 1)
-
     # Note: we deliberately configure our handling of SIGTERM _after_ the
     # startup processes have happened; this ensures that the startup processes
     # (which could take a long time) are naturally interupted by the signal.
     def handle_term(signum, stack):
+        nonlocal running
         log.info("Caught TERM signal")
         set_process_title("Master process exiting")
-        running.value = 0
+        running = False
     signal.signal(signal.SIGTERM, handle_term)
 
     if machine.run_cron:
@@ -68,7 +68,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     if app_settings.ENABLE_PROMETHEUS:
         start_master_http_server(running, machine.worker_names)
 
-    while running.value:
+    while running:
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
             worker = workers[(queue, worker_num)]
 
@@ -152,6 +152,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     os.kill(worker.pid, signum)
                 except OSError:
                     pass
+
+    # SIGUSR2 all the workers. This sets a flag asking them to shut down
+    # gracefully.
+    signal_workers(signal.SIGUSR2, lambda worker: True)
 
     # Kill all the killable workers. While we could do this second and thus give
     # these workers a bit more time while we wait for the others, the extra time

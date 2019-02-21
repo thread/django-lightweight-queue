@@ -22,13 +22,13 @@ if app_settings.ENABLE_PROMETHEUS:
     )
 
 class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_index, worker_num, back_channel, running, log_level, log_filename, touch_filename):
+    def __init__(self, queue, worker_index, worker_num, back_channel, log_level, log_filename, touch_filename):
         self.queue = queue
         self.worker_index = worker_index
         self.worker_num = worker_num
 
         self.back_channel = back_channel
-        self.running = running
+        self.running = True
 
         self.log_level = log_level
         self.log_filename = log_filename
@@ -74,6 +74,9 @@ class Worker(multiprocessing.Process):
         # master
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
+        # SIGUSR2 indicates we should shut down after handling the next entry
+        signal.signal(signal.SIGUSR2, self._handle_sigusr2)
+
         # Each worker gets it own backend
         backend = get_backend(self.queue)
         self.log.info("Loaded backend %s", backend)
@@ -81,7 +84,7 @@ class Worker(multiprocessing.Process):
         time_item_last_processed = datetime.datetime.utcnow()
 
         for item_count in itertools.count():
-            if not self.running.value:
+            if not self.running:
                 break
 
             if self.idle_time_reached(time_item_last_processed):
@@ -109,6 +112,9 @@ class Worker(multiprocessing.Process):
                 sys.exit(1)
 
         self.log.info("Exiting")
+
+    def _handle_sigusr2(self, signum, frame):
+        self.running = False
 
     def idle_time_reached(self, time_item_last_processed):
         idle_time = datetime.datetime.utcnow() - time_item_last_processed
