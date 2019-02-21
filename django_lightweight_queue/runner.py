@@ -94,12 +94,9 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     os.kill(cron_scheduler.pid, signal.SIGKILL)
     cron_scheduler.join()
 
-    def signal_workers(signum, condition):
+    def signal_workers(signum):
         for worker in workers.values():
             if worker is None:
-                continue
-
-            if not condition(worker):
                 continue
 
             try:
@@ -110,7 +107,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # SIGUSR2 all the workers. This sets a flag asking them to shut down
     # gracefully, or kills them immediately if they are receptive to that
     # sort of abuse.
-    signal_workers(signal.SIGUSR2, lambda worker: True)
+    signal_workers(signal.SIGUSR2)
 
     for worker in workers.values():
         if worker is None:
