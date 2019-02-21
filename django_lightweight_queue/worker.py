@@ -161,7 +161,8 @@ class Worker(multiprocessing.Process):
     def tell_master(self, timeout, sigkill_on_stop):
         if sigkill_on_stop:
             # SIGUSR2 can be taken to just cause the process to die
-            # immediately.
+            # immediately. This is the default action for SIGUSR2.
+            # Reference: signal(7)
             signal.signal(signal.SIGUSR2, signal.SIG_DFL)
         else:
             # SIGUSR2 indicates we should shut down after handling the
