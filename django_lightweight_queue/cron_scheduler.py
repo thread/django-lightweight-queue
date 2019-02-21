@@ -4,7 +4,7 @@ import imp
 import time
 import logging
 import datetime
-import multiprocessing
+import threading
 
 from django.apps import apps
 from django.core.management import call_command
@@ -16,7 +16,7 @@ from .utils import set_process_title, get_backend, configure_logging
 CRON_QUEUE_NAME = 'cron_scheduler'
 
 
-class CronScheduler(multiprocessing.Process):
+class CronScheduler(threading.Thread):
     def __init__(self, log_level, log_filename, config):
         self.log_level = log_level
         self.log_filename = log_filename
@@ -25,11 +25,9 @@ class CronScheduler(multiprocessing.Process):
         # Logfiles must be opened in child process
         self.log = None
 
-        super(CronScheduler, self).__init__()
+        super(CronScheduler, self).__init__(daemon=True)
 
     def run(self):
-        set_process_title("Cron scheduler process")
-
         self.log = logging.getLogger()
         for x in self.log.handlers:
             self.log.removeHandler(x)
@@ -50,16 +48,12 @@ class CronScheduler(multiprocessing.Process):
         self.log.info("Loaded backend %s", backend)
 
         while True:
-            # This will run until terminated by the master process via
-            # a signal.
-            try:
-                self.tick(backend)
+            # This will run until the process terminates.
+            self.tick(backend)
 
-                # Sleep until the next second boundary. This corrects for skew
-                # caused by the accumulation of tick() runtime.
-                time.sleep((1 - time.time() % 1))
-            except KeyboardInterrupt:
-                sys.exit(1)
+            # Sleep until the next second boundary. This corrects for skew
+            # caused by the accumulation of tick() runtime.
+            time.sleep((1 - time.time() % 1))
 
     def tick(self, backend):
         self.log.debug("tick()")
