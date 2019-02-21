@@ -147,11 +147,13 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             if worker is None:
                 continue
 
-            if condition(worker):
-                try:
-                    os.kill(worker.pid, signum)
-                except OSError:
-                    pass
+            if not condition(worker):
+                continue
+
+            try:
+                os.kill(worker.pid, signum)
+            except OSError:
+                pass
 
     # SIGUSR2 all the workers. This sets a flag asking them to shut down
     # gracefully.
