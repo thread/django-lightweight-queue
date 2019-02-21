@@ -50,6 +50,8 @@ class CronScheduler(multiprocessing.Process):
         self.log.info("Loaded backend %s", backend)
 
         while True:
+            # This will run until terminated by the master process via
+            # a signal.
             try:
                 self.tick(backend)
 
