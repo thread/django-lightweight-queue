@@ -96,7 +96,11 @@ class ReliableRedisBackend(object):
     def processed_job(self, queue, worker_number, job):
         data = job.to_json().encode('utf-8')
 
-        self.client.lrem(self._processing_key(queue, worker_number), data)
+        self.client.lrem(
+            self._processing_key(queue, worker_number),
+            count=1,
+            value=data,
+        )
 
     def length(self, queue):
         return self.client.llen(self._key(queue))
@@ -136,7 +140,11 @@ class ReliableRedisBackend(object):
             for raw_data in raw_jobs[:-1]:
                 # Remove only one instance of this data (thus coping with
                 # unlikely but possible non-unique entries)
-                self.client.lrem(main_queue_key, raw_data, 1)
+                self.client.lrem(
+                    main_queue_key,
+                    value=raw_data,
+                    count=1,
+                )
 
         return original_size, self.client.llen(main_queue_key)
 
