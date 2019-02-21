@@ -23,12 +23,11 @@ if app_settings.ENABLE_PROMETHEUS:
     )
 
 class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_index, worker_num, back_channel, log_level, log_filename, touch_filename):
+    def __init__(self, queue, worker_index, worker_num, log_level, log_filename, touch_filename):
         self.queue = queue
         self.worker_index = worker_index
         self.worker_num = worker_num
 
-        self.back_channel = back_channel
         self.running = True
 
         self.log_level = log_level
@@ -176,13 +175,6 @@ class Worker(multiprocessing.Process):
         else:
             # Cancel any scheduled alarms
             signal.alarm(0)
-
-        self.back_channel.put((
-            self.queue,
-            self.worker_num,
-            timeout,
-            sigkill_on_stop,
-        ))
 
     def set_process_title(self, *titles):
         set_process_title(self.name, *titles)

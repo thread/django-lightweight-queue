@@ -17,14 +17,6 @@ from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
 
 
 def runner(log, log_filename_fn, touch_filename_fn, machine):
-    # Set a dummy title now; multiprocessing will create an extra process
-    # which will inherit it - we'll set the real title afterwards
-    set_process_title("Internal master process")
-
-    # Use a multiprocessing.Queue to communicate back to the master if/when
-    # children should be killed.
-    back_channel = multiprocessing.Queue()
-
     set_process_title("Master process")
 
     if machine.configure_cron:
@@ -72,18 +64,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
             worker = workers[(queue, worker_num)]
 
-            # Kill any workers that have exceeded their timeout
-            if worker and worker.kill_after and time.time() > worker.kill_after:
-                log.warning("Sending SIGKILL to %s due to timeout", worker.name)
-
-                try:
-                    os.kill(worker.pid, signal.SIGKILL)
-
-                    # Sleep for a bit so we don't start workers constantly
-                    time.sleep(0.1)
-                except OSError:
-                    pass
-
             # Ensure that all workers are now running (idempotent)
             if worker is None or not worker.is_alive():
                 if worker is None:
@@ -99,7 +79,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     queue,
                     index,
                     worker_num,
-                    back_channel,
                     running,
                     log.level,
                     log_filename_fn('%s.%s' % (queue, worker_num)),
@@ -108,33 +87,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
                 workers[(queue, worker_num)] = worker
                 worker.start()
-
-        while True:
-            try:
-                log.debug("Checking back channel for items")
-
-                # We don't use the timeout kwarg so that when we get a TERM
-                # signal we don't have problems with interrupted system calls.
-                msg = back_channel.get_nowait()
-
-                queue, worker_num, timeout, sigkill_on_stop = msg
-            except (Empty, EOFError):
-                break
-
-            worker = workers[(queue, worker_num)]
-
-            kill_after = None
-            if timeout is not None:
-                kill_after = time.time() + timeout
-
-            log.debug(
-                "Setting kill_after=%r and sigkill_on_stop=%r for %s",
-                kill_after,
-                sigkill_on_stop,
-                worker.name,
-            )
-            worker.kill_after = kill_after
-            worker.sigkill_on_stop = sigkill_on_stop
 
         time.sleep(1)
 
@@ -159,12 +111,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # gracefully, or kills them immediately if they are receptive to that
     # sort of abuse.
     signal_workers(signal.SIGUSR2, lambda worker: True)
-
-    # Kill all the killable workers. While we could do this second and thus give
-    # these workers a bit more time while we wait for the others, the extra time
-    # these workers would get is likely small and not worth the trade-off that
-    # the master could be killed while we're trying to tidy up.
-    signal_workers(signal.SIGKILL, lambda worker: worker.sigkill_on_stop)
 
     for worker in workers.values():
         if worker is None:
