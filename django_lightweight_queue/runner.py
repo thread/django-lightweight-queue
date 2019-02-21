@@ -156,7 +156,8 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                 pass
 
     # SIGUSR2 all the workers. This sets a flag asking them to shut down
-    # gracefully.
+    # gracefully, or kills them immediately if they are receptive to that
+    # sort of abuse.
     signal_workers(signal.SIGUSR2, lambda worker: True)
 
     # Kill all the killable workers. While we could do this second and thus give

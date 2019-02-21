@@ -74,9 +74,6 @@ class Worker(multiprocessing.Process):
         # master
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
-        # SIGUSR2 indicates we should shut down after handling the next entry
-        signal.signal(signal.SIGUSR2, self._handle_sigusr2)
-
         # Each worker gets it own backend
         backend = get_backend(self.queue)
         self.log.info("Loaded backend %s", backend)
@@ -161,6 +158,15 @@ class Worker(multiprocessing.Process):
         return True
 
     def tell_master(self, timeout, sigkill_on_stop):
+        if sigkill_on_stop:
+            # SIGUSR2 can be taken to just cause the process to die
+            # immediately.
+            signal.signal(signal.SIGUSR2, signal.SIG_DFL)
+        else:
+            # SIGUSR2 indicates we should shut down after handling the
+            # next entry.
+            signal.signal(signal.SIGUSR2, self._handle_sigusr2)
+
         self.back_channel.put((
             self.queue,
             self.worker_num,
