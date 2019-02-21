@@ -61,8 +61,6 @@ class CronScheduler(multiprocessing.Process):
             except KeyboardInterrupt:
                 sys.exit(1)
 
-        self.log.info("Exiting")
-
     def tick(self, backend):
         self.log.debug("tick()")
 
