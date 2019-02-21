@@ -10,7 +10,7 @@ class RedisBackend(object):
     This backend has at-most-once semantics.
     """
     def __init__(self):
-        self.client = redis.Redis(
+        self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
         )
