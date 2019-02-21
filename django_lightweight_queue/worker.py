@@ -6,7 +6,6 @@ import signal
 import logging
 import datetime
 import itertools
-import multiprocessing
 
 from prometheus_client import start_http_server, Summary
 
@@ -22,7 +21,7 @@ if app_settings.ENABLE_PROMETHEUS:
         ['queue'],
     )
 
-class Worker(multiprocessing.Process):
+class Worker(object):
     def __init__(self, queue, prometheus_port, worker_num, log_level, log_filename, touch_filename):
         self.queue = queue
         self.prometheus_port = prometheus_port
