@@ -123,7 +123,6 @@ class Worker(multiprocessing.Process):
         self.log.debug("Checking backend for items")
         self.set_process_title("Waiting for items")
 
-        # Tell master process that we are not processing anything.
         self.configure_cancellation(timeout=None, sigkill_on_stop=True)
 
         job = backend.dequeue(self.queue, self.worker_num, 15)
