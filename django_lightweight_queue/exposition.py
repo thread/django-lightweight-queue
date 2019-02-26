@@ -64,7 +64,7 @@ def start_master_http_server(running, worker_queue_and_counts):
             # Required as handle_request blocks without this
             httpd.timeout = 5
 
-            while self.running.value:
+            while self.running:
                 httpd.handle_request()
 
     t = MetricsServer(running, name="Master Prometheus metrics server")

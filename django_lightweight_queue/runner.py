@@ -79,7 +79,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     queue,
                     index,
                     worker_num,
-                    running,
                     log.level,
                     log_filename_fn('%s.%s' % (queue, worker_num)),
                     touch_filename_fn(queue),
