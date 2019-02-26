@@ -89,9 +89,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
 
         time.sleep(1)
 
-    # The cron scheduler is always safe to kill.
-    os.kill(cron_scheduler.pid, signal.SIGKILL)
-    cron_scheduler.join()
+    if machine.run_cron:
+        # The cron scheduler is always safe to kill.
+        os.kill(cron_scheduler.pid, signal.SIGKILL)
+        cron_scheduler.join()
 
     def signal_workers(signum):
         for worker in workers.values():
