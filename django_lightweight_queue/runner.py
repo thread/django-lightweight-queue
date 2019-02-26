@@ -11,20 +11,12 @@ except ImportError:
 from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
-from .exposition import start_master_http_server
+from .exposition import metrics_http_server
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
     ensure_queue_workers_for_config
 
 
 def runner(log, log_filename_fn, touch_filename_fn, machine):
-    # Set a dummy title now; multiprocessing will create an extra process
-    # which will inherit it - we'll set the real title afterwards
-    set_process_title("Internal master process")
-
-    # Use a multiprocessing.Queue to communicate back to the master if/when
-    # children should be killed.
-    back_channel = multiprocessing.Queue()
-
     set_process_title("Master process")
 
     if machine.configure_cron:
@@ -32,6 +24,8 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         # even if we're not running cronjobs, as it changes the queue count.
         cron_config = get_cron_config()
         ensure_queue_workers_for_config(cron_config)
+
+    running = True
 
     # Some backends may require on-startup logic per-queue, initialise a dummy
     # backend per queue to do so. Note: we need to do this after any potential
@@ -43,21 +37,18 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         backend = get_backend(queue)
         backend.startup(queue)
 
-    # Use shared state to communicate "exit after next job" to the children
-    running = multiprocessing.Value('d', 1)
-
     # Note: we deliberately configure our handling of SIGTERM _after_ the
     # startup processes have happened; this ensures that the startup processes
     # (which could take a long time) are naturally interupted by the signal.
     def handle_term(signum, stack):
+        nonlocal running
         log.info("Caught TERM signal")
         set_process_title("Master process exiting")
-        running.value = 0
+        running = False
     signal.signal(signal.SIGTERM, handle_term)
 
     if machine.run_cron:
         cron_scheduler = CronScheduler(
-            running,
             log.level,
             log_filename_fn(CRON_QUEUE_NAME),
             cron_config,
@@ -67,23 +58,12 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     workers = {x: None for x in machine.worker_names}
 
     if app_settings.ENABLE_PROMETHEUS:
-        start_master_http_server(running, machine.worker_names)
+        metrics_server = metrics_http_server(machine.worker_names)
+        metrics_server.start()
 
-    while running.value:
+    while running:
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
             worker = workers[(queue, worker_num)]
-
-            # Kill any workers that have exceeded their timeout
-            if worker and worker.kill_after and time.time() > worker.kill_after:
-                log.warning("Sending SIGKILL to %s due to timeout", worker.name)
-
-                try:
-                    os.kill(worker.pid, signal.SIGKILL)
-
-                    # Sleep for a bit so we don't start workers constantly
-                    time.sleep(0.1)
-                except OSError:
-                    pass
 
             # Ensure that all workers are now running (idempotent)
             if worker is None or not worker.is_alive():
@@ -100,8 +80,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     queue,
                     index,
                     worker_num,
-                    back_channel,
-                    running,
                     log.level,
                     log_filename_fn('%s.%s' % (queue, worker_num)),
                     touch_filename_fn(queue),
@@ -110,52 +88,37 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                 workers[(queue, worker_num)] = worker
                 worker.start()
 
-        while True:
-            try:
-                log.debug("Checking back channel for items")
-
-                # We don't use the timeout kwarg so that when we get a TERM
-                # signal we don't have problems with interrupted system calls.
-                msg = back_channel.get_nowait()
-
-                queue, worker_num, timeout, sigkill_on_stop = msg
-            except (Empty, EOFError):
-                break
-
-            worker = workers[(queue, worker_num)]
-
-            kill_after = None
-            if timeout is not None:
-                kill_after = time.time() + timeout
-
-            log.debug(
-                "Setting kill_after=%r and sigkill_on_stop=%r for %s",
-                kill_after,
-                sigkill_on_stop,
-                worker.name,
-            )
-            worker.kill_after = kill_after
-            worker.sigkill_on_stop = sigkill_on_stop
-
         time.sleep(1)
 
-    # Filter out workers which might not have yet been started
-    alive_workers = [x for x in workers.values() if x is not None]
+    if machine.run_cron:
+        # The cron scheduler is always safe to kill.
+        os.kill(cron_scheduler.pid, signal.SIGKILL)
+        cron_scheduler.join()
 
-    # Kill all the killable workers. While we could do this second and thus give
-    # these workers a bit more time while we wait for the others, the extra time
-    # these workers would get is likely small and not worth the trade-off that
-    # the master could be killed while we're trying to tidy up.
-    for worker in alive_workers:
-        if worker.sigkill_on_stop:
-            log.info("Sending SIGKILL to %s", worker.name)
+    def signal_workers(signum):
+        for worker in workers.values():
+            if worker is None:
+                continue
+
             try:
-                os.kill(worker.pid, signal.SIGKILL)
+                os.kill(worker.pid, signum)
             except OSError:
                 pass
 
-    for worker in alive_workers:
+    # SIGUSR2 all the workers. This sets a flag asking them to shut down
+    # gracefully, or kills them immediately if they are receptive to that
+    # sort of abuse.
+    signal_workers(signal.SIGUSR2)
+
+    for worker in workers.values():
+        if worker is None:
+            continue
         log.info("Waiting for %s to terminate", worker.name)
         worker.join()
+
+    if app_settings.ENABLE_PROMETHEUS:
+        metrics_server.terminate()
+        log.info("Waiting for metrics server to terminate")
+        metrics_server.join()
 
     log.info("All processes finished; returning")

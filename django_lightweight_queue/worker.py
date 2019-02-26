@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 import time
 import signal
 import logging
@@ -22,13 +23,12 @@ if app_settings.ENABLE_PROMETHEUS:
     )
 
 class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_index, worker_num, back_channel, running, log_level, log_filename, touch_filename):
+    def __init__(self, queue, worker_index, worker_num, log_level, log_filename, touch_filename):
         self.queue = queue
         self.worker_index = worker_index
         self.worker_num = worker_num
 
-        self.back_channel = back_channel
-        self.running = running
+        self.running = True
 
         self.log_level = log_level
         self.log_filename = log_filename
@@ -73,6 +73,7 @@ class Worker(multiprocessing.Process):
         # Always reset the signal handling; we could have been restarted by the
         # master
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
         # Each worker gets it own backend
         backend = get_backend(self.queue)
@@ -81,7 +82,7 @@ class Worker(multiprocessing.Process):
         time_item_last_processed = datetime.datetime.utcnow()
 
         for item_count in itertools.count():
-            if not self.running.value:
+            if not self.running:
                 break
 
             if self.idle_time_reached(time_item_last_processed):
@@ -110,6 +111,9 @@ class Worker(multiprocessing.Process):
 
         self.log.info("Exiting")
 
+    def _handle_sigusr2(self, signum, frame):
+        self.running = False
+
     def idle_time_reached(self, time_item_last_processed):
         idle_time = datetime.datetime.utcnow() - time_item_last_processed
 
@@ -119,17 +123,16 @@ class Worker(multiprocessing.Process):
         self.log.debug("Checking backend for items")
         self.set_process_title("Waiting for items")
 
-        # Tell master process that we are not processing anything.
-        self.tell_master(None, True)
+        self.configure_cancellation(timeout=None, sigkill_on_stop=True)
 
         job = backend.dequeue(self.queue, self.worker_num, 15)
         if job is None:
             return False
 
         # Update master what we are doing
-        self.tell_master(
-            job.timeout,
-            job.sigkill_on_stop,
+        self.configure_cancellation(
+            timeout=job.timeout,
+            sigkill_on_stop=job.sigkill_on_stop,
         )
 
         self.log.debug("Running job %s", job)
@@ -154,13 +157,24 @@ class Worker(multiprocessing.Process):
 
         return True
 
-    def tell_master(self, timeout, sigkill_on_stop):
-        self.back_channel.put((
-            self.queue,
-            self.worker_num,
-            timeout,
-            sigkill_on_stop,
-        ))
+    def configure_cancellation(self, timeout, sigkill_on_stop):
+        if sigkill_on_stop:
+            # SIGUSR2 can be taken to just cause the process to die
+            # immediately. This is the default action for SIGUSR2.
+            # Reference: signal(7)
+            signal.signal(signal.SIGUSR2, signal.SIG_DFL)
+        else:
+            # SIGUSR2 indicates we should shut down after handling the
+            # next entry.
+            signal.signal(signal.SIGUSR2, self._handle_sigusr2)
+
+        if timeout is not None:
+            # alarm(3) takes whole seconds
+            alarm_duration = int(math.ceil(timeout))
+            signal.alarm(alarm_duration)
+        else:
+            # Cancel any scheduled alarms
+            signal.alarm(0)
 
     def set_process_title(self, *titles):
         set_process_title(self.name, *titles)
