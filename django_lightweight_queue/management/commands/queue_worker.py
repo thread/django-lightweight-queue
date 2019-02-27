@@ -2,7 +2,7 @@ import sys
 import logging
 import argparse
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from ...worker import Worker
 
@@ -34,11 +34,13 @@ class Command(BaseCommand):
         parser.add_argument(
             '--log-file',
             type=str,
+            dest='log_filename',
             help="log destination",
         )
         parser.add_argument(
             '--touch-file',
-            type=argparse.FileType('ab'),
+            type=str,
+            dest='touch_filename',
             default=None,
             help="file to touch after jobs",
         )
@@ -49,8 +51,8 @@ class Command(BaseCommand):
         number,
         prometheus_port,
         log_level,
-        log_file,
-        touch_file,
+        log_filename,
+        touch_filename,
         **options
     ):
         worker = Worker(
@@ -58,7 +60,7 @@ class Command(BaseCommand):
             worker_num=number,
             prometheus_port=prometheus_port,
             log_level=logging._nameToLevel[log_level.upper()],
-            log_file=log_file,
-            touch_file=touch_file,
+            log_filename=log_filename,
+            touch_filename=touch_filename,
         )
         worker.run()

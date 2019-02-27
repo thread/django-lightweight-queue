@@ -11,7 +11,7 @@ except ImportError:
 from prometheus_client.exposition import MetricsHandler
 
 from . import app_settings
-from .utils import set_process_title
+
 
 def get_config_response(worker_queue_and_counts):
     """
@@ -34,6 +34,7 @@ def get_config_response(worker_queue_and_counts):
         }
         for index, (queue, worker_num) in enumerate(worker_queue_and_counts, start=1)
     ]
+
 
 def metrics_http_server(worker_queue_and_counts):
     config_response = json.dumps(
@@ -65,4 +66,4 @@ def metrics_http_server(worker_queue_and_counts):
             except KeyboardInterrupt:
                 pass
 
-    return MetricsServer(name="Master Prometheus metrics server")
+    return MetricsServer(name="Master Prometheus metrics server", daemon=True)
