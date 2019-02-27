@@ -35,7 +35,7 @@ def get_config_response(worker_queue_and_counts):
         for index, (queue, worker_num) in enumerate(worker_queue_and_counts, start=1)
     ]
 
-def start_master_http_server(running, worker_queue_and_counts):
+def metrics_http_server(worker_queue_and_counts):
     config_response = json.dumps(
         get_config_response(worker_queue_and_counts),
         sort_keys=True,
@@ -43,6 +43,7 @@ def start_master_http_server(running, worker_queue_and_counts):
     ).encode('utf-8')
 
     class RequestHandler(MetricsHandler, object):
+
         def do_GET(self):
             if self.path == "/worker_config":
                 self.send_response(200)
@@ -59,12 +60,9 @@ def start_master_http_server(running, worker_queue_and_counts):
         def run(self):
             httpd = HTTPServer(('0.0.0.0', app_settings.PROMETHEUS_START_PORT), RequestHandler)
 
-            # Required as handle_request blocks without this
-            httpd.timeout = 5
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                pass
 
-            while True:
-                httpd.handle_request()
-
-    t = MetricsServer(running, name="Master Prometheus metrics server")
-    t.daemon = True
-    t.start()
+    return MetricsServer(name="Master Prometheus metrics server")

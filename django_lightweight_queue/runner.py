@@ -12,7 +12,7 @@ except ImportError:
 from . import app_settings
 from .utils import set_process_title, get_backend
 from .worker import Worker
-from .exposition import start_master_http_server
+from .exposition import metrics_http_server
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
     ensure_queue_workers_for_config
 
@@ -59,7 +59,8 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     workers = {x: None for x in machine.worker_names}
 
     if app_settings.ENABLE_PROMETHEUS:
-        start_master_http_server(machine.worker_names)
+        metrics_server = metrics_http_server(machine.worker_names)
+        metrics_server.start()
 
     while running:
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
@@ -117,5 +118,10 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             continue
         log.info("Waiting for %s to terminate", worker.name)
         worker.wait()
+
+    if app_settings.ENABLE_PROMETHEUS:
+        metrics_server.terminate()
+        log.info("Waiting for metrics server to terminate")
+        metrics_server.join()
 
     log.info("All processes finished; returning")
