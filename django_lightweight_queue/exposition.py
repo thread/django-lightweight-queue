@@ -1,6 +1,5 @@
 import json
-import signal
-import multiprocessing
+import threading
 
 from socket import gethostname
 
@@ -12,7 +11,7 @@ except ImportError:
 from prometheus_client.exposition import MetricsHandler
 
 from . import app_settings
-from .utils import set_process_title
+
 
 def get_config_response(worker_queue_and_counts):
     """
@@ -36,6 +35,7 @@ def get_config_response(worker_queue_and_counts):
         for index, (queue, worker_num) in enumerate(worker_queue_and_counts, start=1)
     ]
 
+
 def metrics_http_server(worker_queue_and_counts):
     config_response = json.dumps(
         get_config_response(worker_queue_and_counts),
@@ -54,13 +54,11 @@ def metrics_http_server(worker_queue_and_counts):
 
             return super(RequestHandler, self).do_GET()
 
-    class MetricsServer(multiprocessing.Process):
+    class MetricsServer(threading.Thread):
         def __init__(self, *args, **kwargs):
             super(MetricsServer, self).__init__(*args, **kwargs)
 
         def run(self):
-            signal.signal(signal.SIGTERM, signal.SIG_DFL)
-            set_process_title("Root Prometheus metrics server")
             httpd = HTTPServer(('0.0.0.0', app_settings.PROMETHEUS_START_PORT), RequestHandler)
 
             try:
@@ -68,4 +66,4 @@ def metrics_http_server(worker_queue_and_counts):
             except KeyboardInterrupt:
                 pass
 
-    return MetricsServer(name="Master Prometheus metrics server")
+    return MetricsServer(name="Master Prometheus metrics server", daemon=True)

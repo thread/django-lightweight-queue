@@ -6,7 +6,6 @@ import signal
 import logging
 import datetime
 import itertools
-import multiprocessing
 
 from prometheus_client import start_http_server, Summary
 
@@ -22,10 +21,10 @@ if app_settings.ENABLE_PROMETHEUS:
         ['queue'],
     )
 
-class Worker(multiprocessing.Process):
-    def __init__(self, queue, worker_index, worker_num, log_level, log_filename, touch_filename):
+class Worker(object):
+    def __init__(self, queue, prometheus_port, worker_num, log_level, log_filename, touch_filename):
         self.queue = queue
-        self.worker_index = worker_index
+        self.prometheus_port = prometheus_port
         self.worker_num = worker_num
 
         self.running = True
@@ -63,10 +62,9 @@ class Worker(multiprocessing.Process):
             },
         )
 
-        if app_settings.ENABLE_PROMETHEUS:
-            metrics_port = app_settings.PROMETHEUS_START_PORT + self.worker_index
-            self.log.info("Exporting metrics on port %d" % metrics_port)
-            start_http_server(metrics_port)
+        if app_settings.ENABLE_PROMETHEUS and self.prometheus_port is not None:
+            self.log.info("Exporting metrics on port %d" % self.prometheus_port)
+            start_http_server(self.prometheus_port)
 
         self.log.debug("Starting")
 

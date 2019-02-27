@@ -1,16 +1,13 @@
 import os
+import sys
 import time
 import signal
-import multiprocessing
+import logging
+import subprocess
 
-try:
-    from queue import Empty
-except ImportError:
-    from Queue import Empty
 
 from . import app_settings
 from .utils import set_process_title, get_backend
-from .worker import Worker
 from .exposition import metrics_http_server
 from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
     ensure_queue_workers_for_config
@@ -66,34 +63,49 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             worker = workers[(queue, worker_num)]
 
             # Ensure that all workers are now running (idempotent)
-            if worker is None or not worker.is_alive():
+            if worker is None or worker.poll() is not None:
                 if worker is None:
                     log.info("Starting worker #%d for %s", worker_num, queue)
                 else:
                     log.info(
                         "Starting missing worker %s (exit code was: %s)",
                         worker.name,
-                        worker.exitcode,
+                        worker.returncode,
                     )
 
-                worker = Worker(
+                args = [
+                    sys.executable,
+                    # manage.py
+                    sys.argv[0],
+                    'queue_worker',
                     queue,
-                    index,
-                    worker_num,
-                    log.level,
-                    log_filename_fn('%s.%s' % (queue, worker_num)),
-                    touch_filename_fn(queue),
-                )
+                    str(worker_num),
+                    '--prometheus-port',
+                    str(app_settings.PROMETHEUS_START_PORT + index),
+                    '--log-level',
+                    logging._levelToName[log.level].lower(),
+                ]
+
+                log_filename = log_filename_fn('%s.%s' % (queue, worker_num))
+                if log_filename is not None:
+                    args.extend([
+                        '--log-file',
+                        log_filename,
+                    ])
+
+                touch_filename = touch_filename_fn(queue)
+                if touch_filename is not None:
+                    args.extend([
+                        '--touch-file',
+                        touch_filename,
+                    ])
+
+                worker = subprocess.Popen(args)
+                worker.name = "%s/%s" % (queue, worker_num)
 
                 workers[(queue, worker_num)] = worker
-                worker.start()
 
         time.sleep(1)
-
-    if machine.run_cron:
-        # The cron scheduler is always safe to kill.
-        os.kill(cron_scheduler.pid, signal.SIGKILL)
-        cron_scheduler.join()
 
     def signal_workers(signum):
         for worker in workers.values():
@@ -101,7 +113,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                 continue
 
             try:
-                os.kill(worker.pid, signum)
+                worker.send_signal(signum)
             except OSError:
                 pass
 
@@ -114,11 +126,6 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
         if worker is None:
             continue
         log.info("Waiting for %s to terminate", worker.name)
-        worker.join()
-
-    if app_settings.ENABLE_PROMETHEUS:
-        metrics_server.terminate()
-        log.info("Waiting for metrics server to terminate")
-        metrics_server.join()
+        worker.wait()
 
     log.info("All processes finished; returning")
