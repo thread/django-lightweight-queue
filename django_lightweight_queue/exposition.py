@@ -60,6 +60,7 @@ def metrics_http_server(worker_queue_and_counts):
 
         def run(self):
             httpd = HTTPServer(('0.0.0.0', app_settings.PROMETHEUS_START_PORT), RequestHandler)
+            httpd.timeout = 2
 
             try:
                 httpd.serve_forever()
