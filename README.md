@@ -46,12 +46,15 @@ present in the specified file are inherited from the global configuration.
 
 ### Backends
 
-There are three built-in backends:
+There are four built-in backends:
 - Synchronous (the default): executes the task inline, without any actual queuing
 - Redis: executes tasks at-most-once using [Redis][redis] for storage of the
   enqueued tasks
 - Reliable Redis: executes tasks at-least-once using [Redis][redis] for storage
   of the enqueued tasks
+- Debug Web: a backend for use in debugging. Instead of running jobs it prints
+  the url to a view that can be used to run a task in a transaction which will
+  be rolled back. This is useful for debugging and optimising tasks.
 
 [redis]: https://redis.io/
 
