@@ -44,8 +44,8 @@ def debug_run(request):
 
     job = Job.from_json(request.GET['job'])
 
-    log_steam = io.StringIO()
-    handler = logging.StreamHandler(log_steam)
+    log_stream = io.StringIO()
+    handler = logging.StreamHandler(log_stream)
 
     try:
         logging.root.addHandler(handler)
@@ -72,7 +72,7 @@ def debug_run(request):
         'path': job.path,
         'job': json.dumps(job.as_dict(), sort_keys=True, indent=4),
         'result': result,
-        'log': log_steam.getvalue(),
+        'log': log_stream.getvalue(),
     }))
 
     return HttpResponse(document.encode('utf-8'))
