@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import json
 import logging
 import traceback
 
@@ -41,4 +42,4 @@ class LoggingMiddleware(object):
 
         data['fluent_log'] = True
 
-        log.info(data)
+        log.info(json.dumps(data))
