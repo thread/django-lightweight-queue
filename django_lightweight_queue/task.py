@@ -1,5 +1,5 @@
 from .job import Job
-from .utils import get_backend
+from .utils import get_backend, contribute_implied_queue_name
 
 from . import app_settings
 
@@ -66,7 +66,7 @@ class task(object):
         self.sigkill_on_stop = sigkill_on_stop
         self.atomic = atomic
 
-        app_settings.WORKERS.setdefault(self.queue, 1)
+        contribute_implied_queue_name(self.queue)
 
     def __call__(self, fn):
         return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop, self.atomic)

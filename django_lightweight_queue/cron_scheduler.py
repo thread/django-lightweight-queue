@@ -11,7 +11,8 @@ from django.core.management import call_command
 
 from . import app_settings
 from .task import task
-from .utils import set_process_title, get_backend, configure_logging
+from .utils import get_backend, configure_logging, \
+    set_process_title, contribute_implied_queue_name
 
 CRON_QUEUE_NAME = 'cron_scheduler'
 
@@ -146,7 +147,7 @@ def ensure_queue_workers_for_config(config):
     workers after this function is run.
     """
     for row in config:
-        app_settings.WORKERS.setdefault(row['queue'], 1)
+        contribute_implied_queue_name(row['queue'])
 
 
 @task()

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from ... import app_settings
-from ...utils import get_backend, load_extra_config
+from ...utils import get_backend, get_queue_counts, load_extra_config
 from ...cron_scheduler import get_cron_config
 
 
@@ -22,7 +22,7 @@ class Command(BaseCommand):
         print("{0:<55} {1:<5} {2}".format("Queue name", "Concurrency", "Backend"))
         print("-" * 27)
 
-        for k, v in sorted(app_settings.WORKERS.items()):
+        for k, v in sorted(get_queue_counts().items()):
             print(" {0:<54} {1:<5} {2}".format(
                 k,
                 v,

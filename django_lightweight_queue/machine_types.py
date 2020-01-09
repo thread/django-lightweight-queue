@@ -1,6 +1,7 @@
 from django.utils.functional import cached_property
 
 from . import app_settings
+from .utils import get_queue_counts
 from .cron_scheduler import CRON_QUEUE_NAME
 
 
@@ -66,7 +67,7 @@ class PooledMachine(Machine):
         # choosing only those which should be run on this machine.
         job_number = 1
 
-        for queue, num_workers in sorted(app_settings.WORKERS.items()):
+        for queue, num_workers in sorted(get_queue_counts().items()):
             if self.only_queue and self.only_queue != queue:
                 continue
 
@@ -98,6 +99,6 @@ class DirectlyConfiguredMachine(Machine):
     def worker_names(self):
         return tuple(
             (queue, worker_number)
-            for queue, num_workers in sorted(app_settings.WORKERS.items())
+            for queue, num_workers in sorted(get_queue_counts().items())
             for worker_number in range(num_workers)
         )

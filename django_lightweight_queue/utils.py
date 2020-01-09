@@ -12,6 +12,8 @@ from fluent import handler as fluent_handler
 
 from . import constants, app_settings
 
+_accepting_implied_queues = True
+
 
 def load_extra_config(file_path):
     extra_settings = imp.load_source('extra_settings', file_path)
@@ -133,6 +135,29 @@ def get_middleware():
             pass
 
     return middleware
+
+
+def refuse_further_implied_queues():
+    # type: () -> None
+    global _accepting_implied_queues
+    _accepting_implied_queues = False
+
+
+def contribute_implied_queue_name(queue):
+    # type: (str) -> None
+    if not _accepting_implied_queues:
+        raise RuntimeError(
+            "Queues have already been enumerated, ensure that "
+            "'contribute_implied_queue_name' is called during setup.",
+        )
+    app_settings.WORKERS.setdefault(queue, 1)
+
+
+def get_queue_counts():
+    # type: (None) -> Mapping[str, int]
+    refuse_further_implied_queues()
+    return app_settings.WORKERS
+
 
 def import_all_submodules(name, exclude=()):
     for app_config in apps.get_app_configs():
