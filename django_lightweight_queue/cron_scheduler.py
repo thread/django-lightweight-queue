@@ -1,6 +1,6 @@
 import re
-import sys
 import imp
+import sys
 import time
 import logging
 import datetime
