@@ -1,6 +1,5 @@
 import re
 import imp
-import sys
 import time
 import logging
 import datetime
@@ -9,10 +8,9 @@ import threading
 from django.apps import apps
 from django.core.management import call_command
 
-from . import app_settings
 from .task import task
 from .utils import get_backend, configure_logging, \
-    set_process_title, contribute_implied_queue_name
+    contribute_implied_queue_name
 
 CRON_QUEUE_NAME = 'cron_scheduler'
 
