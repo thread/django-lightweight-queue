@@ -54,6 +54,7 @@ workflows:
               ignore: /.*/
 
       - deploy:
+          context: thread-pypi
           requires:
             - build-test
           filters:
