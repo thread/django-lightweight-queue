@@ -1,14 +1,11 @@
 import imp
-import logging
 import warnings
 import importlib
+from functools import lru_cache
 
 from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
-from django.utils.lru_cache import lru_cache
 from django.utils.module_loading import module_has_submodule
-
-from fluent import handler as fluent_handler
 
 from . import constants, app_settings
 
@@ -23,7 +20,7 @@ def load_extra_config(file_path):
 
     def with_prefix(names):
         return set(
-            '%s%s' % (constants.SETTING_NAME_PREFIX, name)
+            '{}{}'.format(constants.SETTING_NAME_PREFIX, name)
             for name in names
         )
 
@@ -33,81 +30,13 @@ def load_extra_config(file_path):
     unexpected_names = extra_names - with_prefix(setting_names)
     if unexpected_names:
         unexpected_str = "' ,'".join(unexpected_names)
-        warnings.warn("Ignoring unexpected setting(s) '%s'." % (unexpected_str,))
+        warnings.warn("Ignoring unexpected setting(s) '{}'.".format(unexpected_str))
 
     override_names = extra_names - unexpected_names
     for name in override_names:
         short_name = name[len(constants.SETTING_NAME_PREFIX):]
         setattr(app_settings, short_name, getattr(extra_settings, name))
 
-class NoFluentFilter(logging.Filter):
-    def filter(self, record):
-        # We try to exclude log messages that are 'definitely' fluent-only log
-        # messages from the regular logs. This is done by excluding messages
-        # which are a dict _and_ have a key 'fluent_log' present.
-        #
-        # We cannot do the opposite, and exclude non-fluent-log messages from
-        # Fluent, as we want the fluent logs to capture all output from the
-        # actual task, and cannot reasonably expect tasks to log both fluent
-        # and non-fluent formatted messages. So we end up with some duplicated
-        # log messages in Fluent for the benefit of completeness.
-        is_dict = isinstance(record.msg, dict)
-
-        if is_dict:
-            return 'fluent_log' not in record.msg
-
-        return True
-
-def configure_logging(level, format, filename, extra=None):
-    """
-    Like ``logging.basicConfig`` but we use WatchedFileHandler so that we play
-    nicely with logrotate and similar tools.
-
-    We also unconditionally remove all existing handlers.
-
-    Returns the file handle of the log file so that we can pass this on to a
-    daemon process.
-    """
-    if extra is None:
-        extra = {}
-
-    logging.root.handlers = []
-
-    if app_settings.ENABLE_FLUENT_LOGGING:
-        handler = fluent_handler.FluentHandler(
-            'django_lightweight_queue',
-            host=app_settings.FLUENT_HOST,
-            port=app_settings.FLUENT_PORT,
-        )
-
-        fluent_format = {
-            'host': '%(hostname)s',
-            'process': '%(process)s',
-            'level': '%(levelname)s',
-        }
-        fluent_format.update(extra)
-
-        handler.setFormatter(fluent_handler.FluentRecordFormatter(
-            fluent_format,
-            fill_missing_fmt_key=True,
-        ))
-        logging.root.addHandler(handler)
-
-    handler = logging.StreamHandler()
-
-    handler.addFilter(NoFluentFilter())
-
-    if filename:
-        handler = logging.handlers.WatchedFileHandler(filename)
-
-    handler.setFormatter(logging.Formatter(format))
-
-    logging.root.addHandler(handler)
-
-    if level is not None:
-        logging.root.setLevel(level)
-
-    return handler.stream.fileno()
 
 @lru_cache()
 def get_path(path):
@@ -117,12 +46,22 @@ def get_path(path):
 
     return getattr(module, attr)
 
+
 @lru_cache()
 def get_backend(queue):
     return get_path(app_settings.BACKEND_OVERRIDES.get(
         queue,
         app_settings.BACKEND,
     ))()
+
+
+@lru_cache()
+def get_logger(name):
+    get_logger_fn = app_settings.LOGGER_FACTORY
+    if not callable(get_logger_fn):
+        get_logger_fn = get_path(app_settings.LOGGER_FACTORY)
+    return get_logger_fn(name)
+
 
 @lru_cache()
 def get_middleware():
@@ -135,6 +74,7 @@ def get_middleware():
             pass
 
     return middleware
+
 
 
 def refuse_further_implied_queues():
@@ -169,13 +109,15 @@ def import_all_submodules(name, exclude=()):
             continue
 
         try:
-            importlib.import_module('%s.%s' % (module_name, name))
+            importlib.import_module('{}.{}'.format(module_name, name))
         except ImportError:
             if module_has_submodule(app_module, name):
                 raise
 
+
 def load_all_tasks():
     import_all_submodules('tasks', app_settings.IGNORE_APPS)
+
 
 try:
     import setproctitle
@@ -183,9 +125,9 @@ try:
     original_title = setproctitle.getproctitle()
 
     def set_process_title(*titles):
-        setproctitle.setproctitle("%s %s" % (
+        setproctitle.setproctitle("{} {}".format(
             original_title,
-            ' '.join('[%s]' % x for x in titles),
+            ' '.join('[{}]'.format(x) for x in titles),
         ))
 except ImportError:
     def set_process_title(*titles):

@@ -50,7 +50,7 @@ def debug_run(request):
     try:
         logging.root.addHandler(handler)
         with transaction.atomic():
-            result = job.run()
+            result = job.run(queue='debug', worker_num=0)
             transaction.set_rollback(rollback=True)
     finally:
         logging.root.removeHandler(handler)

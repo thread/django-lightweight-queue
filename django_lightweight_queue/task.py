@@ -1,9 +1,9 @@
+from . import app_settings
 from .job import Job
 from .utils import get_backend, contribute_implied_queue_name
 
-from . import app_settings
 
-class task(object):
+class task:
     def __init__(self, queue='default', timeout=None, sigkill_on_stop=False, atomic=None):
         """
         Define a task to be run.
@@ -71,7 +71,8 @@ class task(object):
     def __call__(self, fn):
         return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop, self.atomic)
 
-class TaskWrapper(object):
+
+class TaskWrapper:
     def __init__(self, fn, queue, timeout, sigkill_on_stop, atomic):
         self.fn = fn
         self.queue = queue
@@ -79,10 +80,10 @@ class TaskWrapper(object):
         self.sigkill_on_stop = sigkill_on_stop
         self.atomic = atomic
 
-        self.path = '%s.%s' % (fn.__module__, fn.__name__)
+        self.path = '{}.{}'.format(fn.__module__, fn.__name__)
 
     def __repr__(self):
-        return "<TaskWrapper: %s>" % self.path
+        return "<TaskWrapper: {}>".format(self.path)
 
     def __call__(self, *args, **kwargs):
         # Allow us to override the default values dynamically

@@ -7,12 +7,12 @@ import logging
 import datetime
 import itertools
 
-from prometheus_client import start_http_server, Summary
+from prometheus_client import Summary, start_http_server
 
 from django.db import connections, transaction
 
 from . import app_settings
-from .utils import get_backend, set_process_title, configure_logging
+from .utils import get_logger, get_backend, set_process_title
 
 if app_settings.ENABLE_PROMETHEUS:
     job_duration = Summary(
@@ -21,52 +21,33 @@ if app_settings.ENABLE_PROMETHEUS:
         ['queue'],
     )
 
-class Worker(object):
-    def __init__(self, queue, prometheus_port, worker_num, log_level, log_filename, touch_filename):
+
+class Worker:
+    def __init__(self, queue, prometheus_port, worker_num, touch_filename):
         self.queue = queue
         self.prometheus_port = prometheus_port
         self.worker_num = worker_num
 
         self.running = True
 
-        self.log_level = log_level
-        self.log_filename = log_filename
         self.touch_filename = touch_filename
 
-        # Logfiles must be opened in child process
-        self.log = None
+        self.logger = get_logger('dlq.worker')
 
         # Defaults for values dynamically updated by the master process when
         # running a job
         self.kill_after = None
         self.sigkill_on_stop = False
 
-        super(Worker, self).__init__()
+        super().__init__()
 
         # Setup @property.setter on Process
-        self.name = '%s/%s' % (queue, worker_num)
+        self.name = '{}/{}'.format(queue, worker_num)
 
     def run(self):
-        self.log = logging.getLogger()
-        for x in self.log.handlers:
-            self.log.removeHandler(x)
-
-        configure_logging(
-            level=self.log_level,
-            format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
-                '%%(message)s' % self.name,
-            filename=self.log_filename,
-            extra={
-                'queue': self.queue,
-                'worker_num': '%s' % self.worker_num,
-            },
-        )
-
         if app_settings.ENABLE_PROMETHEUS and self.prometheus_port is not None:
-            self.log.info("Exporting metrics on port %d" % self.prometheus_port)
+            self.log(logging.INFO, "Exporting metrics on port {}".format(self.prometheus_port))
             start_http_server(self.prometheus_port)
-
-        self.log.debug("Starting")
 
         # Always reset the signal handling; we could have been restarted by the
         # master
@@ -75,20 +56,22 @@ class Worker(object):
 
         # Each worker gets it own backend
         backend = get_backend(self.queue)
-        self.log.info("Loaded backend %s", backend)
+        self.log(logging.DEBUG, "Loaded backend {}".format(backend))
 
         time_item_last_processed = datetime.datetime.utcnow()
+
+        self.log(logging.DEBUG, "Worker started")
 
         for item_count in itertools.count():
             if not self.running:
                 break
 
             if self.idle_time_reached(time_item_last_processed):
-                self.log.info("Exiting due to reaching idle time limit")
+                self.log(logging.INFO, "Exiting due to reaching idle time limit")
                 break
 
             if item_count > 1000:
-                self.log.info("Exiting due to reaching item limit")
+                self.log(logging.INFO, "Exiting due to reaching item limit")
                 break
 
             try:
@@ -107,7 +90,7 @@ class Worker(object):
             except KeyboardInterrupt:
                 sys.exit(1)
 
-        self.log.info("Exiting")
+        self.log(logging.DEBUG, "Exiting")
 
     def _handle_sigusr2(self, signum, frame):
         self.running = False
@@ -118,7 +101,8 @@ class Worker(object):
         return idle_time > datetime.timedelta(minutes=30)
 
     def process(self, backend):
-        self.log.debug("Checking backend for items")
+        self.log(logging.DEBUG, "Checking backend for items")
+
         self.set_process_title("Waiting for items")
 
         self.configure_cancellation(timeout=None, sigkill_on_stop=True)
@@ -133,10 +117,9 @@ class Worker(object):
             sigkill_on_stop=job.sigkill_on_stop,
         )
 
-        self.log.debug("Running job %s", job)
-        self.set_process_title("Running job %s" % job)
+        self.set_process_title("Running job {}".format(job))
 
-        if job.run() and self.touch_filename:
+        if job.run(queue=self.queue, worker_num=self.worker_num) and self.touch_filename:
             with open(self.touch_filename, 'a'):
                 os.utime(self.touch_filename, None)
 
@@ -167,12 +150,18 @@ class Worker(object):
             signal.signal(signal.SIGUSR2, self._handle_sigusr2)
 
         if timeout is not None:
-            # alarm(3) takes whole seconds
+            # alarm(3) takes whole seconds
             alarm_duration = int(math.ceil(timeout))
             signal.alarm(alarm_duration)
         else:
-            # Cancel any scheduled alarms
+            # Cancel any scheduled alarms
             signal.alarm(0)
 
     def set_process_title(self, *titles):
         set_process_title(self.name, *titles)
+
+    def log(self, level, message):
+        self.logger.log(level, message, extra={
+            'queue': self.queue,
+            'worker': self.worker_num,
+        })

@@ -1,0 +1,72 @@
+version: 2.1
+
+jobs:
+  build-test:
+    docker:
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+      - run:
+          name: Install Poetry
+          command: |
+            curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+      - restore_cache:
+          keys:
+            - deps-{{ checksum "poetry.lock" }}
+      - run:
+          name: Install Dependencies
+          command: |
+            source $HOME/.poetry/env
+            poetry install
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths: 
+            - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - run:
+          name: Run Tests
+          command: |
+            source $HOME/.poetry/env
+            poetry run ./runtests
+
+  deploy:
+    docker:
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+      - run:
+          name: Push to PyPI
+          command: |
+            curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+            source $HOME/.poetry/env
+            poetry publish \
+              --build \
+              --username "${PYPI_USERNAME}" \
+              --password "${PYPI_PASSWORD}" \
+              --no-interaction
+
+workflows:
+  version: 2.1
+
+  build-test:
+    jobs:
+      - build-test
+  
+  build-test-deploy:
+    jobs:
+      - build-test:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+
+      - deploy:
+          context: thread-pypi
+          requires:
+            - build-test
+          filters:
+              tags:
+                only: /v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/

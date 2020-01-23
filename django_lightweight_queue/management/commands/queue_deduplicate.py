@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
         if not hasattr(backend, 'deduplicate'):
             raise CommandError(
-                "Configured backend '%s.%s' doesn't support deduplication" % (
+                "Configured backend '{}.{}' doesn't support deduplication".format(
                     type(backend).__module__,
                     type(backend).__name__,
                 ),
@@ -28,13 +28,13 @@ class Command(BaseCommand):
 
         if original_size == new_size:
             self.stdout.write(
-                "No duplicate jobs detected (queue length remains %d)" % (
+                "No duplicate jobs detected (queue length remains {})".format(
                     original_size,
                 ),
             )
         else:
             self.stdout.write(
-                "Deduplication reduced the queue from %d jobs to %d job(s)" % (
+                "Deduplication reduced the queue from {} jobs to {} job(s)".format(
                     original_size,
                     new_size,
                 ),

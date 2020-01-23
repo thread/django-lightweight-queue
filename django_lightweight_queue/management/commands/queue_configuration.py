@@ -32,7 +32,7 @@ class Command(BaseCommand):
         print("")
         print("Middleware:")
         for x in app_settings.MIDDLEWARE:
-            print(" * %s" % x)
+            print(" * {}".format(x))
 
         print("")
         print("Cron configuration")
@@ -48,4 +48,4 @@ class Command(BaseCommand):
                 'timeout',
                 'sigkill_on_stop',
             ):
-                print("% 20s: %s" % (k, x.get(k, '-')))
+                print("{:20s}: {}".format(k, x.get(k, '-')))
