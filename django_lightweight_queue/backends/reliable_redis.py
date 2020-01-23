@@ -37,7 +37,7 @@ class ReliableRedisBackend(object):
         main_queue_key = self._key(queue)
 
         pattern = self._prefix_key(
-            'django_lightweight_queue:%s:processing:*' % queue,
+            'django_lightweight_queue:{}:processing:*'.format(queue),
         )
 
         processing_queue_keys = self.client.keys(pattern)
@@ -149,12 +149,12 @@ class ReliableRedisBackend(object):
         return original_size, self.client.llen(main_queue_key)
 
     def _key(self, queue):
-        key = 'django_lightweight_queue:%s' % queue
+        key = 'django_lightweight_queue:{}'.format(queue)
 
         return self._prefix_key(key)
 
     def _processing_key(self, queue, worker_number):
-        key = 'django_lightweight_queue:%s:processing:%s' % (
+        key = 'django_lightweight_queue:{}:processing:{}'.format(
             queue,
             worker_number,
         )
@@ -163,7 +163,7 @@ class ReliableRedisBackend(object):
 
     def _prefix_key(self, key):
         if app_settings.REDIS_PREFIX:
-            return '%s:%s' % (
+            return '{}:{}'.format(
                 app_settings.REDIS_PREFIX,
                 key,
             )

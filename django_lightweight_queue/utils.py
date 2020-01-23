@@ -23,7 +23,7 @@ def load_extra_config(file_path):
 
     def with_prefix(names):
         return set(
-            '%s%s' % (constants.SETTING_NAME_PREFIX, name)
+            '{}{}'.format(constants.SETTING_NAME_PREFIX, name)
             for name in names
         )
 
@@ -33,7 +33,7 @@ def load_extra_config(file_path):
     unexpected_names = extra_names - with_prefix(setting_names)
     if unexpected_names:
         unexpected_str = "' ,'".join(unexpected_names)
-        warnings.warn("Ignoring unexpected setting(s) '%s'." % (unexpected_str,))
+        warnings.warn("Ignoring unexpected setting(s) '{}'.".format(unexpected_str))
 
     override_names = extra_names - unexpected_names
     for name in override_names:
@@ -169,7 +169,7 @@ def import_all_submodules(name, exclude=()):
             continue
 
         try:
-            importlib.import_module('%s.%s' % (module_name, name))
+            importlib.import_module('{}.{}'.format(module_name, name))
         except ImportError:
             if module_has_submodule(app_module, name):
                 raise
@@ -183,9 +183,9 @@ try:
     original_title = setproctitle.getproctitle()
 
     def set_process_title(*titles):
-        setproctitle.setproctitle("%s %s" % (
+        setproctitle.setproctitle("{} {}".format(
             original_title,
-            ' '.join('[%s]' % x for x in titles),
+            ' '.join('[{}]'.format(x) for x in titles),
         ))
 except ImportError:
     def set_process_title(*titles):

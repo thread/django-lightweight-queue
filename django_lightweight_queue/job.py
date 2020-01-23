@@ -22,7 +22,7 @@ class Job(object):
         self._json = None
 
     def __repr__(self):
-        return "<Job: %s(*%r, **%r) @ %s>" % (
+        return "<Job: {}(*{!r}, **{!r}) @ {}>".format(
             self.path,
             self.args,
             self.kwargs,

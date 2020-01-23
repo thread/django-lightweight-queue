@@ -79,10 +79,10 @@ class TaskWrapper(object):
         self.sigkill_on_stop = sigkill_on_stop
         self.atomic = atomic
 
-        self.path = '%s.%s' % (fn.__module__, fn.__name__)
+        self.path = '{}.{}'.format(fn.__module__, fn.__name__)
 
     def __repr__(self):
-        return "<TaskWrapper: %s>" % self.path
+        return "<TaskWrapper: {}>".format(self.path)
 
     def __call__(self, *args, **kwargs):
         # Allow us to override the default values dynamically

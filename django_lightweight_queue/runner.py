@@ -101,7 +101,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     ])
 
                 worker = subprocess.Popen(args)
-                worker.name = "%s/%s" % (queue, worker_num)
+                worker.name = "{}/{}".format(queue, worker_num)
 
                 workers[(queue, worker_num)] = worker
 

@@ -22,7 +22,7 @@ def get_config_response(worker_queue_and_counts):
     return [
         {
             "targets": [
-                "%s:%d" % (
+                "{}:{}".format(
                     gethostname(),
                     app_settings.PROMETHEUS_START_PORT + index,
                 ),

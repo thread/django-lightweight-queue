@@ -96,13 +96,14 @@ def get_cron_config():
             return
         t_parts = [int(x) for x in parts]
         for num in t_parts:
-            assert num >= minval and num <= maxval, \
-                "Invalid time specified in cron config. " \
-                "Specified: %s, minval: %s, maxval: %s" % (
+            assert num >= minval and num <= maxval, (
+                "Invalid time specified in cron config. "
+                "Specified: {}, minval: {}, maxval: {}".format(
                     num,
                     minval,
                     maxval,
                 )
+            )
         return lambda x: x in t_parts
 
     for app_config in apps.get_app_configs():

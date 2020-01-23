@@ -37,9 +37,9 @@ class RedisBackend(object):
 
     def _key(self, queue):
         if app_settings.REDIS_PREFIX:
-            return '%s:django_lightweight_queue:%s' % (
+            return '{}:django_lightweight_queue:{}'.format(
                 app_settings.REDIS_PREFIX,
                 queue,
             )
 
-        return 'django_lightweight_queue:%s' % queue
+        return 'django_lightweight_queue:{}'.format(queue)

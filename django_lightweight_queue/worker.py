@@ -44,7 +44,7 @@ class Worker(object):
         super(Worker, self).__init__()
 
         # Setup @property.setter on Process
-        self.name = '%s/%s' % (queue, worker_num)
+        self.name = '{}/{}'.format(queue, worker_num)
 
     def run(self):
         self.log = logging.getLogger()
