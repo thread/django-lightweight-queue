@@ -6,6 +6,10 @@ jobs:
       - image: circleci/python:3.5.5
     steps:
       - checkout
+      - run:
+          name: Install Poetry
+          command: |
+            curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
       - restore_cache:
           keys:
             - deps-{{ checksum "poetry.lock" }}
