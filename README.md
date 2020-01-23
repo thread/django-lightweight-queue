@@ -63,7 +63,7 @@ will result in the runner to use the settings from the specified configuration
 file in preference to settings from the Django environment. Any settings not
 present in the specified file are inherited from the global configuration.
 
-### Backends
+## Backends
 
 There are four built-in backends:
 
@@ -101,7 +101,7 @@ When using `--exact-configuration` the number of workers is configured exactly,
 rather than being treated as the configuration for a pool. Additionally,
 exactly-configured runners will _not_ run any cron workers.
 
-### Example
+#### Example
 
 Given a Django configuration containing:
 
