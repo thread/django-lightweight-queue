@@ -13,6 +13,7 @@ redis = "^3.3.11"
 prometheus-client = "^0.7.1"
 
 [tool.poetry.dev-dependencies]
+fakeredis = "^1.1.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
