@@ -4,7 +4,6 @@ jobs:
   build-test:
     docker:
       - image: circleci/python:3.5.5
-
     steps:
       - checkout
       - restore_cache:
@@ -26,17 +25,17 @@ jobs:
 
   deploy:
     docker:
-        - image: circleci/python:3.5.5
-      steps:
-        - checkout
-        - run:
-            name: Push to PyPI
-            command: |
-              poetry publish \
-                --build \
-                --username "${PYPI_USERNAME}" \
-                --password "${PYPI_PASSWORD}" \
-                --no-interaction
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+      - run:
+          name: Push to PyPI
+          command: |
+            poetry publish \
+              --build \
+              --username "${PYPI_USERNAME}" \
+              --password "${PYPI_PASSWORD}" \
+              --no-interaction
 
 workflows:
   version: 2.1
