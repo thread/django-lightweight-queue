@@ -2,9 +2,11 @@ from django.conf import settings
 
 from . import constants
 
+
 def setting(suffix, default):
     attr_name = '{}{}'.format(constants.SETTING_NAME_PREFIX, suffix)
     return getattr(settings, attr_name, default)
+
 
 WORKERS = setting('WORKERS', {})
 BACKEND = setting('BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')

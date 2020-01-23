@@ -1,12 +1,7 @@
 import json
 import threading
-
 from socket import gethostname
-
-try:
-    from http.server import HTTPServer
-except ImportError:
-    from BaseHTTPServer import HTTPServer
+from http.server import HTTPServer
 
 from prometheus_client.exposition import MetricsHandler
 
@@ -30,7 +25,7 @@ def get_config_response(worker_queue_and_counts):
             "labels": {
                 "django_lightweight_queue_worker_queue": queue,
                 "django_lightweight_queue_worker_num": str(worker_num),
-            }
+            },
         }
         for index, (queue, worker_num) in enumerate(worker_queue_and_counts, start=1)
     ]

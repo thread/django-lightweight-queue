@@ -127,7 +127,7 @@ def get_cron_config():
         for row in mod.CONFIG:
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
             row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
-            row['day_matcher'] = get_matcher(1,  7, row.get('days', '*'))
+            row['day_matcher'] = get_matcher(1, 7, row.get('days', '*'))
             row['queue'] = row.get('queue', 'cron')
             row['timeout'] = row.get('timeout', None)
             row['sigkill_on_stop'] = row.get('sigkill_on_stop', False)

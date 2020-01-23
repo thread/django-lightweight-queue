@@ -5,7 +5,7 @@ from .utils import get_queue_counts
 from .cron_scheduler import CRON_QUEUE_NAME
 
 
-class Machine(object):
+class Machine:
     """
     Dummy machine class to contain documentation.
 
@@ -72,7 +72,7 @@ class PooledMachine(Machine):
                 continue
 
             for worker_num in range(1, num_workers + 1):
-                if (job_number % self.machine_count) + 1 == self.machine_number:
+                if (job_number % self.machine_count) + 1 == self.machine_number: # noqa: S001
                     worker_names.append((queue, worker_num))
 
                 job_number += 1

@@ -167,11 +167,11 @@ class Worker(object):
             signal.signal(signal.SIGUSR2, self._handle_sigusr2)
 
         if timeout is not None:
-            # alarm(3) takes whole seconds
+            # alarm(3) takes whole seconds
             alarm_duration = int(math.ceil(timeout))
             signal.alarm(alarm_duration)
         else:
-            # Cancel any scheduled alarms
+            # Cancel any scheduled alarms
             signal.alarm(0)
 
     def set_process_title(self, *titles):

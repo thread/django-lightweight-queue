@@ -1,5 +1,3 @@
-from __future__ import absolute_import # For 'redis'
-
 import redis
 
 from ..job import Job
@@ -9,6 +7,7 @@ class RedisBackend(object):
     """
     This backend has at-most-once semantics.
     """
+
     def __init__(self):
         self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,

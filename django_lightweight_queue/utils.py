@@ -117,6 +117,7 @@ def get_path(path):
 
     return getattr(module, attr)
 
+
 @lru_cache()
 def get_backend(queue):
     return get_path(app_settings.BACKEND_OVERRIDES.get(
@@ -135,6 +136,7 @@ def get_middleware():
             pass
 
     return middleware
+
 
 
 def refuse_further_implied_queues():
@@ -174,8 +176,10 @@ def import_all_submodules(name, exclude=()):
             if module_has_submodule(app_module, name):
                 raise
 
+
 def load_all_tasks():
     import_all_submodules('tasks', app_settings.IGNORE_APPS)
+
 
 try:
     import setproctitle

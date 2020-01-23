@@ -1,5 +1,3 @@
-from __future__ import absolute_import # For 'redis'
-
 import redis
 
 from ..job import Job
