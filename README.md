@@ -1,6 +1,7 @@
 # Django Lightweight Queue
 
-DLQ is a lightweight & modular queue and cron system for Django.
+DLQ is a lightweight & modular queue and cron system for Django. It powers
+millions of production jobs every day at Thread.
 
 ## Installation
 
@@ -156,3 +157,9 @@ CONFIG = (
     },
 )
 ```
+
+## Maintainers
+
+This repository was created by [Chris Lamb][https://github.com/lamby] at
+[Thread][https://www.thread.com/], and continues to be maintained by the [Thread
+engineering team][https://github.com/thread].
