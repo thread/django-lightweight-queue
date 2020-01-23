@@ -53,14 +53,19 @@ class Job:
     def created_time_str(self):
         return self.created_time.strftime(TIME_FORMAT)
 
-    def run(self):
+    def run(self, *, queue, worker_num):
+        """
+        `queue` and `worker_num` arguments are required for context only and do
+        not change the behaviour of job execution.
+        """
+
         start = time.time()
 
         middleware = get_middleware()
 
         for instance in middleware:
             if hasattr(instance, 'process_job'):
-                instance.process_job(self)
+                instance.process_job(self, queue, worker_num)
 
         try:
             task = self.get_task_instance()

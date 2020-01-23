@@ -1,9 +1,11 @@
 import redis
 
-from ..job import Job
 from .. import app_settings
+from ..job import Job
+from .base import BaseBackend
 
-class ReliableRedisBackend(object):
+
+class ReliableRedisBackend(BaseBackend):
     """
     This backend manages a per-queue-per-worker 'processing' queue. E.g. if we
     had a queue called 'django_lightweight_queue:things', and two workers, we

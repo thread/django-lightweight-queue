@@ -136,7 +136,7 @@ class Worker(object):
         self.log.debug("Running job %s", job)
         self.set_process_title("Running job %s" % job)
 
-        if job.run() and self.touch_filename:
+        if job.run(queue=self.queue, worker_num=self.worker_num) and self.touch_filename:
             with open(self.touch_filename, 'a'):
                 os.utime(self.touch_filename, None)
 

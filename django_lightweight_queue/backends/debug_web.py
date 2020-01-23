@@ -3,8 +3,10 @@ import urllib
 from django.conf import settings
 from django.shortcuts import reverse
 
+from .base import BaseBackend
 
-class DebugWebBackend(object):
+
+class DebugWebBackend(BaseBackend):
     """
     This backend aids debugging in concert with the 'debug-run' view.
 
@@ -14,8 +16,6 @@ class DebugWebBackend(object):
 
     See the docstring of that view for information (and limitations) about it.
     """
-    def startup(self, queue):
-        pass
 
     def enqueue(self, job, queue):
         path = reverse('django-lightweight-queue:debug-run')
@@ -28,6 +28,3 @@ class DebugWebBackend(object):
 
     def length(self, queue):
         return 0
-
-    def processed_job(self, queue, worker_num, job):
-        pass
