@@ -16,6 +16,7 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
+            source $HOME/.poetry/env
             poetry install
       - save_cache:
           key: deps-{{ checksum "poetry.lock" }}
@@ -25,6 +26,7 @@ jobs:
       - run:
           name: Run Tests
           command: |
+            source $HOME/.poetry/env
             poetry run ./runtests
 
   deploy:
@@ -35,6 +37,8 @@ jobs:
       - run:
           name: Push to PyPI
           command: |
+            curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+            source $HOME/.poetry/env
             poetry publish \
               --build \
               --username "${PYPI_USERNAME}" \
