@@ -1,19 +1,19 @@
-import os
 import sys
 import time
 import signal
-import logging
 import subprocess
 
-
 from . import app_settings
-from .utils import set_process_title, get_backend
+from .utils import get_backend, set_process_title
 from .exposition import metrics_http_server
-from .cron_scheduler import CronScheduler, CRON_QUEUE_NAME, get_cron_config, \
-    ensure_queue_workers_for_config
+from .cron_scheduler import (
+    CronScheduler,
+    get_cron_config,
+    ensure_queue_workers_for_config,
+)
 
 
-def runner(log, log_filename_fn, touch_filename_fn, machine):
+def runner(touch_filename_fn, machine, logger):
     set_process_title("Master process")
 
     if machine.configure_cron:
@@ -30,7 +30,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # (including the implicit cron ones) have been configured.
     queues_to_startup = set(queue for queue, _ in machine.worker_names)
     for queue in queues_to_startup:
-        log.info("Running startup for queue %s", queue)
+        logger.debug("Running startup for queue {}".format(queue))
         backend = get_backend(queue)
         backend.startup(queue)
 
@@ -39,17 +39,13 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     # (which could take a long time) are naturally interupted by the signal.
     def handle_term(signum, stack):
         nonlocal running
-        log.info("Caught TERM signal")
+        logger.debug("Caught TERM signal")
         set_process_title("Master process exiting")
         running = False
     signal.signal(signal.SIGTERM, handle_term)
 
     if machine.run_cron:
-        cron_scheduler = CronScheduler(
-            log.level,
-            log_filename_fn(CRON_QUEUE_NAME),
-            cron_config,
-        )
+        cron_scheduler = CronScheduler(cron_config)
         cron_scheduler.start()
 
     workers = {x: None for x in machine.worker_names}
@@ -65,12 +61,24 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
             # Ensure that all workers are now running (idempotent)
             if worker is None or worker.poll() is not None:
                 if worker is None:
-                    log.info("Starting worker #%d for %s", worker_num, queue)
+                    logger.info(
+                        "Starting worker #{} for {}".format(worker_num, queue),
+                        extra={
+                            'worker': worker_num,
+                            'queue': queue,
+                        },
+                    )
                 else:
-                    log.info(
-                        "Starting missing worker %s (exit code was: %s)",
-                        worker.name,
-                        worker.returncode,
+                    logger.info(
+                        "Starting missing worker {} (exit code was: {})".format(
+                            worker.name,
+                            worker.returncode,
+                        ),
+                        extra={
+                            'worker': worker_num,
+                            'queue': queue,
+                            'exit_code': worker.returncode,
+                        },
                     )
 
                 args = [
@@ -82,16 +90,7 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
                     str(worker_num),
                     '--prometheus-port',
                     str(app_settings.PROMETHEUS_START_PORT + index),
-                    '--log-level',
-                    logging._levelToName[log.level].lower(),
                 ]
-
-                log_filename = log_filename_fn('%s.%s' % (queue, worker_num))
-                if log_filename is not None:
-                    args.extend([
-                        '--log-file',
-                        log_filename,
-                    ])
 
                 touch_filename = touch_filename_fn(queue)
                 if touch_filename is not None:
@@ -125,7 +124,8 @@ def runner(log, log_filename_fn, touch_filename_fn, machine):
     for worker in workers.values():
         if worker is None:
             continue
-        log.info("Waiting for %s to terminate", worker.name)
+
+        logger.info("Waiting for {} to terminate".format(worker.name))
         worker.wait()
 
-    log.info("All processes finished; returning")
+    logger.info("All processes finished")

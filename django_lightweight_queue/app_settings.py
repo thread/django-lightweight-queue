@@ -11,6 +11,8 @@ def setting(suffix, default):
 WORKERS = setting('WORKERS', {})
 BACKEND = setting('BACKEND', 'django_lightweight_queue.backends.synchronous.SynchronousBackend')
 
+LOGGER_FACTORY = setting('LOGGER_FACTORY', 'logging.getLogger')
+
 # Allow per-queue overrides of the backend.
 BACKEND_OVERRIDES = setting('BACKEND_OVERRIDES', {})
 
@@ -34,9 +36,5 @@ REDIS_PREFIX = setting('REDIS_PREFIX', '')
 ENABLE_PROMETHEUS = setting('ENABLE_PROMETHEUS', False)
 # Workers will export metrics on this port, and ports following it
 PROMETHEUS_START_PORT = setting('PROMETHEUS_START_PORT', 9300)
-
-ENABLE_FLUENT_LOGGING = setting('ENABLE_FLUENT_LOGGING', False)
-FLUENT_HOST = setting('FLUENT_HOST', '127.0.0.1')
-FLUENT_PORT = setting('FLUENT_PORT', 24224)
 
 ATOMIC_JOBS = setting('ATOMIC_JOBS', True)

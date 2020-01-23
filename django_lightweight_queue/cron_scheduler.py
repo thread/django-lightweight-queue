@@ -1,7 +1,6 @@
 import re
 import imp
 import time
-import logging
 import datetime
 import threading
 
@@ -9,42 +8,25 @@ from django.apps import apps
 from django.core.management import call_command
 
 from .task import task
-from .utils import get_backend, configure_logging, \
-    contribute_implied_queue_name
+from .utils import get_logger, get_backend, contribute_implied_queue_name
 
 CRON_QUEUE_NAME = 'cron_scheduler'
 
 
 class CronScheduler(threading.Thread):
-    def __init__(self, log_level, log_filename, config):
-        self.log_level = log_level
-        self.log_filename = log_filename
+    def __init__(self, config):
         self.config = config
-
-        # Logfiles must be opened in child process
-        self.log = None
-
+        self.logger = get_logger('dlq.cron')
         super(CronScheduler, self).__init__(daemon=True)
 
     def run(self):
-        self.log = logging.getLogger()
-        for x in self.log.handlers:
-            self.log.removeHandler(x)
-
-        configure_logging(
-            level=self.log_level,
-            format='%%(asctime)-15s %%(process)d %s %%(levelname).1s: '
-                '%%(message)s' % (CRON_QUEUE_NAME,),
-            filename=self.log_filename,
-            extra={
-                'queue': CRON_QUEUE_NAME,
-            },
-        )
-
-        self.log.debug("Starting")
+        self.logger.debug("Starting cron thread")
 
         backend = get_backend(CRON_QUEUE_NAME)
-        self.log.info("Loaded backend %s", backend)
+        self.logger.info(
+            "Loaded backend {}".format(backend),
+            extra={'backend': backend},
+        )
 
         while True:
             # This will run until the process terminates.
@@ -55,7 +37,10 @@ class CronScheduler(threading.Thread):
             time.sleep((1 - time.time() % 1))
 
     def tick(self, backend):
-        self.log.debug("tick()")
+        self.logger.debug(
+            "Cron thread checking for work",
+            extra={'backend': backend},
+        )
 
         t = datetime.datetime.utcnow()
 
@@ -71,7 +56,13 @@ class CronScheduler(threading.Thread):
             ):
                 continue
 
-            self.log.info("Enqueueing %s", row['command'])
+            self.logger.debug(
+                "Enqueueing {}".format(row['command']),
+                extra={
+                    'target_queue': row['queue'],
+                    'command': row['command'],
+                },
+            )
 
             execute(
                 row['command'],
@@ -82,7 +73,13 @@ class CronScheduler(threading.Thread):
                 **row.get('command_kwargs', {})
             )
 
-            self.log.debug("Enqueued %s", row)
+            self.logger.info(
+                "Enqueued {}".format(row['command']),
+                extra={
+                    'target_queue': row['queue'],
+                    'command': row['command'],
+                },
+            )
 
 
 def get_cron_config():

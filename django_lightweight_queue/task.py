@@ -1,7 +1,7 @@
+from . import app_settings
 from .job import Job
 from .utils import get_backend, contribute_implied_queue_name
 
-from . import app_settings
 
 class task:
     def __init__(self, queue='default', timeout=None, sigkill_on_stop=False, atomic=None):

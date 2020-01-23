@@ -1,43 +1,19 @@
-import json
 import logging
-import traceback
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-class LoggingMiddleware(object):
-    def process_job(self, job):
-        log.info("Running job %s", job)
 
-        self.fluent_log(job, state='processing')
+class LoggingMiddleware:
+    def process_job(self, job, queue, worker_num):
+        logger.info("Running job {}".format(job))
 
     def process_result(self, job, result, duration):
-        log.info("Finished job => %r (Time taken: %.2fs)",
+        logger.info("Finished job => {!r} (Time taken: {:.2f}s)".format(
             result,
             duration,
-        )
-
-        self.fluent_log(job, state='finished', duration=duration)
+        ))
 
     def process_exception(self, job, duration, *exc_info):
-        exception = ''.join(traceback.format_exception(*exc_info))
-
-        log.error("Exception when processing job (duration: %.2fs): %s",
+        logger.exception("Exception when processing job (duration: {:.2f}s)".format(
             duration,
-            exception,
-        )
-
-        self.fluent_log(
-            job,
-            state='exception',
-            duration=duration,
-            exception=exception,
-        )
-
-    def fluent_log(self, job, **kwargs):
-        data = job.as_dict()
-
-        data.update(kwargs)
-
-        data['fluent_log'] = True
-
-        log.info(json.dumps(data))
+        ))
