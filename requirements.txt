@@ -1,5 +1,0 @@
-Django>=1.11.27,<3.0
-daemonize
-redis
-prometheus-client
-fluent-logger>=0.4.6
