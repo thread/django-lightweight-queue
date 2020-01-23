@@ -6,11 +6,14 @@ authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = ">=3.5"
 django = ">=1.11.27,<3.0"
-daemonize = "^2.5.0"
-redis = "^3.3.11"
-prometheus-client = "^0.7.1"
+daemonize = "~=2.5.0"
+prometheus-client = "~=0.7"
+redis = {version = "~=3.*", optional = true}
+
+[tool.poetry.extras]
+redis = ["redis"]
 
 [tool.poetry.dev-dependencies]
 fakeredis = "^1.1.0"

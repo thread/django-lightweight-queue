@@ -92,9 +92,12 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 version = "0.3.0"
 
+[extras]
+redis = ["redis"]
+
 [metadata]
-content-hash = "62f9debb5a5d03af9057e75aba368840aeea5d89c39605c8ce7ffa09f893b189"
-python-versions = "^3.5"
+content-hash = "d36d98f757bf99d0a953e219032bf22ca498aa5e9a9aae1f1a99621f4906660f"
+python-versions = ">=3.5"
 
 [metadata.files]
 daemonize = [
