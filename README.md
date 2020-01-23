@@ -160,6 +160,6 @@ CONFIG = (
 
 ## Maintainers
 
-This repository was created by [Chris Lamb][https://github.com/lamby] at
-[Thread][https://www.thread.com/], and continues to be maintained by the [Thread
-engineering team][https://github.com/thread].
+This repository was created by [Chris Lamb](https://github.com/lamby) at
+[Thread](https://www.thread.com/), and continues to be maintained by the [Thread
+engineering team](https://github.com/thread).
