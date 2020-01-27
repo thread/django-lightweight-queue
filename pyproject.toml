@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "django-lightweight-queue"
-version = "3.0.0"
+version = "3.0.1"
 description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.5"
