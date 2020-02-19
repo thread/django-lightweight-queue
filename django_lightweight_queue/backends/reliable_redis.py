@@ -65,7 +65,7 @@ class ReliableRedisBackend(BaseBackend):
         # retry.
         self.client.transaction(
             move_processing_jobs_to_main,
-            processing_queue_keys,
+            *processing_queue_keys,
         )
 
     def enqueue(self, job, queue):
