@@ -9,7 +9,7 @@ class RedisCleanupMixin(object):
     def tearDown(self):
         root = '*'
         if self.prefix is not None:
-            root = '%s*' % (self.prefix,)
+            root = '{}*'.format(self.prefix)
 
         keys = self.client.keys(root)
         for key in keys:
