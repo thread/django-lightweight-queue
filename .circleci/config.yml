@@ -21,6 +21,17 @@ references:
       key: deps-py<< parameters.version >>-{{ checksum "poetry.lock" }}
       paths:
         - /home/circleci/.cache/pypoetry/virtualenvs
+  parametrised-python-executor: &parametrised-python-executor
+    parameters:
+      version:
+        type: string
+    executor:
+      name: python
+      version: << parameters.version >>
+  python-version-matrix: &python-version-matrix
+    matrix:
+      parameters:
+        version: ["3.5.5"]
 
 executors:
   python:
@@ -32,9 +43,7 @@ executors:
 
 jobs:
   build-test:
-    executor:
-      name: python
-      version: "3.5.5"
+    <<: *parametrised-python-executor
 
     steps:
       - checkout
@@ -51,9 +60,7 @@ jobs:
             poetry run ./runtests
 
   lint:
-    executor:
-      name: python
-      version: "3.5.5"
+    <<: *parametrised-python-executor
 
     steps:
       - checkout
@@ -91,13 +98,16 @@ workflows:
 
   build-test:
     jobs:
-      - build-test
-      - lint
+      - build-test:
+          <<: *python-version-matrix
+      - lint:
+          <<: *python-version-matrix
 
 
   build-test-deploy:
     jobs:
       - build-test:
+          <<: *python-version-matrix
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
@@ -105,6 +115,7 @@ workflows:
               ignore: /.*/
 
       - lint:
+          <<: *python-version-matrix
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
