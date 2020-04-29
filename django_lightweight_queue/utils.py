@@ -94,7 +94,7 @@ def contribute_implied_queue_name(queue):
 
 
 def get_queue_counts():
-    # type: (None) -> Mapping[str, int]
+    # type: () -> Mapping[str, int]
     refuse_further_implied_queues()
     return app_settings.WORKERS
 
