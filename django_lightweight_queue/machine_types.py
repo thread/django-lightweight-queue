@@ -1,6 +1,5 @@
 from django.utils.functional import cached_property
 
-from . import app_settings
 from .utils import get_queue_counts
 from .cron_scheduler import CRON_QUEUE_NAME
 
