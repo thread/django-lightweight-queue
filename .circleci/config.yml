@@ -57,6 +57,23 @@ jobs:
             source $HOME/.poetry/env
             poetry run flake8
 
+  type-check:
+    docker:
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+
+      - *install-poetry
+      - *restore-dependencies-cache
+      - *install-dependencies
+      - *save-dependencies-cache
+
+      - run:
+          name: Run Mypy
+          command: |
+            source $HOME/.poetry/env
+            poetry run ./script/type-check
+
   deploy:
     docker:
       - image: circleci/python:3.5.5

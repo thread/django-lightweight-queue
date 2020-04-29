@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# This file exists in order to provide the paths which should be checked
+
+exec mypy django_lightweight_queue tests "$@"
