@@ -31,7 +31,7 @@ references:
   python-version-matrix: &python-version-matrix
     matrix:
       parameters:
-        version: ["3.5.5"]
+        version: ["3.5.5", "3.6", "3.7", "3.8"]
 
 executors:
   python:
