@@ -1,6 +1,6 @@
 class RedisCleanupMixin(object):
     client = None
-    prefix = None
+    prefix = NotImplemented  # type: str
 
     def setUp(self):
         super(RedisCleanupMixin, self).setUp()
