@@ -16,7 +16,15 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
     longMessage = True
     prefix = settings.LIGHTWEIGHT_QUEUE_REDIS_PREFIX
 
-    def create_job(self, path='path', args=('args',), kwargs=None, timeout=None, sigkill_on_stop=False, created_time=None):
+    def create_job(
+        self,
+        path='path',
+        args=('args',),
+        kwargs=None,
+        timeout=None,
+        sigkill_on_stop=False,
+        created_time=None,
+    ):
         if created_time is None:
             created_time = self.start_time
 

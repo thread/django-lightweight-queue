@@ -76,7 +76,6 @@ def get_middleware():
     return middleware
 
 
-
 def refuse_further_implied_queues():
     # type: () -> None
     global _accepting_implied_queues

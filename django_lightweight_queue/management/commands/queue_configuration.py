@@ -7,8 +7,12 @@ from ...cron_scheduler import get_cron_config
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--config', action='store', default=None,
-            help="The path to an additional django-style config file to load")
+        parser.add_argument(
+            '--config',
+            action='store',
+            default=None,
+            help="The path to an additional django-style config file to load",
+        )
 
     def handle(self, **options):
         # Configuration overrides

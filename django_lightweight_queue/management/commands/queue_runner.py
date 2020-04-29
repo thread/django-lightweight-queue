@@ -10,22 +10,53 @@ from ...machine_types import PooledMachine, DirectlyConfiguredMachine
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--pidfile', action='store', dest='pidfile', default=None,
-            help="Fork and write pidfile to this file.")
-        parser.add_argument('--touchfile', action='store', dest='touchfile', default=None,
-            help="touch(1) the specified file after running a job.")
-        parser.add_argument('--machine', action='store', dest='machine_number', default=None,
-            help="Machine number, for parallelism")
-        parser.add_argument('--of', action='store', dest='machine_count', default=None,
-            help="Total number of machines running the queues")
-        parser.add_argument('--only-queue', action='store', default=None,
-            help="Only run the given queue, useful for local debugging")
-        parser.add_argument('--config', action='store', default=None,
-            help="The path to an additional django-style config file to load")
-        parser.add_argument('--exact-configuration', action='store_true',
+        parser.add_argument(
+            '--pidfile',
+            action='store',
+            dest='pidfile',
+            default=None,
+            help="Fork and write pidfile to this file.",
+        )
+        parser.add_argument(
+            '--touchfile',
+            action='store',
+            dest='touchfile',
+            default=None,
+            help="touch(1) the specified file after running a job.",
+        )
+        parser.add_argument(
+            '--machine',
+            action='store',
+            dest='machine_number',
+            default=None,
+            help="Machine number, for parallelism",
+        )
+        parser.add_argument(
+            '--of',
+            action='store',
+            dest='machine_count',
+            default=None,
+            help="Total number of machines running the queues",
+        )
+        parser.add_argument(
+            '--only-queue',
+            action='store',
+            default=None,
+            help="Only run the given queue, useful for local debugging",
+        )
+        parser.add_argument(
+            '--config',
+            action='store',
+            default=None,
+            help="The path to an additional django-style config file to load",
+        )
+        parser.add_argument(
+            '--exact-configuration',
+            action='store_true',
             help="Run queues on this machine exactly as specified. Requires the"
                  " use of the '--config' option in addition. It is an error to"
-                 " use this option together with either '--machine' or '--of'.")
+                 " use this option together with either '--machine' or '--of'.",
+        )
 
     def validate_and_normalise(self, options):
         if options['exact_configuration']:

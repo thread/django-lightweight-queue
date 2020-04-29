@@ -7,7 +7,15 @@ from django_lightweight_queue.job import Job
 class JobTests(unittest.TestCase):
     longMessage = True
 
-    def create_job(self, path='path', args=('args',), kwargs=None, timeout=None, sigkill_on_stop=False, created_time=None):
+    def create_job(
+        self,
+        path='path',
+        args=('args',),
+        kwargs=None,
+        timeout=None,
+        sigkill_on_stop=False,
+        created_time=None,
+    ):
         if created_time is None:
             created_time = self.start_time
 
