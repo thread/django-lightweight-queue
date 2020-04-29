@@ -9,7 +9,7 @@ references:
   restore-dependencies-cache: &restore-dependencies-cache
     restore_cache:
       keys:
-        - deps-{{ checksum "poetry.lock" }}
+        - deps-py<< parameters.version >>-{{ checksum "poetry.lock" }}
   install-dependencies: &install-dependencies
     run:
       name: Install Dependencies
@@ -18,14 +18,24 @@ references:
         poetry install
   save-dependencies-cache: &save-dependencies-cache
     save_cache:
-      key: deps-{{ checksum "poetry.lock" }}
+      key: deps-py<< parameters.version >>-{{ checksum "poetry.lock" }}
       paths:
         - /home/circleci/.cache/pypoetry/virtualenvs
 
+executors:
+  python:
+    parameters:
+      version:
+        type: string
+    docker:
+      - image: circleci/python:<< parameters.version >>
+
 jobs:
   build-test:
-    docker:
-      - image: circleci/python:3.5.5
+    executor:
+      name: python
+      version: "3.5.5"
+
     steps:
       - checkout
 
@@ -41,8 +51,10 @@ jobs:
             poetry run ./runtests
 
   lint:
-    docker:
-      - image: circleci/python:3.5.5
+    executor:
+      name: python
+      version: "3.5.5"
+
     steps:
       - checkout
 
@@ -58,8 +70,9 @@ jobs:
             poetry run flake8
 
   deploy:
-    docker:
-      - image: circleci/python:3.5.5
+    executor:
+      name: python
+      version: "3.5.5"
     steps:
       - checkout
       - run:
@@ -80,6 +93,7 @@ workflows:
     jobs:
       - build-test
       - lint
+
 
   build-test-deploy:
     jobs:
