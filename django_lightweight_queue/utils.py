@@ -1,6 +1,7 @@
 import imp
 import warnings
 import importlib
+from typing import Mapping
 from functools import lru_cache
 
 from django.apps import apps
