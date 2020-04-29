@@ -70,7 +70,7 @@ class CronScheduler(threading.Thread):
                 django_lightweight_queue_timeout=row['timeout'],
                 django_lightweight_queue_sigkill_on_stop=row['sigkill_on_stop'],
                 *row.get('command_args', []),
-                **row.get('command_kwargs', {})
+                **row.get('command_kwargs', {}),
             )
 
             self.logger.info(

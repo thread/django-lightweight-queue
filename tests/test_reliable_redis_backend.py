@@ -76,7 +76,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         self.assertEqual(
             1,
             self.backend.length(QUEUE),
-            "Should still be a single entry in the queue"
+            "Should still be a single entry in the queue",
         )
 
     def test_unique_entries_in_queue(self):
@@ -101,7 +101,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         self.assertEqual(
             2,
             self.backend.length(QUEUE),
-            "Should still be a single entry in the queue"
+            "Should still be a single entry in the queue",
         )
 
     def test_duplicate_entries_in_queue(self):
@@ -126,7 +126,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         self.assertEqual(
             1,
             self.backend.length(QUEUE),
-            "Should still be a single entry in the queue"
+            "Should still be a single entry in the queue",
         )
 
     def test_preserves_order_with_fixed_timestamps(self):
@@ -156,7 +156,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         self.assertEqual(
             3,
             self.backend.length(QUEUE),
-            "Wrong number of jobs remaining in queue"
+            "Wrong number of jobs remaining in queue",
         )
 
         job = self.backend.dequeue(QUEUE, WORKER_NUMBER, timeout=1)
@@ -222,7 +222,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         self.assertEqual(
             3,
             self.backend.length(QUEUE),
-            "Wrong number of jobs remaining in queue"
+            "Wrong number of jobs remaining in queue",
         )
 
         job = self.backend.dequeue(QUEUE, WORKER_NUMBER, timeout=1)
