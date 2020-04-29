@@ -40,6 +40,23 @@ jobs:
             source $HOME/.poetry/env
             poetry run ./runtests
 
+  lint:
+    docker:
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+
+      - *install-poetry
+      - *restore-dependencies-cache
+      - *install-dependencies
+      - *save-dependencies-cache
+
+      - run:
+          name: Run Flake8
+          command: |
+            source $HOME/.poetry/env
+            poetry run flake8
+
   deploy:
     docker:
       - image: circleci/python:3.5.5
@@ -62,10 +79,18 @@ workflows:
   build-test:
     jobs:
       - build-test
-  
+      - lint
+
   build-test-deploy:
     jobs:
       - build-test:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+
+      - lint:
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
@@ -76,6 +101,7 @@ workflows:
           context: thread-pypi
           requires:
             - build-test
+            - lint
           filters:
               tags:
                 only: /v[0-9]+(\.[0-9]+)*/
