@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 from ..job import Job
-from ..types import QueueName
+from ..types import QueueName, WorkerNumber
 
 
 class BaseBackend(metaclass=ABCMeta):
@@ -14,12 +14,12 @@ class BaseBackend(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def dequeue(self, queue: QueueName, worker_num: int, timeout: float) -> Optional[Job]:
+    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: float) -> Optional[Job]:
         raise NotImplementedError()
 
     @abstractmethod
     def length(self, queue: QueueName) -> int:
         raise NotImplementedError()
 
-    def processed_job(self, queue: QueueName, worker_num: int, job: Job) -> None:
+    def processed_job(self, queue: QueueName, worker_num: WorkerNumber, job: Job) -> None:
         pass
