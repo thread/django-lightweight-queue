@@ -1,8 +1,11 @@
+from typing import Dict, List, Tuple, Optional
+
 import redis
 
 from .. import app_settings
 from ..job import Job
 from .base import BaseBackend
+from ..types import QueueName, WorkerNumber
 
 
 class ReliableRedisBackend(BaseBackend):
@@ -27,13 +30,13 @@ class ReliableRedisBackend(BaseBackend):
     This backend has at-least-once semantics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
         )
 
-    def startup(self, queue):
+    def startup(self, queue: QueueName) -> None:
         main_queue_key = self._key(queue)
 
         pattern = self._prefix_key(
@@ -42,7 +45,7 @@ class ReliableRedisBackend(BaseBackend):
 
         processing_queue_keys = self.client.keys(pattern)
 
-        def move_processing_jobs_to_main(pipe):
+        def move_processing_jobs_to_main(pipe: redis.client.StrictPipeline) -> None:
             # Collect all the data we need to add, before adding the data back
             # to the main queue of and clearing the processing queues
             # atomically, so if this crashes, we don't lose jobs
@@ -68,10 +71,10 @@ class ReliableRedisBackend(BaseBackend):
             *processing_queue_keys,
         )
 
-    def enqueue(self, job, queue):
+    def enqueue(self, job: Job, queue: QueueName) -> None:
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
-    def dequeue(self, queue, worker_number, timeout):
+    def dequeue(self, queue: QueueName, worker_number: WorkerNumber, timeout: float) -> Optional[Job]:
         main_queue_key = self._key(queue)
         processing_queue_key = self._processing_key(queue, worker_number)
 
@@ -93,7 +96,9 @@ class ReliableRedisBackend(BaseBackend):
         if data:
             return Job.from_json(data.decode('utf-8'))
 
-    def processed_job(self, queue, worker_number, job):
+        return None
+
+    def processed_job(self, queue: QueueName, worker_number: WorkerNumber, job: Job) -> None:
         data = job.to_json().encode('utf-8')
 
         self.client.lrem(
@@ -102,10 +107,10 @@ class ReliableRedisBackend(BaseBackend):
             value=data,
         )
 
-    def length(self, queue):
+    def length(self, queue: QueueName) -> int:
         return self.client.llen(self._key(queue))
 
-    def deduplicate(self, queue):
+    def deduplicate(self, queue: QueueName) -> Tuple[int, int]:
         """
         Deduplicate the given queue by comparing the jobs in a manner which
         ignores their created timestamps.
@@ -126,7 +131,7 @@ class ReliableRedisBackend(BaseBackend):
 
         # A mapping of job_identity -> list of raw_job data; the entries in the
         # latter list are ordered from newest to oldest
-        jobs = {}
+        jobs = {}  # type: Dict[str, List[bytes]]
 
         for raw_data in self.client.lrange(main_queue_key, 0, -1):
             job_identity = Job.from_json(
@@ -148,12 +153,12 @@ class ReliableRedisBackend(BaseBackend):
 
         return original_size, self.client.llen(main_queue_key)
 
-    def _key(self, queue):
+    def _key(self, queue: QueueName) -> str:
         key = 'django_lightweight_queue:{}'.format(queue)
 
         return self._prefix_key(key)
 
-    def _processing_key(self, queue, worker_number):
+    def _processing_key(self, queue: QueueName, worker_number: WorkerNumber) -> str:
         key = 'django_lightweight_queue:{}:processing:{}'.format(
             queue,
             worker_number,
@@ -161,7 +166,7 @@ class ReliableRedisBackend(BaseBackend):
 
         return self._prefix_key(key)
 
-    def _prefix_key(self, key):
+    def _prefix_key(self, key: str) -> str:
         if app_settings.REDIS_PREFIX:
             return '{}:{}'.format(
                 app_settings.REDIS_PREFIX,
