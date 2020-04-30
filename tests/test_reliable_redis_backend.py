@@ -1,9 +1,11 @@
 import datetime
 import unittest
 import unittest.mock
+from typing import Any, Dict, Tuple, Optional
 
 import fakeredis
 from django_lightweight_queue.job import Job
+from django_lightweight_queue.types import QueueName
 from django_lightweight_queue.backends.reliable_redis import (
     ReliableRedisBackend,
 )
@@ -18,27 +20,27 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
 
     def create_job(
         self,
-        path='path',
-        args=('args',),
-        kwargs=None,
-        timeout=None,
-        sigkill_on_stop=False,
-        created_time=None,
-    ):
+        path: str = 'path',
+        args: Tuple[Any, ...] = ('args',),
+        kwargs: Optional[Dict[str, Any]] = None,
+        timeout: Optional[int] = None,
+        sigkill_on_stop: bool = False,
+        created_time: Optional[datetime.datetime] = None,
+    ) -> Job:
         if created_time is None:
             created_time = self.start_time
 
-        job = Job(path, args, kwargs, timeout, sigkill_on_stop)
+        job = Job(path, args, kwargs or {}, timeout, sigkill_on_stop)
         job.created_time = created_time
 
         return job
 
-    def enqueue_job(self, queue, *args, **kwargs):
+    def enqueue_job(self, queue: QueueName, *args: Any, **kwargs: Any) -> Job:
         job = self.create_job(*args, **kwargs)
         self.backend.enqueue(job, queue)
         return job
 
-    def setUp(self):
+    def setUp(self) -> None:
         with unittest.mock.patch('redis.StrictRedis', fakeredis.FakeStrictRedis):
             self.backend = ReliableRedisBackend()
         self.client = self.backend.client
