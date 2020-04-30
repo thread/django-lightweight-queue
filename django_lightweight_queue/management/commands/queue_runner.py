@@ -1,15 +1,22 @@
+from typing import Any, Dict, Optional
+
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import (
+    BaseCommand,
+    CommandError,
+    CommandParser,
+)
 
+from ...types import QueueName
 from ...utils import get_logger, get_backend, get_middleware, load_extra_config
 from ...runner import runner
-from ...machine_types import PooledMachine, DirectlyConfiguredMachine
+from ...machine_types import Machine, PooledMachine, DirectlyConfiguredMachine
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             '--pidfile',
             action='store',
@@ -58,7 +65,7 @@ class Command(BaseCommand):
                  " use this option together with either '--machine' or '--of'.",
         )
 
-    def validate_and_normalise(self, options):
+    def validate_and_normalise(self, options: Dict[str, Any]) -> None:
         if options['exact_configuration']:
             if not options['config']:
                 raise CommandError(
@@ -91,12 +98,12 @@ class Command(BaseCommand):
                     "Machine number must be less than or equal to machine count!",
                 )
 
-    def handle(self, **options):
+    def handle(self, **options: Any) -> None:
         logger = get_logger('dlq.master')
 
         self.validate_and_normalise(options)
 
-        def touch_filename(name):
+        def touch_filename(name: str) -> Optional[str]:
             try:
                 return options['touchfile'] % name
             except TypeError:
@@ -122,15 +129,15 @@ class Command(BaseCommand):
         logger.debug("Loaded models")
 
         if options['exact_configuration']:
-            machine = DirectlyConfiguredMachine()
+            machine = DirectlyConfiguredMachine()  # type: Machine
         else:
             machine = PooledMachine(
                 machine_number=int(options['machine_number']),
                 machine_count=int(options['machine_count']),
-                only_queue=options['only_queue'],
+                only_queue=QueueName(options['only_queue']),
             )
 
-        def run():
+        def run() -> None:
             runner(touch_filename, machine, logger)
 
         # fork() only after we have started enough to catch failure, including

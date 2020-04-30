@@ -1,12 +1,15 @@
-from django.core.management.base import BaseCommand
+from typing import Any
 
+from django.core.management.base import BaseCommand, CommandParser
+
+from ...types import QueueName, WorkerNumber
 from ...worker import Worker
 
 
 class Command(BaseCommand):
     help = "Run an individual queue worker"  # noqa:A003 # inherited name
 
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             'queue',
             help="queue for which this is a worker",
@@ -31,12 +34,12 @@ class Command(BaseCommand):
 
     def handle(
         self,
-        queue,
-        number,
-        prometheus_port,
-        touch_filename,
-        **options
-    ):
+        queue: QueueName,
+        number: WorkerNumber,
+        prometheus_port: int,
+        touch_filename: str,
+        **options: Any
+    ) -> None:
         worker = Worker(
             queue=queue,
             worker_num=number,
