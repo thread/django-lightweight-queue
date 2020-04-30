@@ -53,7 +53,7 @@ def load_extra_config(file_path: str) -> None:
 
 
 @lru_cache()
-def get_path(path: str) -> Type[Any]:
+def get_path(path: str) -> Any:
     module_name, attr = path.rsplit('.', 1)
 
     module = importlib.import_module(module_name)
