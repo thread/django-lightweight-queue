@@ -1,16 +1,7 @@
 import imp
 import warnings
 import importlib
-from typing import (
-    Any,
-    Set,
-    List,
-    Type,
-    Mapping,
-    Iterable,
-    Sequence,
-    TYPE_CHECKING,
-)
+from typing import Any, Set, List, Mapping, Iterable, Sequence, TYPE_CHECKING
 from functools import lru_cache
 
 from django.apps import apps
