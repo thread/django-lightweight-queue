@@ -6,12 +6,12 @@ from typing_extensions import Protocol
 QueueName = NewType('QueueName', str)
 WorkerNumber = NewType('WorkerNumber', int)
 
-_SysExcInfoType = Union[
+SysExcInfoType = Union[
     Tuple[type, BaseException, Optional[TracebackType]],
     Tuple[None, None, None],
 ]
 
-_ExcInfoType = Union[None, bool, _SysExcInfoType, BaseException]
+_ExcInfoType = Union[None, bool, SysExcInfoType, BaseException]
 
 
 class Logger(Protocol):
