@@ -1,5 +1,8 @@
+from typing import Tuple, Sequence
+
 from django.utils.functional import cached_property
 
+from .types import QueueName, WorkerNumber
 from .utils import get_queue_counts
 from .cron_scheduler import CRON_QUEUE_NAME
 
@@ -13,7 +16,7 @@ class Machine:
     """
 
     @property
-    def run_cron(self):
+    def run_cron(self) -> bool:
         """
         Returns a `bool` for whether or not a runner on this machine should
         run the cron queue.
@@ -21,7 +24,7 @@ class Machine:
         raise NotImplementedError()
 
     @property
-    def worker_names(self):
+    def worker_names(self) -> Sequence[Tuple[QueueName, WorkerNumber]]:
         """
         Returns a sequence of tuples of (queue_name, worker_num) for the workers
         which should run on this machine. Worker numbers start at 1.
@@ -39,23 +42,23 @@ class PooledMachine(Machine):
     determine its position within the pool and thus which queues to run.
     """
 
-    def __init__(self, machine_number, machine_count, only_queue):
+    def __init__(self, machine_number: int, machine_count: int, only_queue: QueueName) -> None:
         self.machine_number = machine_number
         self.machine_count = machine_count
         self.only_queue = only_queue
 
     @property
-    def run_cron(self):
+    def run_cron(self) -> bool:
         return self.machine_number == 1 and (
             not self.only_queue or self.only_queue == CRON_QUEUE_NAME
         )
 
     @property
-    def configure_cron(self):
+    def configure_cron(self) -> bool:
         return True
 
     @cached_property
-    def worker_names(self):
+    def worker_names(self) -> Sequence[Tuple[QueueName, WorkerNumber]]:
         """
         Determine the workers to run on a given machine in a pool of a known size.
         """
@@ -72,7 +75,7 @@ class PooledMachine(Machine):
 
             for worker_num in range(1, num_workers + 1):
                 if (job_number % self.machine_count) + 1 == self.machine_number:  # noqa: S001
-                    worker_names.append((queue, worker_num))
+                    worker_names.append((queue, WorkerNumber(worker_num)))
 
                 job_number += 1
 
@@ -87,17 +90,17 @@ class DirectlyConfiguredMachine(Machine):
     file has already been handled.
     """
     @property
-    def run_cron(self):
+    def run_cron(self) -> bool:
         return False
 
     @property
-    def configure_cron(self):
+    def configure_cron(self) -> bool:
         return False
 
     @cached_property
-    def worker_names(self):
+    def worker_names(self) -> Sequence[Tuple[QueueName, WorkerNumber]]:
         return tuple(
-            (queue, worker_number)
+            (queue, WorkerNumber(worker_number))
             for queue, num_workers in sorted(get_queue_counts().items())
             for worker_number in range(num_workers)
         )

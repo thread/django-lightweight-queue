@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple, Union, NewType, Optional
 from typing_extensions import Protocol
 
 QueueName = NewType('QueueName', str)
+WorkerNumber = NewType('WorkerNumber', int)
 
 _SysExcInfoType = Union[
     Tuple[type, BaseException, Optional[TracebackType]],
