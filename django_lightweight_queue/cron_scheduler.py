@@ -3,23 +3,44 @@ import imp
 import time
 import datetime
 import threading
+from typing import Any, cast, Dict, List, Tuple, Callable, Optional, Sequence
+
+from typing_extensions import TypedDict
 
 from django.apps import apps
 from django.core.management import call_command
 
 from .task import task
+from .types import QueueName
 from .utils import get_logger, get_backend, contribute_implied_queue_name
+from .backends.base import BaseBackend
 
 CRON_QUEUE_NAME = 'cron_scheduler'
 
 
+CronConfig = TypedDict('CronConfig', {
+    'minutes': Optional[str],
+    'hours': Optional[str],
+    'days': Optional[str],
+    'min_matcher': Callable[[int], bool],
+    'hour_matcher': Callable[[int], bool],
+    'day_matcher': Callable[[int], bool],
+    'queue': QueueName,
+    'command': str,
+    'timeout': Optional[float],
+    'sigkill_on_stop': bool,
+    'command_args': Tuple[Any],
+    'command_kwargs': Dict[str, Any],
+})
+
+
 class CronScheduler(threading.Thread):
-    def __init__(self, config):
+    def __init__(self, config: Sequence[CronConfig]):
         self.config = config
         self.logger = get_logger('dlq.cron')
         super(CronScheduler, self).__init__(daemon=True)
 
-    def run(self):
+    def run(self) -> None:
         self.logger.debug("Starting cron thread")
 
         backend = get_backend(CRON_QUEUE_NAME)
@@ -36,7 +57,7 @@ class CronScheduler(threading.Thread):
             # caused by the accumulation of tick() runtime.
             time.sleep((1 - time.time() % 1))
 
-    def tick(self, backend):
+    def tick(self, backend: BaseBackend) -> None:
         self.logger.debug(
             "Cron thread checking for work",
             extra={'backend': backend},
@@ -82,10 +103,10 @@ class CronScheduler(threading.Thread):
             )
 
 
-def get_cron_config():
+def get_cron_config() -> Sequence[CronConfig]:
     config = []
 
-    def get_matcher(minval, maxval, t):
+    def get_matcher(minval: int, maxval: int, t: Optional[str]) -> Optional[Callable[[int], bool]]:
         if t == '*':
             return lambda x: True
         parts = re.split(r'\s*,\s*', t)
@@ -121,7 +142,7 @@ def get_cron_config():
 
         mod = __import__('{}.cron'.format(app), fromlist=(app,))
 
-        for row in mod.CONFIG:
+        for row in cast(List[CronConfig], mod.CONFIG):
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
             row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
             row['day_matcher'] = get_matcher(1, 7, row.get('days', '*'))
@@ -133,7 +154,7 @@ def get_cron_config():
     return config
 
 
-def ensure_queue_workers_for_config(config):
+def ensure_queue_workers_for_config(config: Sequence[CronConfig]) -> None:
     """
     Modify the ``WORKERS`` setting such that each of the queues in the given
     cron configuration have some queue workers specified.
@@ -147,5 +168,5 @@ def ensure_queue_workers_for_config(config):
 
 
 @task()
-def execute(name, *args, **kwargs):
+def execute(name: str, *args: Any, **kwargs: Any) -> None:
     call_command(name, *args, **kwargs)
