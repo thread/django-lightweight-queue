@@ -1,4 +1,4 @@
-import urllib
+import urllib.parse
 
 from django.conf import settings
 from django.shortcuts import reverse
