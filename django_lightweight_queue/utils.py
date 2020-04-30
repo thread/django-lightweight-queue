@@ -9,6 +9,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
 from . import constants, app_settings
+from .types import QueueName
 
 _accepting_implied_queues = True
 
@@ -83,8 +84,7 @@ def refuse_further_implied_queues():
     _accepting_implied_queues = False
 
 
-def contribute_implied_queue_name(queue):
-    # type: (str) -> None
+def contribute_implied_queue_name(queue: QueueName) -> None:
     if not _accepting_implied_queues:
         raise RuntimeError(
             "Queues have already been enumerated, ensure that "
@@ -93,7 +93,7 @@ def contribute_implied_queue_name(queue):
     app_settings.WORKERS.setdefault(queue, 1)
 
 
-def get_queue_counts() -> Mapping[str, int]:
+def get_queue_counts() -> Mapping[QueueName, int]:
     refuse_further_implied_queues()
     return app_settings.WORKERS
 

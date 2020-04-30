@@ -1,7 +1,9 @@
 from types import TracebackType
-from typing import Any, Dict, Tuple, Union, Optional
+from typing import Any, Dict, Tuple, Union, NewType, Optional
 
 from typing_extensions import Protocol
+
+QueueName = NewType('QueueName', str)
 
 _SysExcInfoType = Union[
     Tuple[type, BaseException, Optional[TracebackType]],

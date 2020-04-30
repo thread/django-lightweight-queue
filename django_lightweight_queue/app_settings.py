@@ -3,7 +3,7 @@ from typing import Dict, Union, Mapping, TypeVar, Callable, Sequence
 from django.conf import settings
 
 from . import constants
-from .types import Logger
+from .types import Logger, QueueName
 
 T = TypeVar('T')
 
@@ -13,7 +13,7 @@ def setting(suffix: str, default: T) -> T:
     return getattr(settings, attr_name, default)
 
 
-WORKERS = setting('WORKERS', {})  # type: Dict[str, int]
+WORKERS = setting('WORKERS', {})  # type: Dict[QueueName, int]
 BACKEND = setting(
     'BACKEND',
     'django_lightweight_queue.backends.synchronous.SynchronousBackend',
@@ -25,7 +25,7 @@ LOGGER_FACTORY = setting(
 )  # type: Union[str, Callable[[str], Logger]]
 
 # Allow per-queue overrides of the backend.
-BACKEND_OVERRIDES = setting('BACKEND_OVERRIDES', {})  # type: Mapping[str, str]
+BACKEND_OVERRIDES = setting('BACKEND_OVERRIDES', {})  # type: Mapping[QueueName, str]
 
 MIDDLEWARE = setting('MIDDLEWARE', (
     'django_lightweight_queue.middleware.logging.LoggingMiddleware',
