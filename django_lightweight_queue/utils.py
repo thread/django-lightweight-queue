@@ -125,11 +125,11 @@ try:
 
     original_title = setproctitle.getproctitle()
 
-    def set_process_title(*titles):
+    def set_process_title(*titles: str) -> None:
         setproctitle.setproctitle("{} {}".format(
             original_title,
             ' '.join('[{}]'.format(x) for x in titles),
         ))
 except ImportError:
-    def set_process_title(*titles):
+    def set_process_title(*titles: str) -> None:
         pass
