@@ -41,9 +41,9 @@ class Command(BaseCommand):
         print("")
         print("Cron configuration")
 
-        for x in get_cron_config():
+        for config in get_cron_config():
             print("")
-            for k in (
+            for key in (
                 'command',
                 'command_args',
                 'hours',
@@ -52,4 +52,4 @@ class Command(BaseCommand):
                 'timeout',
                 'sigkill_on_stop',
             ):
-                print("{:20s}: {}".format(k, x.get(k, '-')))
+                print("{:20s}: {}".format(key, config.get(k, '-')))
