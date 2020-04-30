@@ -2,10 +2,13 @@ import sys
 import time
 import signal
 import subprocess
+from typing import Dict, Tuple, Callable, Optional
 
 from . import app_settings
+from .types import Logger, QueueName, WorkerNumber
 from .utils import get_backend, set_process_title
 from .exposition import metrics_http_server
+from .machine_types import Machine
 from .cron_scheduler import (
     CronScheduler,
     get_cron_config,
@@ -13,7 +16,11 @@ from .cron_scheduler import (
 )
 
 
-def runner(touch_filename_fn, machine, logger):
+def runner(
+    touch_filename_fn: Callable[[QueueName], Optional[str]],
+    machine: Machine,
+    logger: Logger,
+) -> None:
     set_process_title("Master process")
 
     if machine.configure_cron:
@@ -37,7 +44,7 @@ def runner(touch_filename_fn, machine, logger):
     # Note: we deliberately configure our handling of SIGTERM _after_ the
     # startup processes have happened; this ensures that the startup processes
     # (which could take a long time) are naturally interupted by the signal.
-    def handle_term(signum, stack):
+    def handle_term(signum: int, stack: object) -> None:
         nonlocal running
         logger.debug("Caught TERM signal")
         set_process_title("Master process exiting")
@@ -48,7 +55,10 @@ def runner(touch_filename_fn, machine, logger):
         cron_scheduler = CronScheduler(cron_config)
         cron_scheduler.start()
 
-    workers = {x: None for x in machine.worker_names}
+    workers = {
+        x: None
+        for x in machine.worker_names
+    }  # type: Dict[Tuple[QueueName, WorkerNumber], Optional[subprocess.Popen[bytes]]]
 
     if app_settings.ENABLE_PROMETHEUS:
         metrics_server = metrics_http_server(machine.worker_names)
@@ -71,7 +81,7 @@ def runner(touch_filename_fn, machine, logger):
                 else:
                     logger.info(
                         "Starting missing worker {} (exit code was: {})".format(
-                            worker.name,
+                            worker.name,  # type: ignore[attr-defined]
                             worker.returncode,
                         ),
                         extra={
@@ -100,13 +110,13 @@ def runner(touch_filename_fn, machine, logger):
                     ])
 
                 worker = subprocess.Popen(args)
-                worker.name = "{}/{}".format(queue, worker_num)
+                worker.name = "{}/{}".format(queue, worker_num)  # type: ignore[attr-defined]
 
                 workers[(queue, worker_num)] = worker
 
         time.sleep(1)
 
-    def signal_workers(signum):
+    def signal_workers(signum: int) -> None:
         for worker in workers.values():
             if worker is None:
                 continue
@@ -125,7 +135,9 @@ def runner(touch_filename_fn, machine, logger):
         if worker is None:
             continue
 
-        logger.info("Waiting for {} to terminate".format(worker.name))
+        logger.info("Waiting for {} to terminate".format(
+            worker.name,  # type: ignore[attr-defined]
+        ))
         worker.wait()
 
     logger.info("All processes finished")

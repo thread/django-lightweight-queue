@@ -24,6 +24,14 @@ class Machine:
         raise NotImplementedError()
 
     @property
+    def configure_cron(self) -> bool:
+        """
+        Returns a `bool` for whether or not a runner on this machine should
+        configure the cron queues.
+        """
+        raise NotImplementedError()
+
+    @property
     def worker_names(self) -> Sequence[Tuple[QueueName, WorkerNumber]]:
         """
         Returns a sequence of tuples of (queue_name, worker_num) for the workers
