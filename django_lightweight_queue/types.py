@@ -15,6 +15,18 @@ _ExcInfoType = Union[None, bool, _SysExcInfoType, BaseException]
 
 
 class Logger(Protocol):
+    def log(
+        self,
+        level: int,
+        msg: str,
+        *args: Any,
+        exc_info: _ExcInfoType = ...,
+        stack_info: bool = ...,
+        extra: Optional[Dict[str, Any]] = ...,
+        **kwargs: Any
+    ) -> None:
+        ...
+
     def debug(
         self,
         msg: str,
