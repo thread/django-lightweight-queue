@@ -7,7 +7,8 @@ license = "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.5"
+# TYPE_CHECKING was added in 3.5.2
+python = ">=3.5.2"
 django = ">=1.11.27,<3.0"
 daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"

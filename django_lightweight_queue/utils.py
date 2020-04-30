@@ -1,7 +1,16 @@
 import imp
 import warnings
 import importlib
-from typing import Mapping
+from typing import (
+    Any,
+    Set,
+    List,
+    Type,
+    Mapping,
+    Iterable,
+    Sequence,
+    TYPE_CHECKING,
+)
 from functools import lru_cache
 
 from django.apps import apps
@@ -9,18 +18,21 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
 from . import constants, app_settings
-from .types import QueueName
+from .types import Logger, QueueName
+
+if TYPE_CHECKING:
+    from .backends.base import BaseBackend
 
 _accepting_implied_queues = True
 
 
-def load_extra_config(file_path):
+def load_extra_config(file_path: str) -> None:
     extra_settings = imp.load_source('extra_settings', file_path)
 
-    def get_setting_names(module):
+    def get_setting_names(module: object) -> Set[str]:
         return set(name for name in dir(module) if name.isupper())
 
-    def with_prefix(names):
+    def with_prefix(names: Iterable[str]) -> Set[str]:
         return set(
             '{}{}'.format(constants.SETTING_NAME_PREFIX, name)
             for name in names
@@ -41,7 +53,7 @@ def load_extra_config(file_path):
 
 
 @lru_cache()
-def get_path(path):
+def get_path(path: str) -> Type[Any]:
     module_name, attr = path.rsplit('.', 1)
 
     module = importlib.import_module(module_name)
@@ -50,7 +62,7 @@ def get_path(path):
 
 
 @lru_cache()
-def get_backend(queue):
+def get_backend(queue: QueueName) -> 'BaseBackend':
     return get_path(app_settings.BACKEND_OVERRIDES.get(
         queue,
         app_settings.BACKEND,
@@ -58,7 +70,7 @@ def get_backend(queue):
 
 
 @lru_cache()
-def get_logger(name):
+def get_logger(name: str) -> Logger:
     get_logger_fn = app_settings.LOGGER_FACTORY
     if not callable(get_logger_fn):
         get_logger_fn = get_path(app_settings.LOGGER_FACTORY)
@@ -66,7 +78,7 @@ def get_logger(name):
 
 
 @lru_cache()
-def get_middleware():
+def get_middleware() -> List[Any]:
     middleware = []
 
     for path in app_settings.MIDDLEWARE:
@@ -78,8 +90,7 @@ def get_middleware():
     return middleware
 
 
-def refuse_further_implied_queues():
-    # type: () -> None
+def refuse_further_implied_queues() -> None:
     global _accepting_implied_queues
     _accepting_implied_queues = False
 
@@ -98,7 +109,7 @@ def get_queue_counts() -> Mapping[QueueName, int]:
     return app_settings.WORKERS
 
 
-def import_all_submodules(name, exclude=()):
+def import_all_submodules(name: str, exclude: Sequence[str] = ()) -> None:
     for app_config in apps.get_app_configs():
         app_module = app_config.module
 
@@ -114,7 +125,7 @@ def import_all_submodules(name, exclude=()):
                 raise
 
 
-def load_all_tasks():
+def load_all_tasks() -> None:
     import_all_submodules('tasks', app_settings.IGNORE_APPS)
 
 
