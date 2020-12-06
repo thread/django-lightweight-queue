@@ -35,7 +35,7 @@ references:
     matrix:
       parameters:
         python-version: ["3.5.5", "3.6", "3.7", "3.8"]
-        django-version: ["2.2", "3.1"]
+        django-version: ["1.11.27", "2.2", "3.1"]
       exclude:
         # Not supported.
         - python-version: "3.5.5"
