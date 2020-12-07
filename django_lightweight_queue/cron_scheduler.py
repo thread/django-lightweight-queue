@@ -70,7 +70,7 @@ class CronScheduler(threading.Thread):
                 django_lightweight_queue_timeout=row['timeout'],
                 django_lightweight_queue_sigkill_on_stop=row['sigkill_on_stop'],
                 *row.get('command_args', []),
-                **row.get('command_kwargs', {})
+                **row.get('command_kwargs', {}),
             )
 
             self.logger.info(
@@ -119,7 +119,7 @@ def get_cron_config():
         except ImportError:
             continue
 
-        mod = __import__('%s.cron' % app, fromlist=(app,))
+        mod = __import__('{}.cron'.format(app), fromlist=(app,))
 
         for row in mod.CONFIG:
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))

@@ -4,7 +4,7 @@ from ...utils import get_backend
 
 
 class Command(BaseCommand):
-    help = "Command to deduplicate tasks in a redis-backed queue"
+    help = "Command to deduplicate tasks in a redis-backed queue"  # noqa:A003 # inherited name
 
     def add_arguments(self, parser):
         parser.add_argument(

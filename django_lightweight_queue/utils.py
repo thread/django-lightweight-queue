@@ -1,6 +1,7 @@
 import imp
 import warnings
 import importlib
+from typing import Mapping
 from functools import lru_cache
 
 from django.apps import apps
@@ -74,7 +75,6 @@ def get_middleware():
             pass
 
     return middleware
-
 
 
 def refuse_further_implied_queues():

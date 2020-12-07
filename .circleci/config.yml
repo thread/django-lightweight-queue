@@ -1,33 +1,61 @@
 version: 2.1
 
+references:
+  install-poetry: &install-poetry
+    run:
+      name: Install Poetry
+      command: |
+        curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+  restore-dependencies-cache: &restore-dependencies-cache
+    restore_cache:
+      keys:
+        - deps-{{ checksum "poetry.lock" }}
+  install-dependencies: &install-dependencies
+    run:
+      name: Install Dependencies
+      command: |
+        source $HOME/.poetry/env
+        poetry install
+  save-dependencies-cache: &save-dependencies-cache
+    save_cache:
+      key: deps-{{ checksum "poetry.lock" }}
+      paths:
+        - /home/circleci/.cache/pypoetry/virtualenvs
+
 jobs:
   build-test:
     docker:
       - image: circleci/python:3.5.5
     steps:
       - checkout
-      - run:
-          name: Install Poetry
-          command: |
-            curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-      - restore_cache:
-          keys:
-            - deps-{{ checksum "poetry.lock" }}
-      - run:
-          name: Install Dependencies
-          command: |
-            source $HOME/.poetry/env
-            poetry install
-      - save_cache:
-          key: deps-{{ checksum "poetry.lock" }}
-          paths: 
-            - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - *install-poetry
+      - *restore-dependencies-cache
+      - *install-dependencies
+      - *save-dependencies-cache
 
       - run:
           name: Run Tests
           command: |
             source $HOME/.poetry/env
             poetry run ./runtests
+
+  lint:
+    docker:
+      - image: circleci/python:3.5.5
+    steps:
+      - checkout
+
+      - *install-poetry
+      - *restore-dependencies-cache
+      - *install-dependencies
+      - *save-dependencies-cache
+
+      - run:
+          name: Run Flake8
+          command: |
+            source $HOME/.poetry/env
+            poetry run flake8
 
   deploy:
     docker:
@@ -51,10 +79,18 @@ workflows:
   build-test:
     jobs:
       - build-test
-  
+      - lint
+
   build-test-deploy:
     jobs:
       - build-test:
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+
+      - lint:
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
@@ -65,6 +101,7 @@ workflows:
           context: thread-pypi
           requires:
             - build-test
+            - lint
           filters:
               tags:
                 only: /v[0-9]+(\.[0-9]+)*/

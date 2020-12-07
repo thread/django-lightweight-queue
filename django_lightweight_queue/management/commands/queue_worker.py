@@ -4,7 +4,7 @@ from ...worker import Worker
 
 
 class Command(BaseCommand):
-    help = "Run an individual queue worker"
+    help = "Run an individual queue worker"  # noqa:A003 # inherited name
 
     def add_arguments(self, parser):
         parser.add_argument(
