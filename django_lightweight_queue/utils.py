@@ -1,7 +1,17 @@
 import imp
 import warnings
 import importlib
-from typing import Any, Set, List, Mapping, Iterable, Sequence, TYPE_CHECKING
+from typing import (
+    Any,
+    Set,
+    cast,
+    List,
+    Mapping,
+    Callable,
+    Iterable,
+    Sequence,
+    TYPE_CHECKING,
+)
 from functools import lru_cache
 
 from django.apps import apps
@@ -64,7 +74,10 @@ def get_backend(queue: QueueName) -> 'BaseBackend':
 def get_logger(name: str) -> Logger:
     get_logger_fn = app_settings.LOGGER_FACTORY
     if not callable(get_logger_fn):
-        get_logger_fn = get_path(app_settings.LOGGER_FACTORY)
+        get_logger_fn = cast(
+            Callable[[str], Logger],
+            get_path(app_settings.LOGGER_FACTORY),
+        )
     return get_logger_fn(name)
 
 
