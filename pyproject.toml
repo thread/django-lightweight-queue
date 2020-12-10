@@ -5,6 +5,7 @@ description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
 readme = "README.md"
+include = ["django_lightweight_queue/py.typed"]
 
 [tool.poetry.dependencies]
 # TYPE_CHECKING was added in 3.5.2
