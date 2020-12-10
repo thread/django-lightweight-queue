@@ -22,7 +22,7 @@ class RedisBackend(BaseBackend):
     def enqueue(self, job: Job, queue: QueueName) -> None:
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
-    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: float) -> Optional[Job]:
+    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
         try:
             _, data = self.client.brpop(self._key(queue), timeout)
 

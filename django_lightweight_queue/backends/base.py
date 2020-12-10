@@ -14,7 +14,7 @@ class BaseBackend(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: float) -> Optional[Job]:
+    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
         raise NotImplementedError()
 
     @abstractmethod

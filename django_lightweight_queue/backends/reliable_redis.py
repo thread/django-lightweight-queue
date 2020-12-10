@@ -74,7 +74,7 @@ class ReliableRedisBackend(BaseBackend):
     def enqueue(self, job: Job, queue: QueueName) -> None:
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
-    def dequeue(self, queue: QueueName, worker_number: WorkerNumber, timeout: float) -> Optional[Job]:
+    def dequeue(self, queue: QueueName, worker_number: WorkerNumber, timeout: int) -> Optional[Job]:
         main_queue_key = self._key(queue)
         processing_queue_key = self._processing_key(queue, worker_number)
 
