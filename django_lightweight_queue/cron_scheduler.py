@@ -106,7 +106,7 @@ class CronScheduler(threading.Thread):
 def get_cron_config() -> Sequence[CronConfig]:
     config = []
 
-    def get_matcher(minval: int, maxval: int, t: Optional[str]) -> Optional[Callable[[int], bool]]:
+    def get_matcher(minval, maxval, t):
         if t == '*':
             return lambda x: True
         parts = re.split(r'\s*,\s*', t)
