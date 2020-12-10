@@ -77,8 +77,8 @@ jobs:
             poetry run flake8
 
   type-check:
-    docker:
-      - image: circleci/python:3.5.5
+    <<: *parametrised-python-executor
+
     steps:
       - checkout
 
@@ -119,6 +119,8 @@ workflows:
           <<: *python-version-matrix
       - lint:
           <<: *python-version-matrix
+      - type-check:
+          <<: *python-version-matrix
 
 
   build-test-deploy:
@@ -139,11 +141,20 @@ workflows:
             branches:
               ignore: /.*/
 
+      - type-check:
+          <<: *python-version-matrix
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+
       - deploy:
           context: thread-pypi
           requires:
             - build-test
             - lint
+            - type-check
           filters:
               tags:
                 only: /v[0-9]+(\.[0-9]+)*/
