@@ -23,12 +23,12 @@ class RedisBackend(BaseBackend):
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
     def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
-        try:
-            _, data = self.client.brpop(self._key(queue), timeout)
-
-            return Job.from_json(data.decode('utf-8'))
-        except TypeError:
+        raw = self.client.brpop(self._key(queue), timeout)
+        if raw is None:
             return None
+
+        _, data = raw
+        return Job.from_json(data.decode('utf-8'))
 
     def length(self, queue: QueueName) -> int:
         return self.client.llen(self._key(queue))
