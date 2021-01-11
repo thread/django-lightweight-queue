@@ -12,9 +12,11 @@ django = ">=1.11.27,<3.0"
 daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"
 redis = {version = "~=3.*", optional = true}
+tqdm = {version = "^4.54.1", optional = true}
 
 [tool.poetry.extras]
 redis = ["redis"]
+progress = ["tqdm"]
 
 [tool.poetry.dev-dependencies]
 # Testing tools

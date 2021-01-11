@@ -3,6 +3,7 @@ import redis
 from .. import app_settings
 from ..job import Job
 from .base import BaseBackend
+from ..progress_logger import NULL_PROGRESS_LOGGER
 
 
 class ReliableRedisBackend(BaseBackend):
@@ -105,7 +106,7 @@ class ReliableRedisBackend(BaseBackend):
     def length(self, queue):
         return self.client.llen(self._key(queue))
 
-    def deduplicate(self, queue):
+    def deduplicate(self, queue, *, progress_logger=NULL_PROGRESS_LOGGER):
         """
         Deduplicate the given queue by comparing the jobs in a manner which
         ignores their created timestamps.
@@ -128,14 +129,18 @@ class ReliableRedisBackend(BaseBackend):
         # latter list are ordered from newest to oldest
         jobs = {}
 
-        for raw_data in self.client.lrange(main_queue_key, 0, -1):
+        progress_logger.info("Collecting jobs")
+
+        for raw_data in progress_logger.progress(self.client.lrange(main_queue_key, 0, -1)):
             job_identity = Job.from_json(
                 raw_data.decode('utf-8'),
             ).identity_without_created()
 
             jobs.setdefault(job_identity, []).append(raw_data)
 
-        for raw_jobs in jobs.values():
+        progress_logger.info("Removing duplicate jobs")
+
+        for raw_jobs in progress_logger.progress(jobs.values()):
             # Leave the oldest in the queue
             for raw_data in raw_jobs[:-1]:
                 # Remove only one instance of this data (thus coping with
