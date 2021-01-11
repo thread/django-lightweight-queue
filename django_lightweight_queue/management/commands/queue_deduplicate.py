@@ -3,7 +3,7 @@ from typing import TypeVar
 from django.core.management.base import BaseCommand, CommandError
 
 from ...utils import get_backend
-from ...logger import Logger
+from ...progress_logger import ProgressLogger
 
 T = TypeVar('T')
 
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         original_size, new_size = backend.deduplicate(
             queue,
-            logger=self.get_logger(),
+            progress_logger=self.get_progress_logger(),
         )
 
         if original_size == new_size:
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 ),
             )
 
-    def get_logger(self) -> Logger:
+    def get_progress_logger(self) -> ProgressLogger:
         try:
             import tqdm
             progress = tqdm.tqdm
@@ -56,4 +56,4 @@ class Command(BaseCommand):
             def progress(iterable: T) -> T:
                 return iterable
 
-        return Logger(self.stdout.write, progress)
+        return ProgressLogger(self.stdout.write, progress)
