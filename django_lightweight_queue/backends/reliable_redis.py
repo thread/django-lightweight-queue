@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, TypeVar, Optional
 
 import redis
 
@@ -7,6 +7,10 @@ from ..job import Job
 from .base import BaseBackend
 from ..types import QueueName, WorkerNumber
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
+
+# Work around https://github.com/python/mypy/issues/9914. Name needs to match
+# that in progress_logger.py.
+T = TypeVar('T')
 
 
 class ReliableRedisBackend(BaseBackend):
