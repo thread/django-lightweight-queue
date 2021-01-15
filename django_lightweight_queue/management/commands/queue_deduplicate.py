@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, TypeVar
 
 from django.core.management.base import (
     BaseCommand,
@@ -8,6 +8,9 @@ from django.core.management.base import (
 
 from ...types import QueueName
 from ...utils import get_backend
+from ...progress_logger import ProgressLogger
+
+T = TypeVar('T')
 
 
 class Command(BaseCommand):
@@ -31,7 +34,10 @@ class Command(BaseCommand):
                 ),
             )
 
-        original_size, new_size = backend.deduplicate(queue)  # type: ignore[attr-defined]
+        original_size, new_size = backend.deduplicate(  # type: ignore[attr-defined]
+            queue,
+            progress_logger=self.get_progress_logger(),
+        )
 
         if original_size == new_size:
             self.stdout.write(
@@ -46,3 +52,13 @@ class Command(BaseCommand):
                     new_size,
                 ),
             )
+
+    def get_progress_logger(self) -> ProgressLogger:
+        try:
+            import tqdm
+            progress = tqdm.tqdm
+        except ImportError:
+            def progress(iterable: T) -> T:
+                return iterable
+
+        return ProgressLogger(self.stdout.write, progress)
