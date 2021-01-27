@@ -60,9 +60,9 @@ def runner(
         cron_scheduler.start()
 
     workers = {
-        x: None
+        x: (None, "{}/{}".format(*x))
         for x in machine.worker_names
-    }  # type: Dict[Tuple[QueueName, WorkerNumber], Optional[subprocess.Popen[bytes]]]
+    }  # type: Dict[Tuple[QueueName, WorkerNumber], Tuple[Optional[subprocess.Popen[bytes]], str]]
 
     if app_settings.ENABLE_PROMETHEUS:
         metrics_server = metrics_http_server(machine.worker_names)
@@ -70,13 +70,17 @@ def runner(
 
     while running:
         for index, (queue, worker_num) in enumerate(machine.worker_names, start=1):
-            worker = workers[(queue, worker_num)]
+            worker, worker_name = workers[(queue, worker_num)]
 
             # Ensure that all workers are now running (idempotent)
             if worker is None or worker.poll() is not None:
                 if worker is None:
                     logger.info(
-                        "Starting worker #{} for {}".format(worker_num, queue),
+                        "Starting worker #{} for {} ({})".format(
+                            worker_num,
+                            queue,
+                            worker_name,
+                        ),
                         extra={
                             'worker': worker_num,
                             'queue': queue,
@@ -85,7 +89,7 @@ def runner(
                 else:
                     logger.info(
                         "Starting missing worker {} (exit code was: {})".format(
-                            worker.name,  # type: ignore[attr-defined]
+                            worker_name,
                             worker.returncode,
                         ),
                         extra={
@@ -114,14 +118,12 @@ def runner(
                     ])
 
                 worker = subprocess.Popen(args)
-                worker.name = "{}/{}".format(queue, worker_num)  # type: ignore[attr-defined]
-
-                workers[(queue, worker_num)] = worker
+                workers[(queue, worker_num)] = (worker, worker_name)
 
         time.sleep(1)
 
     def signal_workers(signum: int) -> None:
-        for worker in workers.values():
+        for worker, _ in workers.values():
             if worker is None:
                 continue
 
@@ -135,13 +137,11 @@ def runner(
     # sort of abuse.
     signal_workers(signal.SIGUSR2)
 
-    for worker in workers.values():
+    for worker, worker_name in workers.values():
         if worker is None:
             continue
 
-        logger.info("Waiting for {} to terminate".format(
-            worker.name,  # type: ignore[attr-defined]
-        ))
+        logger.info("Waiting for {} to terminate".format(worker_name))
         worker.wait()
 
     logger.info("All processes finished")
