@@ -8,6 +8,7 @@ from django.core.management.base import (
 
 from ...types import QueueName
 from ...utils import get_backend
+from ...backends.base import BackendWithDeduplicate
 from ...progress_logger import ProgressLogger
 
 T = TypeVar('T')
@@ -26,7 +27,7 @@ class Command(BaseCommand):
     def handle(self, queue: QueueName, **options: Any) -> None:
         backend = get_backend(queue)
 
-        if not hasattr(backend, 'deduplicate'):
+        if not isinstance(backend, BackendWithDeduplicate):
             raise CommandError(
                 "Configured backend '{}.{}' doesn't support deduplication".format(
                     type(backend).__module__,
@@ -34,7 +35,7 @@ class Command(BaseCommand):
                 ),
             )
 
-        original_size, new_size = backend.deduplicate(  # type: ignore[attr-defined]
+        original_size, new_size = backend.deduplicate(
             queue,
             progress_logger=self.get_progress_logger(),
         )
