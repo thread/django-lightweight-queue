@@ -11,7 +11,7 @@ TCallable = TypeVar('TCallable', bound=Callable[..., Any])
 class task:
     def __init__(
         self,
-        queue: QueueName = QueueName('default'),  # noqa:B008
+        queue: str = 'default',
         timeout: Optional[int] = None,
         sigkill_on_stop: bool = False,
         atomic: Optional[bool] = None,
@@ -72,7 +72,7 @@ class task:
         if atomic is None:
             atomic = app_settings.ATOMIC_JOBS
 
-        self.queue = queue
+        self.queue = QueueName(queue)
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
         self.atomic = atomic
