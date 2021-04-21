@@ -45,6 +45,10 @@ def runner(touch_filename_fn, machine, logger):
     signal.signal(signal.SIGTERM, handle_term)
 
     if machine.run_cron:
+        # Load the cron scheduling configuration explicitly, to account for the
+        # case where we want to run the cron but not configure it. This can
+        # happen if our caller has already done the configuration.
+        cron_config = get_cron_config()
         cron_scheduler = CronScheduler(cron_config)
         cron_scheduler.start()
 
