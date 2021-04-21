@@ -1,98 +1,106 @@
 [[package]]
-category = "dev"
-description = "Classes Without Boilerplate"
-name = "attrs"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "19.3.0"
-
-[package.extras]
-azure-pipelines = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "pytest-azurepipelines"]
-dev = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "sphinx", "pre-commit"]
-docs = ["sphinx", "zope.interface"]
-tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface"]
-
-[[package]]
+name = "asgiref"
+version = "3.3.4"
+description = "ASGI specs, helper code, and adapters"
 category = "main"
-description = "Library to enable your code run as a daemon process on Unix-like systems."
-name = "daemonize"
 optional = false
-python-versions = "*"
-version = "2.5.0"
-
-[[package]]
-category = "main"
-description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
-name = "django"
-optional = false
-python-versions = ">=3.5"
-version = "2.2.9"
+python-versions = ">=3.6"
 
 [package.dependencies]
-pytz = "*"
-sqlparse = "*"
+typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [package.extras]
-argon2 = ["argon2-cffi (>=16.1.0)"]
+tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
+
+[[package]]
+name = "attrs"
+version = "20.3.0"
+description = "Classes Without Boilerplate"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[package.extras]
+docs = ["furo", "sphinx", "zope.interface"]
+tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface"]
+dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "furo", "sphinx", "pre-commit"]
+tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six"]
+
+[[package]]
+name = "daemonize"
+version = "2.5.0"
+description = "Library to enable your code run as a daemon process on Unix-like systems."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "django"
+version = "3.2"
+description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+sqlparse = ">=0.2.2"
+pytz = "*"
+asgiref = ">=3.3.2,<4"
+
+[package.extras]
+argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
-category = "dev"
-description = "Discover and load entry points from installed packages."
-name = "entrypoints"
-optional = false
-python-versions = ">=2.7"
-version = "0.3"
-
-[[package]]
-category = "dev"
-description = "Fake implementation of redis API for testing purposes."
 name = "fakeredis"
+version = "1.5.0"
+description = "Fake implementation of redis API for testing purposes."
+category = "dev"
 optional = false
-python-versions = "*"
-version = "1.1.0"
+python-versions = ">=3.5"
 
 [package.dependencies]
-redis = "*"
 six = ">=1.12"
+redis = "<3.6.0"
 sortedcontainers = "*"
 
 [package.extras]
+aioredis = ["aioredis"]
 lua = ["lupa"]
 
 [[package]]
-category = "dev"
-description = "the modular source code checker: pep8, pyflakes and co"
 name = "flake8"
+version = "3.9.1"
+description = "the modular source code checker: pep8 pyflakes and co"
+category = "dev"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "3.7.9"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [package.dependencies]
-entrypoints = ">=0.3.0,<0.4.0"
+pycodestyle = ">=2.7.0,<2.8.0"
 mccabe = ">=0.6.0,<0.7.0"
-pycodestyle = ">=2.5.0,<2.6.0"
-pyflakes = ">=2.1.0,<2.2.0"
+pyflakes = ">=2.3.0,<2.4.0"
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
-category = "dev"
-description = "A plugin for flake8 finding likely bugs and design problems in your program. Contains warnings that don't belong in pyflakes and pycodestyle."
 name = "flake8-bugbear"
+version = "19.8.0"
+description = "A plugin for flake8 finding likely bugs and design problems in your program. Contains warnings that don't belong in pyflakes and pycodestyle."
+category = "dev"
 optional = false
 python-versions = ">=3.5"
-version = "19.8.0"
 
 [package.dependencies]
 attrs = "*"
 flake8 = ">=3.0.0"
 
 [[package]]
-category = "dev"
-description = "Check for python builtins being used as variables or parameters."
 name = "flake8-builtins"
+version = "1.5.3"
+description = "Check for python builtins being used as variables or parameters."
+category = "dev"
 optional = false
 python-versions = "*"
-version = "1.5.2"
 
 [package.dependencies]
 flake8 = "*"
@@ -101,91 +109,85 @@ flake8 = "*"
 test = ["coverage", "coveralls", "mock", "pytest", "pytest-cov"]
 
 [[package]]
-category = "dev"
-description = "Adds coding magic comment checks to flake8"
 name = "flake8-coding"
+version = "1.3.2"
+description = "Adds coding magic comment checks to flake8"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "1.3.2"
 
 [package.dependencies]
 flake8 = "*"
 
 [[package]]
-category = "dev"
-description = "Flake8 lint for trailing commas."
 name = "flake8-commas"
+version = "2.0.0"
+description = "Flake8 lint for trailing commas."
+category = "dev"
 optional = false
 python-versions = "*"
-version = "2.0.0"
 
 [package.dependencies]
 flake8 = ">=2,<4.0.0"
 
 [[package]]
-category = "dev"
-description = "A flake8 plugin to help you write better list/set/dict comprehensions."
 name = "flake8-comprehensions"
+version = "3.4.0"
+description = "A flake8 plugin to help you write better list/set/dict comprehensions."
+category = "dev"
 optional = false
-python-versions = ">=3.5"
-version = "3.2.2"
+python-versions = ">=3.6"
 
 [package.dependencies]
 flake8 = ">=3.0,<3.2.0 || >3.2.0,<4"
-
-[package.dependencies.importlib-metadata]
-python = "<3.8"
-version = "*"
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
-category = "dev"
-description = "ipdb/pdb statement checker plugin for flake8"
 name = "flake8-debugger"
+version = "3.2.1"
+description = "ipdb/pdb statement checker plugin for flake8"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "3.2.1"
 
 [package.dependencies]
-flake8 = ">=1.5"
 pycodestyle = "*"
+flake8 = ">=1.5"
 
 [[package]]
-category = "dev"
-description = "flake8 plugin that integrates isort ."
 name = "flake8-isort"
+version = "3.0.1"
+description = "flake8 plugin that integrates isort ."
+category = "dev"
 optional = false
 python-versions = "*"
-version = "3.0.0"
 
 [package.dependencies]
-flake8 = ">=3.2.1"
-testfixtures = "*"
-
-[package.dependencies.isort]
-extras = ["pyproject"]
-version = ">=4.3.5"
+flake8 = ">=3.2.1,<4"
+isort = {version = ">=4.3.5,<5", extras = ["pyproject"]}
+testfixtures = ">=6.8.0,<7"
 
 [package.extras]
-test = ["pytest"]
+test = ["pytest (>=4.0.2,<6)"]
 
 [[package]]
-category = "dev"
-description = "mutable defaults flake8 extension"
 name = "flake8-mutable"
+version = "1.2.0"
+description = "mutable defaults flake8 extension"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "1.2.0"
 
 [package.dependencies]
 flake8 = "*"
 
 [[package]]
-category = "dev"
-description = "Checks for old string formatting."
 name = "flake8-pep3101"
+version = "1.3.0"
+description = "Checks for old string formatting."
+category = "dev"
 optional = false
 python-versions = "*"
-version = "1.3.0"
 
 [package.dependencies]
 flake8 = ">=3.0"
@@ -194,205 +196,223 @@ flake8 = ">=3.0"
 test = ["pytest", "testfixtures"]
 
 [[package]]
-category = "dev"
-description = "A flake8 plugin that helps you write tidier imports."
 name = "flake8-tidy-imports"
+version = "4.2.1"
+description = "A flake8 plugin that helps you write tidier imports."
+category = "dev"
 optional = false
-python-versions = ">=3.5"
-version = "4.1.0"
+python-versions = ">=3.6"
 
 [package.dependencies]
 flake8 = ">=3.0,<3.2.0 || >3.2.0,<4"
-
-[package.dependencies.importlib-metadata]
-python = "<3.8"
-version = "*"
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
-category = "dev"
-description = "Read metadata from Python packages"
-marker = "python_version < \"3.8\""
 name = "importlib-metadata"
+version = "4.0.1"
+description = "Read metadata from Python packages"
+category = "dev"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
-version = "1.6.0"
+python-versions = ">=3.6"
 
 [package.dependencies]
+typing-extensions = {version = ">=3.6.4", markers = "python_version < \"3.8\""}
 zipp = ">=0.5"
 
 [package.extras]
-docs = ["sphinx", "rst.linker"]
-testing = ["packaging", "importlib-resources"]
+docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "packaging", "pep517", "pyfakefs", "flufl.flake8", "pytest-black (>=0.3.7)", "pytest-mypy", "importlib-resources (>=1.3)"]
 
 [[package]]
-category = "dev"
-description = "A Python utility / library to sort Python imports."
 name = "isort"
+version = "4.3.21"
+description = "A Python utility / library to sort Python imports."
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "4.3.21"
+
+[package.dependencies]
+toml = {version = "*", optional = true, markers = "extra == \"pyproject\""}
 
 [package.extras]
+requirements = ["pipreqs", "pip-api"]
 pipfile = ["pipreqs", "requirementslib"]
 pyproject = ["toml"]
-requirements = ["pipreqs", "pip-api"]
 xdg_home = ["appdirs (>=1.4.0)"]
 
 [[package]]
-category = "dev"
-description = "McCabe checker, plugin for flake8"
 name = "mccabe"
+version = "0.6.1"
+description = "McCabe checker, plugin for flake8"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "0.6.1"
 
 [[package]]
-category = "main"
-description = "Python client for the Prometheus monitoring system."
 name = "prometheus-client"
+version = "0.10.1"
+description = "Python client for the Prometheus monitoring system."
+category = "main"
 optional = false
-python-versions = "*"
-version = "0.7.1"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.extras]
 twisted = ["twisted"]
 
 [[package]]
-category = "dev"
-description = "Python style guide checker"
 name = "pycodestyle"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "2.5.0"
-
-[[package]]
+version = "2.7.0"
+description = "Python style guide checker"
 category = "dev"
-description = "passive checker of Python programs"
-name = "pyflakes"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "2.1.1"
 
 [[package]]
-category = "main"
-description = "World timezone definitions, modern and historical"
+name = "pyflakes"
+version = "2.3.1"
+description = "passive checker of Python programs"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
 name = "pytz"
+version = "2021.1"
+description = "World timezone definitions, modern and historical"
+category = "main"
 optional = false
 python-versions = "*"
-version = "2019.3"
 
 [[package]]
-category = "main"
-description = "Python client for Redis key-value store"
 name = "redis"
+version = "3.5.3"
+description = "Python client for Redis key-value store"
+category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "3.3.11"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [package.extras]
 hiredis = ["hiredis (>=0.1.3)"]
 
 [[package]]
-category = "dev"
-description = "Python 2 and 3 compatibility utilities"
 name = "six"
+version = "1.15.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-version = "1.14.0"
 
 [[package]]
-category = "dev"
-description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
 name = "sortedcontainers"
+version = "2.3.0"
+description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "2.1.0"
 
 [[package]]
-category = "main"
-description = "Non-validating SQL parser"
 name = "sqlparse"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "0.3.0"
-
-[[package]]
-category = "dev"
-description = "A collection of helpers and mock objects for unit tests and doc tests."
-name = "testfixtures"
-optional = false
-python-versions = "*"
-version = "6.14.1"
-
-[package.extras]
-build = ["setuptools-git", "wheel", "twine"]
-docs = ["sphinx", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
-test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
-
-[[package]]
+version = "0.4.1"
+description = "A non-validating SQL parser."
 category = "main"
-description = "Fast, Extensible Progress Meter"
-name = "tqdm"
-optional = true
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-version = "4.54.1"
-
-[package.extras]
-dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown", "wheel"]
-
-[[package]]
-category = "dev"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-marker = "python_version < \"3.8\""
-name = "zipp"
 optional = false
-python-versions = ">=2.7"
-version = "1.2.0"
-
-[package.extras]
-docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
-testing = ["pathlib2", "unittest2", "jaraco.itertools", "func-timeout"]
-
-[extras]
-redis = ["redis"]
-progress = ["tqdm"]
-
-[metadata]
-content-hash = "3650964a49d975ad16401115c3c7d85da0f2d47a2b170ad34aeac1766cd70010"
 python-versions = ">=3.5"
 
+[[package]]
+name = "testfixtures"
+version = "6.17.1"
+description = "A collection of helpers and mock objects for unit tests and doc tests."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.extras]
+docs = ["sphinx", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
+test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
+build = ["setuptools-git", "wheel", "twine"]
+
+[[package]]
+name = "toml"
+version = "0.10.2"
+description = "Python Library for Tom's Obvious, Minimal Language"
+category = "dev"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
+name = "tqdm"
+version = "4.60.0"
+description = "Fast, Extensible Progress Meter"
+category = "main"
+optional = true
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+
+[package.extras]
+telegram = ["requests"]
+notebook = ["ipywidgets (>=6)"]
+dev = ["py-make (>=0.1.0)", "twine", "wheel"]
+
+[[package]]
+name = "typing-extensions"
+version = "3.7.4.3"
+description = "Backported and Experimental Type Hints for Python 3.5+"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "zipp"
+version = "3.4.1"
+description = "Backport of pathlib-compatible object wrapper for zip files"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
+testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
+
+[extras]
+progress = ["tqdm"]
+redis = ["redis"]
+
+[metadata]
+lock-version = "1.1"
+python-versions = ">=3.6"
+content-hash = "89508f2a5b23a5e68187cb1663364f0795ef79bca0939d59865b350ff84a2440"
+
 [metadata.files]
+asgiref = [
+    {file = "asgiref-3.3.4-py3-none-any.whl", hash = "sha256:92906c611ce6c967347bbfea733f13d6313901d54dcca88195eaeb52b2a8e8ee"},
+    {file = "asgiref-3.3.4.tar.gz", hash = "sha256:d1216dfbdfb63826470995d31caed36225dcaf34f182e0fa257a4dd9e86f1b78"},
+]
 attrs = [
-    {file = "attrs-19.3.0-py2.py3-none-any.whl", hash = "sha256:08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c"},
-    {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
+    {file = "attrs-20.3.0-py2.py3-none-any.whl", hash = "sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6"},
+    {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 daemonize = [
     {file = "daemonize-2.5.0-py2.py3-none-any.whl", hash = "sha256:9b6b91311a9d934ff3f5f766666635ca280d3de8e7137e4cd7d3f052543b989f"},
     {file = "daemonize-2.5.0.tar.gz", hash = "sha256:dd026e4ff8d22cb016ed2130bc738b7d4b1da597ef93c074d2adb9e4dea08bc3"},
 ]
 django = [
-    {file = "Django-2.2.9-py3-none-any.whl", hash = "sha256:687c37153486cf26c3fdcbdd177ef16de38dc3463f094b5f9c9955d91f277b14"},
-    {file = "Django-2.2.9.tar.gz", hash = "sha256:662a1ff78792e3fd77f16f71b1f31149489434de4b62a74895bd5d6534e635a5"},
-]
-entrypoints = [
-    {file = "entrypoints-0.3-py2.py3-none-any.whl", hash = "sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19"},
-    {file = "entrypoints-0.3.tar.gz", hash = "sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451"},
+    {file = "Django-3.2-py3-none-any.whl", hash = "sha256:0604e84c4fb698a5e53e5857b5aea945b2f19a18f25f10b8748dbdf935788927"},
+    {file = "Django-3.2.tar.gz", hash = "sha256:21f0f9643722675976004eb683c55d33c05486f94506672df3d6a141546f389d"},
 ]
 fakeredis = [
-    {file = "fakeredis-1.1.0-py2.py3-none-any.whl", hash = "sha256:1db27ec3a5c964b9fb9f36ec1b9770a81204c54e84f83c763f36689eef4a5fd4"},
-    {file = "fakeredis-1.1.0.tar.gz", hash = "sha256:169598943dc10aadd62871a34b2867bb5e24f9da7ebc97a2058c3f35c760241e"},
+    {file = "fakeredis-1.5.0-py3-none-any.whl", hash = "sha256:e0416e4941cecd3089b0d901e60c8dc3c944f6384f5e29e2261c0d3c5fa99669"},
+    {file = "fakeredis-1.5.0.tar.gz", hash = "sha256:1ac0cef767c37f51718874a33afb5413e69d132988cb6a80c6e6dbeddf8c7623"},
 ]
 flake8 = [
-    {file = "flake8-3.7.9-py2.py3-none-any.whl", hash = "sha256:49356e766643ad15072a789a20915d3c91dc89fd313ccd71802303fd67e4deca"},
-    {file = "flake8-3.7.9.tar.gz", hash = "sha256:45681a117ecc81e870cbf1262835ae4af5e7a8b08e40b944a8a6e6b895914cfb"},
+    {file = "flake8-3.9.1-py2.py3-none-any.whl", hash = "sha256:3b9f848952dddccf635be78098ca75010f073bfe14d2c6bda867154bea728d2a"},
+    {file = "flake8-3.9.1.tar.gz", hash = "sha256:1aa8990be1e689d96c745c5682b687ea49f2e05a443aff1f8251092b0014e378"},
 ]
 flake8-bugbear = [
     {file = "flake8-bugbear-19.8.0.tar.gz", hash = "sha256:d8c466ea79d5020cb20bf9f11cf349026e09517a42264f313d3f6fddb83e0571"},
     {file = "flake8_bugbear-19.8.0-py35.py36.py37-none-any.whl", hash = "sha256:ded4d282778969b5ab5530ceba7aa1a9f1b86fa7618fc96a19a1d512331640f8"},
 ]
 flake8-builtins = [
-    {file = "flake8-builtins-1.5.2.tar.gz", hash = "sha256:fe7be13fe51bfb06bdae6096c6488e328c822c3aa080e24b91b77116a4fbb8b0"},
-    {file = "flake8_builtins-1.5.2-py2.py3-none-any.whl", hash = "sha256:a0296d23da92a6f2494243b9f2039bfdb73f34aba20054c1b70b2a60c84745bb"},
+    {file = "flake8-builtins-1.5.3.tar.gz", hash = "sha256:09998853b2405e98e61d2ff3027c47033adbdc17f9fe44ca58443d876eb00f3b"},
+    {file = "flake8_builtins-1.5.3-py2.py3-none-any.whl", hash = "sha256:7706babee43879320376861897e5d1468e396a40b8918ed7bccf70e5f90b8687"},
 ]
 flake8-coding = [
     {file = "flake8-coding-1.3.2.tar.gz", hash = "sha256:b8f4d5157a8f74670e6cfea732c3d9f4291a4e994c8701d2c55f787c6e6cb741"},
@@ -403,15 +423,15 @@ flake8-commas = [
     {file = "flake8_commas-2.0.0-py2.py3-none-any.whl", hash = "sha256:ee2141a3495ef9789a3894ed8802d03eff1eaaf98ce6d8653a7c573ef101935e"},
 ]
 flake8-comprehensions = [
-    {file = "flake8-comprehensions-3.2.2.tar.gz", hash = "sha256:e7db586bb6eb95afdfd87ed244c90e57ae1352db8ef0ad3012fca0200421e5df"},
-    {file = "flake8_comprehensions-3.2.2-py3-none-any.whl", hash = "sha256:d08323aa801aef33477cd33f2f5ce3acb1aafd26803ab0d171d85d514c1273a2"},
+    {file = "flake8-comprehensions-3.4.0.tar.gz", hash = "sha256:c00039be9f3959a26a98da3024f0fe809859bf1753ccb90e228cc40f3ac31ca7"},
+    {file = "flake8_comprehensions-3.4.0-py3-none-any.whl", hash = "sha256:7258a28e229fb9a8d16370b9c47a7d66396ba0201abb06c9d11df41b18ed64c4"},
 ]
 flake8-debugger = [
     {file = "flake8-debugger-3.2.1.tar.gz", hash = "sha256:712d7c1ff69ddf3f0130e94cc88c2519e720760bce45e8c330bfdcb61ab4090d"},
 ]
 flake8-isort = [
-    {file = "flake8-isort-3.0.0.tar.gz", hash = "sha256:3ce227b5c5342b6d63937d3863e8de8783ae21863cb035cf992cdb0ba5990aa3"},
-    {file = "flake8_isort-3.0.0-py2.py3-none-any.whl", hash = "sha256:f5322a85cea89998e0df954162fd35a1f1e5b5eb4fc0c79b5975aa2799106baa"},
+    {file = "flake8-isort-3.0.1.tar.gz", hash = "sha256:5d976da513cc390232ad5a9bb54aee8a092466a15f442d91dfc525834bee727a"},
+    {file = "flake8_isort-3.0.1-py2.py3-none-any.whl", hash = "sha256:df1dd6dd73f6a8b128c9c783356627231783cccc82c13c6dc343d1a5a491699b"},
 ]
 flake8-mutable = [
     {file = "flake8-mutable-1.2.0.tar.gz", hash = "sha256:ee9b77111b867d845177bbc289d87d541445ffcc6029a0c5c65865b42b18c6a6"},
@@ -422,12 +442,12 @@ flake8-pep3101 = [
     {file = "flake8_pep3101-1.3.0-py2.py3-none-any.whl", hash = "sha256:a5dae1caca1243b2b40108dce926d97cf5a9f52515c4a4cbb1ffe1ca0c54e343"},
 ]
 flake8-tidy-imports = [
-    {file = "flake8-tidy-imports-4.1.0.tar.gz", hash = "sha256:c30b40337a2e6802ba3bb611c26611154a27e94c53fc45639e3e282169574fd3"},
-    {file = "flake8_tidy_imports-4.1.0-py3-none-any.whl", hash = "sha256:62059ca07d8a4926b561d392cbab7f09ee042350214a25cf12823384a45d27dd"},
+    {file = "flake8-tidy-imports-4.2.1.tar.gz", hash = "sha256:52e5f2f987d3d5597538d5941153409ebcab571635835b78f522c7bf03ca23bc"},
+    {file = "flake8_tidy_imports-4.2.1-py3-none-any.whl", hash = "sha256:76e36fbbfdc8e3c5017f9a216c2855a298be85bc0631e66777f4e6a07a859dc4"},
 ]
 importlib-metadata = [
-    {file = "importlib_metadata-1.6.0-py2.py3-none-any.whl", hash = "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f"},
-    {file = "importlib_metadata-1.6.0.tar.gz", hash = "sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"},
+    {file = "importlib_metadata-4.0.1-py3-none-any.whl", hash = "sha256:d7eb1dea6d6a6086f8be21784cc9e3bcfa55872b52309bc5fad53a8ea444465d"},
+    {file = "importlib_metadata-4.0.1.tar.gz", hash = "sha256:8c501196e49fb9df5df43833bdb1e4328f64847763ec8a50703148b73784d581"},
 ]
 isort = [
     {file = "isort-4.3.21-py2.py3-none-any.whl", hash = "sha256:6e811fcb295968434526407adb8796944f1988c5b65e8139058f2014cbe100fd"},
@@ -438,45 +458,55 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 prometheus-client = [
-    {file = "prometheus_client-0.7.1.tar.gz", hash = "sha256:71cd24a2b3eb335cb800c7159f423df1bd4dcd5171b234be15e3f31ec9f622da"},
+    {file = "prometheus_client-0.10.1-py2.py3-none-any.whl", hash = "sha256:030e4f9df5f53db2292eec37c6255957eb76168c6f974e4176c711cf91ed34aa"},
+    {file = "prometheus_client-0.10.1.tar.gz", hash = "sha256:b6c5a9643e3545bcbfd9451766cbaa5d9c67e7303c7bc32c750b6fa70ecb107d"},
 ]
 pycodestyle = [
-    {file = "pycodestyle-2.5.0-py2.py3-none-any.whl", hash = "sha256:95a2219d12372f05704562a14ec30bc76b05a5b297b21a5dfe3f6fac3491ae56"},
-    {file = "pycodestyle-2.5.0.tar.gz", hash = "sha256:e40a936c9a450ad81df37f549d676d127b1b66000a6c500caa2b085bc0ca976c"},
+    {file = "pycodestyle-2.7.0-py2.py3-none-any.whl", hash = "sha256:514f76d918fcc0b55c6680472f0a37970994e07bbb80725808c17089be302068"},
+    {file = "pycodestyle-2.7.0.tar.gz", hash = "sha256:c389c1d06bf7904078ca03399a4816f974a1d590090fecea0c63ec26ebaf1cef"},
 ]
 pyflakes = [
-    {file = "pyflakes-2.1.1-py2.py3-none-any.whl", hash = "sha256:17dbeb2e3f4d772725c777fabc446d5634d1038f234e77343108ce445ea69ce0"},
-    {file = "pyflakes-2.1.1.tar.gz", hash = "sha256:d976835886f8c5b31d47970ed689944a0262b5f3afa00a5a7b4dc81e5449f8a2"},
+    {file = "pyflakes-2.3.1-py2.py3-none-any.whl", hash = "sha256:7893783d01b8a89811dd72d7dfd4d84ff098e5eed95cfa8905b22bbffe52efc3"},
+    {file = "pyflakes-2.3.1.tar.gz", hash = "sha256:f5bc8ecabc05bb9d291eb5203d6810b49040f6ff446a756326104746cc00c1db"},
 ]
 pytz = [
-    {file = "pytz-2019.3-py2.py3-none-any.whl", hash = "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d"},
-    {file = "pytz-2019.3.tar.gz", hash = "sha256:b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"},
+    {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
+    {file = "pytz-2021.1.tar.gz", hash = "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da"},
 ]
 redis = [
-    {file = "redis-3.3.11-py2.py3-none-any.whl", hash = "sha256:3613daad9ce5951e426f460deddd5caf469e08a3af633e9578fc77d362becf62"},
-    {file = "redis-3.3.11.tar.gz", hash = "sha256:8d0fc278d3f5e1249967cba2eb4a5632d19e45ce5c09442b8422d15ee2c22cc2"},
+    {file = "redis-3.5.3-py2.py3-none-any.whl", hash = "sha256:432b788c4530cfe16d8d943a09d40ca6c16149727e4afe8c2c9d5580c59d9f24"},
+    {file = "redis-3.5.3.tar.gz", hash = "sha256:0e7e0cfca8660dea8b7d5cd8c4f6c5e29e11f31158c0b0ae91a397f00e5a05a2"},
 ]
 six = [
-    {file = "six-1.14.0-py2.py3-none-any.whl", hash = "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"},
-    {file = "six-1.14.0.tar.gz", hash = "sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a"},
+    {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
+    {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 sortedcontainers = [
-    {file = "sortedcontainers-2.1.0-py2.py3-none-any.whl", hash = "sha256:d9e96492dd51fae31e60837736b38fe42a187b5404c16606ff7ee7cd582d4c60"},
-    {file = "sortedcontainers-2.1.0.tar.gz", hash = "sha256:974e9a32f56b17c1bac2aebd9dcf197f3eb9cd30553c5852a3187ad162e1a03a"},
+    {file = "sortedcontainers-2.3.0-py2.py3-none-any.whl", hash = "sha256:37257a32add0a3ee490bb170b599e93095eed89a55da91fa9f48753ea12fd73f"},
+    {file = "sortedcontainers-2.3.0.tar.gz", hash = "sha256:59cc937650cf60d677c16775597c89a960658a09cf7c1a668f86e1e4464b10a1"},
 ]
 sqlparse = [
-    {file = "sqlparse-0.3.0-py2.py3-none-any.whl", hash = "sha256:40afe6b8d4b1117e7dff5504d7a8ce07d9a1b15aeeade8a2d10f130a834f8177"},
-    {file = "sqlparse-0.3.0.tar.gz", hash = "sha256:7c3dca29c022744e95b547e867cee89f4fce4373f3549ccd8797d8eb52cdb873"},
+    {file = "sqlparse-0.4.1-py3-none-any.whl", hash = "sha256:017cde379adbd6a1f15a61873f43e8274179378e95ef3fede90b5aa64d304ed0"},
+    {file = "sqlparse-0.4.1.tar.gz", hash = "sha256:0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8"},
 ]
 testfixtures = [
-    {file = "testfixtures-6.14.1-py2.py3-none-any.whl", hash = "sha256:30566e24a1b34e4d3f8c13abf62557d01eeb4480bcb8f1745467bfb0d415a7d9"},
-    {file = "testfixtures-6.14.1.tar.gz", hash = "sha256:58d2b3146d93bc5ddb0cd24e0ccacb13e29bdb61e5c81235c58f7b8ee4470366"},
+    {file = "testfixtures-6.17.1-py2.py3-none-any.whl", hash = "sha256:9ed31e83f59619e2fa17df053b241e16e0608f4580f7b5a9333a0c9bdcc99137"},
+    {file = "testfixtures-6.17.1.tar.gz", hash = "sha256:5ec3a0dd6f71cc4c304fbc024a10cc293d3e0b852c868014b9f233203e149bda"},
+]
+toml = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 tqdm = [
-    {file = "tqdm-4.54.1-py2.py3-none-any.whl", hash = "sha256:d4f413aecb61c9779888c64ddf0c62910ad56dcbe857d8922bb505d4dbff0df1"},
-    {file = "tqdm-4.54.1.tar.gz", hash = "sha256:38b658a3e4ecf9b4f6f8ff75ca16221ae3378b2e175d846b6b33ea3a20852cf5"},
+    {file = "tqdm-4.60.0-py2.py3-none-any.whl", hash = "sha256:daec693491c52e9498632dfbe9ccfc4882a557f5fa08982db1b4d3adbe0887c3"},
+    {file = "tqdm-4.60.0.tar.gz", hash = "sha256:ebdebdb95e3477ceea267decfc0784859aa3df3e27e22d23b83e9b272bf157ae"},
+]
+typing-extensions = [
+    {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
+    {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
+    {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
 ]
 zipp = [
-    {file = "zipp-1.2.0-py2.py3-none-any.whl", hash = "sha256:e0d9e63797e483a30d27e09fffd308c59a700d365ec34e93cc100844168bf921"},
-    {file = "zipp-1.2.0.tar.gz", hash = "sha256:c70410551488251b0fee67b460fb9a536af8d6f9f008ad10ac51f615b6a521b1"},
+    {file = "zipp-3.4.1-py3-none-any.whl", hash = "sha256:51cb66cc54621609dd593d1787f286ee42a5c0adbb4b29abea5a63edc3e03098"},
+    {file = "zipp-3.4.1.tar.gz", hash = "sha256:3607921face881ba3e026887d8150cca609d517579abe052ac81fc5aeffdbd76"},
 ]
