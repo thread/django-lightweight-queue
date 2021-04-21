@@ -7,7 +7,7 @@ license = "BSD-3-Clause"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.5"
+python = ">=3.6"
 django = ">=1.11.27"
 daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"

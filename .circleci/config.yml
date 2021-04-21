@@ -34,12 +34,8 @@ references:
   version-matrix: &version-matrix
     matrix:
       parameters:
-        python-version: ["3.5.5", "3.6", "3.7", "3.8"]
+        python-version: ["3.6", "3.7", "3.8"]
         django-version: ["1.11.27", "2.2", "3.1"]
-      exclude:
-        # Not supported.
-        - python-version: "3.5.5"
-          django-version: "3.1"
 
 executors:
   python:
@@ -87,7 +83,7 @@ jobs:
   deploy:
     executor:
       name: python
-      version: "3.5.5"
+      version: "3.7"
     steps:
       - checkout
       - run:
