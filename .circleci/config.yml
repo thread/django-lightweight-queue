@@ -103,17 +103,17 @@ workflows:
   build-test:
     jobs:
       - build-test:
-          name: "build-py<< matrix.python-version >>-Django<< matrix.django-version >>"
+          name: build-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
       - lint:
-          name: "lint-py<< matrix.python-version >>-Django<< matrix.django-version >>"
+          name: lint-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
 
 
   build-test-deploy:
     jobs:
       - build-test:
-          name: "build-py<< matrix.python-version >>-Django<< matrix.django-version >>"
+          name: build-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
           filters:
             tags:
@@ -122,7 +122,7 @@ workflows:
               ignore: /.*/
 
       - lint:
-          name: "lint-py<< matrix.python-version >>-Django<< matrix.django-version >>"
+          name: lint-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
           filters:
             tags:
