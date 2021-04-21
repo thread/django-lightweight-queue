@@ -21,9 +21,9 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.extras]
+dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "furo", "sphinx", "pre-commit"]
 docs = ["furo", "sphinx", "zope.interface"]
 tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface"]
-dev = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "furo", "sphinx", "pre-commit"]
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six"]
 
 [[package]]
@@ -43,9 +43,9 @@ optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-sqlparse = ">=0.2.2"
-pytz = "*"
 asgiref = ">=3.3.2,<4"
+pytz = "*"
+sqlparse = ">=0.2.2"
 
 [package.extras]
 argon2 = ["argon2-cffi (>=19.1.0)"]
@@ -60,8 +60,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.dependencies]
-six = ">=1.12"
 redis = "<3.6.0"
+six = ">=1.12"
 sortedcontainers = "*"
 
 [package.extras]
@@ -77,10 +77,10 @@ optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [package.dependencies]
-pycodestyle = ">=2.7.0,<2.8.0"
-mccabe = ">=0.6.0,<0.7.0"
-pyflakes = ">=2.3.0,<2.4.0"
 importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
+mccabe = ">=0.6.0,<0.7.0"
+pycodestyle = ">=2.7.0,<2.8.0"
+pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "flake8-bugbear"
@@ -151,8 +151,8 @@ optional = false
 python-versions = "*"
 
 [package.dependencies]
-pycodestyle = "*"
 flake8 = ">=1.5"
+pycodestyle = "*"
 
 [[package]]
 name = "flake8-isort"
@@ -235,9 +235,9 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 toml = {version = "*", optional = true, markers = "extra == \"pyproject\""}
 
 [package.extras]
-requirements = ["pipreqs", "pip-api"]
 pipfile = ["pipreqs", "requirementslib"]
 pyproject = ["toml"]
+requirements = ["pipreqs", "pip-api"]
 xdg_home = ["appdirs (>=1.4.0)"]
 
 [[package]]
@@ -327,9 +327,9 @@ optional = false
 python-versions = "*"
 
 [package.extras]
+build = ["setuptools-git", "wheel", "twine"]
 docs = ["sphinx", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
 test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
-build = ["setuptools-git", "wheel", "twine"]
 
 [[package]]
 name = "toml"
@@ -348,9 +348,9 @@ optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
 
 [package.extras]
-telegram = ["requests"]
-notebook = ["ipywidgets (>=6)"]
 dev = ["py-make (>=0.1.0)", "twine", "wheel"]
+notebook = ["ipywidgets (>=6)"]
+telegram = ["requests"]
 
 [[package]]
 name = "typing-extensions"
@@ -379,7 +379,7 @@ redis = ["redis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6"
-content-hash = "89508f2a5b23a5e68187cb1663364f0795ef79bca0939d59865b350ff84a2440"
+content-hash = "2a5223c5f36dd83ae52491f12ec91ad0cdfbc05926be4b0be01e1702ba072d95"
 
 [metadata.files]
 asgiref = [
