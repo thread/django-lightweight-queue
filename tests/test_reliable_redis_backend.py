@@ -1,6 +1,8 @@
 import datetime
 import unittest
+import contextlib
 import unittest.mock
+from typing import Mapping, Iterator
 
 import fakeredis
 from django_lightweight_queue.job import Job
@@ -37,6 +39,17 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
         job = self.create_job(*args, **kwargs)
         self.backend.enqueue(job, queue)
         return job
+
+    @contextlib.contextmanager
+    def mock_workers(self, workers: Mapping[str, int]) -> Iterator[None]:
+        with unittest.mock.patch(
+            'django_lightweight_queue.utils._accepting_implied_queues',
+            new=False,
+        ), unittest.mock.patch.dict(
+            'django_lightweight_queue.app_settings.WORKERS',
+            workers,
+        ):
+            yield
 
     def setUp(self):
         with unittest.mock.patch('redis.StrictRedis', fakeredis.FakeStrictRedis):
@@ -248,4 +261,66 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             ['args3'],
             job.args,
             "Third job dequeued should be the third job enqueued",
+        )
+
+    def test_startup_recovers_orphaned_job(self):
+        QUEUE = 'the-queue'
+
+        self.enqueue_job(QUEUE)
+        orig_job = self.backend.dequeue(QUEUE, worker_number=3, timeout=1)
+
+        self.assertEqual(
+            0,
+            self.backend.length(QUEUE),
+            "Queue should appear empty after dequeuing job",
+        )
+
+        with self.mock_workers({QUEUE: 1}):
+            self.backend.startup(QUEUE)
+
+        self.assertEqual(
+            1,
+            self.backend.length(QUEUE),
+            "Queue should have recovered entry after running startup",
+        )
+
+        actual_job = self.backend.dequeue(QUEUE, worker_number=1, timeout=1)
+
+        self.assertEqual(
+            orig_job.as_dict(),
+            actual_job.as_dict(),
+            "The queue job should be the original one",
+        )
+
+    def test_startup_doesnt_move_job_on_known_queue(self):
+        QUEUE = 'the-queue'
+
+        self.enqueue_job(QUEUE)
+        orig_job = self.backend.dequeue(QUEUE, worker_number=3, timeout=1)
+
+        self.assertEqual(
+            0,
+            self.backend.length(QUEUE),
+            "Queue should appear empty after dequeuing job",
+        )
+
+        with self.mock_workers({QUEUE: 3}):
+            self.backend.startup(QUEUE)
+
+        self.assertEqual(
+            0,
+            self.backend.length(QUEUE),
+            "Queue should still appear empty after startup",
+        )
+
+        actual_job = Job.from_json(
+            self.client.lpop(
+                self.backend._processing_key(QUEUE, 3),
+            ).decode(),
+        )
+
+        self.assertEqual(
+            orig_job.as_dict(),
+            actual_job.as_dict(),
+            "The queue job should be the original one",
         )
