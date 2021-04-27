@@ -3,7 +3,7 @@ import redis
 from .. import app_settings
 from ..job import Job
 from .base import BaseBackend
-from ..utils import get_all_worker_numbers
+from ..utils import get_worker_numbers
 from ..progress_logger import NULL_PROGRESS_LOGGER
 
 
@@ -49,7 +49,7 @@ class ReliableRedisBackend(BaseBackend):
         current_processing_queue_keys = set(self.client.keys(pattern))
         expected_processing_queue_keys = set(
             self._processing_key(queue, worker_number).encode()
-            for worker_number in get_all_worker_numbers()[queue]
+            for worker_number in get_worker_numbers(queue)
         )
         processing_queue_keys = current_processing_queue_keys - expected_processing_queue_keys
 

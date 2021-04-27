@@ -99,9 +99,9 @@ def get_queue_counts():
     return app_settings.WORKERS
 
 
-def get_all_worker_numbers() -> Mapping[str, Collection[int]]:
-    counts = get_queue_counts()
-    return {k: range(1, v + 1) for k, v in counts.items()}
+def get_worker_numbers(queue: str) -> Collection[int]:
+    count = get_queue_counts()[queue]
+    return range(1, count + 1)
 
 
 def import_all_submodules(name, exclude=()):
