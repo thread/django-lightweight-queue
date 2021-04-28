@@ -1,7 +1,7 @@
 import imp
 import warnings
 import importlib
-from typing import Mapping
+from typing import Mapping, Collection
 from functools import lru_cache
 
 from django.apps import apps
@@ -97,6 +97,11 @@ def get_queue_counts():
     # type: (None) -> Mapping[str, int]
     refuse_further_implied_queues()
     return app_settings.WORKERS
+
+
+def get_worker_numbers(queue: str) -> Collection[int]:
+    count = get_queue_counts()[queue]
+    return range(1, count + 1)
 
 
 def import_all_submodules(name, exclude=()):
