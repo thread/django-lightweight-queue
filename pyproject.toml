@@ -5,6 +5,12 @@ description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
 readme = "README.md"
+homepage = "https://github.com/thread/django-lightweight-queue/"
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.6"
