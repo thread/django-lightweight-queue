@@ -1,7 +1,9 @@
 import imp
+import time
+import datetime
 import warnings
 import importlib
-from typing import Mapping, Collection
+from typing import Mapping, Callable, Collection
 from functools import lru_cache
 
 from django.apps import apps
@@ -11,6 +13,8 @@ from django.utils.module_loading import module_has_submodule
 from . import constants, app_settings
 
 _accepting_implied_queues = True
+
+THIRTY_SECONDS = datetime.timedelta(seconds=30)
 
 
 def load_extra_config(file_path):
@@ -122,6 +126,35 @@ def import_all_submodules(name, exclude=()):
 
 def load_all_tasks():
     import_all_submodules('tasks', app_settings.IGNORE_APPS)
+
+
+def block_for_time(
+    should_continue_blocking: Callable[[], bool],
+    timeout: datetime.timedelta,
+    check_frequency: datetime.timedelta = THIRTY_SECONDS,
+) -> bool:
+    """
+    Block until a cancellation function or timeout indicates otherwise.
+
+    Returns whether or not the timeout was encountered.
+    """
+    if not should_continue_blocking:
+        return False
+
+    end = time.time() + timeout.total_seconds()
+
+    while should_continue_blocking:
+        now = time.time()
+        if now > end:
+            # timed out
+            return True
+
+        time.sleep(min(
+            check_frequency.total_seconds(),
+            end - now,
+        ))
+
+    return False
 
 
 try:

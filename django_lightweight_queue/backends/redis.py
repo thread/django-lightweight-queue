@@ -1,8 +1,13 @@
+import datetime
+
 import redis
 
 from .. import app_settings
 from ..job import Job
 from .base import BaseBackend
+from ..utils import block_for_time
+
+QueueName = str
 
 
 class RedisBackend(BaseBackend):
@@ -20,6 +25,15 @@ class RedisBackend(BaseBackend):
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
     def dequeue(self, queue, worker_num, timeout):
+        if self.is_paused(queue):
+            # Block for a while to avoid constant polling ...
+            block_for_time(
+                lambda: self.is_paused(queue),
+                timeout=datetime.timedelta(minutes=5),
+            )
+            # ... but always indicate that we did no work
+            return None
+
         try:
             _, data = self.client.brpop(self._key(queue), timeout)
 
@@ -30,6 +44,27 @@ class RedisBackend(BaseBackend):
     def length(self, queue):
         return self.client.llen(self._key(queue))
 
+    def pause(self, queue: QueueName, until: datetime.datetime) -> None:
+        """
+        Pause the given queue by setting a pause marker.
+        """
+
+        pause_key = self._pause_key(queue)
+
+        now = datetime.datetime.now(datetime.timezone.utc)
+        delta = until - now
+
+        self.client.setex(
+            pause_key,
+            time=int(delta.total_seconds()),
+            # Store the value for debugging, we rely on setex behaviour for
+            # implementation.
+            value=until.isoformat(' '),
+        )
+
+    def is_paused(self, queue: QueueName) -> bool:
+        return self.client.exists(self._pause_key(queue))
+
     def _key(self, queue):
         if app_settings.REDIS_PREFIX:
             return '{}:django_lightweight_queue:{}'.format(
@@ -38,3 +73,6 @@ class RedisBackend(BaseBackend):
             )
 
         return 'django_lightweight_queue:{}'.format(queue)
+
+    def _pause_key(self, queue: QueueName) -> str:
+        return self._key(queue) + ':pause'
