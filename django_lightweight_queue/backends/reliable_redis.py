@@ -194,6 +194,12 @@ class ReliableRedisBackend(BaseBackend):
             value=until.isoformat(' '),
         )
 
+    def resume(self, queue: QueueName) -> None:
+        """
+        Resume the given queue by deleting the pause marker (if present).
+        """
+        self.client.delete(self._pause_key(queue))
+
     def is_paused(self, queue: QueueName) -> bool:
         return self.client.exists(self._pause_key(queue))
 
