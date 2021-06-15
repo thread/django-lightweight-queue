@@ -138,12 +138,12 @@ def block_for_time(
 
     Returns whether or not the timeout was encountered.
     """
-    if not should_continue_blocking:
+    if not should_continue_blocking():
         return False
 
     end = time.time() + timeout.total_seconds()
 
-    while should_continue_blocking:
+    while should_continue_blocking():
         now = time.time()
         if now > end:
             # timed out
