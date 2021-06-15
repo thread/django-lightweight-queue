@@ -29,7 +29,7 @@ class RedisBackend(BaseBackend):
             # Block for a while to avoid constant polling ...
             block_for_time(
                 lambda: self.is_paused(queue),
-                timeout=datetime.timedelta(minutes=5),
+                timeout=datetime.timedelta(seconds=timeout),
             )
             # ... but always indicate that we did no work
             return None

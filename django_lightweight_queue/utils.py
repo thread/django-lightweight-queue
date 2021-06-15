@@ -14,7 +14,7 @@ from . import constants, app_settings
 
 _accepting_implied_queues = True
 
-THIRTY_SECONDS = datetime.timedelta(seconds=30)
+FIVE_SECONDS = datetime.timedelta(seconds=5)
 
 
 def load_extra_config(file_path):
@@ -131,7 +131,7 @@ def load_all_tasks():
 def block_for_time(
     should_continue_blocking: Callable[[], bool],
     timeout: datetime.timedelta,
-    check_frequency: datetime.timedelta = THIRTY_SECONDS,
+    check_frequency: datetime.timedelta = FIVE_SECONDS,
 ) -> bool:
     """
     Block until a cancellation function or timeout indicates otherwise.
