@@ -338,7 +338,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
 
         with unittest.mock.patch(
             'time.time',
-            side_effect=itertools.count(time.time(), 30),
+            side_effect=itertools.count(time.time(), 1),
         ), unittest.mock.patch(
             'time.sleep',
         ) as mock_sleep:
