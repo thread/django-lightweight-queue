@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         if not hasattr(backend, 'resume'):
             raise CommandError(
-                "Configured backend '{}.{}' doesn't support pausing".format(
+                "Configured backend '{}.{}' doesn't support resuming from paused".format(
                     type(backend).__module__,
                     type(backend).__name__,
                 ),
