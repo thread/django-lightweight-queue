@@ -4,7 +4,7 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BaseBackend, BackendWithDeduplicate
+from .base import BackendWithDeduplicate
 from ..types import QueueName, WorkerNumber
 from ..utils import get_worker_numbers
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
