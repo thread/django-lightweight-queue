@@ -4,13 +4,13 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BaseBackend
+from .base import BackendWithPauseResume
 from ..utils import block_for_time
 
 QueueName = str
 
 
-class RedisBackend(BaseBackend):
+class RedisBackend(BackendWithPauseResume):
     """
     This backend has at-most-once semantics.
     """

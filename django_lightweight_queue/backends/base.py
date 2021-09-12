@@ -1,6 +1,9 @@
+import datetime
 from abc import ABCMeta, abstractmethod
 
 from ..job import Job
+
+QueueName = str
 
 
 class BaseBackend(metaclass=ABCMeta):
@@ -21,3 +24,15 @@ class BaseBackend(metaclass=ABCMeta):
 
     def processed_job(self, queue: str, worker_num: int, job: Job) -> None:
         pass
+
+
+class BackendWithPause(BaseBackend, metaclass=ABCMeta):
+    @abstractmethod
+    def pause(self, queue: QueueName, until: datetime.datetime) -> None:
+        raise NotImplementedError()
+
+
+class BackendWithPauseResume(BackendWithPause, metaclass=ABCMeta):
+    @abstractmethod
+    def resume(self, queue: QueueName) -> None:
+        raise NotImplementedError()

@@ -4,14 +4,14 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BaseBackend
+from .base import BackendWithPauseResume
 from ..utils import block_for_time, get_worker_numbers
 from ..progress_logger import NULL_PROGRESS_LOGGER
 
 QueueName = str
 
 
-class ReliableRedisBackend(BaseBackend):
+class ReliableRedisBackend(BackendWithPauseResume):
     """
     This backend manages a per-queue-per-worker 'processing' queue. E.g. if we
     had a queue called 'django_lightweight_queue:things', and two workers, we

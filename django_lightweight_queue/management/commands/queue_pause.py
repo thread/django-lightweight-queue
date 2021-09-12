@@ -5,6 +5,7 @@ import datetime
 from django.core.management.base import BaseCommand, CommandError
 
 from ...utils import get_backend
+from ...backends.base import BackendWithPause
 
 QueueName = str
 
@@ -79,7 +80,7 @@ class Command(BaseCommand):
 
         backend = get_backend(queue)
 
-        if not hasattr(backend, 'pause'):
+        if not isinstance(backend, BackendWithPause):
             raise CommandError(
                 "Configured backend '{}.{}' doesn't support pausing".format(
                     type(backend).__module__,

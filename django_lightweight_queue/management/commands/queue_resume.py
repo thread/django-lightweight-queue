@@ -3,6 +3,7 @@ import argparse
 from django.core.management.base import BaseCommand, CommandError
 
 from ...utils import get_backend
+from ...backends.base import BackendWithPauseResume
 
 QueueName = str
 
@@ -25,7 +26,7 @@ class Command(BaseCommand):
     def handle(self, queue: QueueName, **options: object) -> None:
         backend = get_backend(queue)
 
-        if not hasattr(backend, 'resume'):
+        if not isinstance(backend, BackendWithPauseResume):
             raise CommandError(
                 "Configured backend '{}.{}' doesn't support resuming from paused".format(
                     type(backend).__module__,
