@@ -10,6 +10,7 @@ from typing import (
     Callable,
     Iterable,
     Sequence,
+    Collection,
     TYPE_CHECKING,
 )
 from functools import lru_cache
@@ -19,7 +20,7 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
 from . import constants, app_settings
-from .types import Logger, QueueName
+from .types import Logger, QueueName, WorkerNumber
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend
@@ -111,6 +112,11 @@ def contribute_implied_queue_name(queue: QueueName) -> None:
 def get_queue_counts() -> Mapping[QueueName, int]:
     refuse_further_implied_queues()
     return app_settings.WORKERS
+
+
+def get_worker_numbers(queue: QueueName) -> Collection[WorkerNumber]:
+    count = get_queue_counts()[queue]
+    return cast(Collection[WorkerNumber], range(1, count + 1))
 
 
 def import_all_submodules(name: str, exclude: Sequence[str] = ()) -> None:

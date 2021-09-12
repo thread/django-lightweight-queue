@@ -1,16 +1,21 @@
 [tool.poetry]
 name = "django-lightweight-queue"
-version = "3.1.0"
+version = "4.0.2"
 description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
 readme = "README.md"
+homepage = "https://github.com/thread/django-lightweight-queue/"
 include = ["django_lightweight_queue/py.typed"]
 
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+]
+
 [tool.poetry.dependencies]
-# TYPE_CHECKING was added in 3.5.2
-python = ">=3.5.2"
-django = ">=1.11.27,<3.0"
+python = ">=3.6"
+django = ">=2.2"
 daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"
 redis = {version = "~=3.*", optional = true}

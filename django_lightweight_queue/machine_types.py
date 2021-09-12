@@ -3,7 +3,7 @@ from typing import Tuple, Sequence
 from django.utils.functional import cached_property
 
 from .types import QueueName, WorkerNumber
-from .utils import get_queue_counts
+from .utils import get_queue_counts, get_worker_numbers
 from .cron_scheduler import CRON_QUEUE_NAME
 
 
@@ -77,13 +77,13 @@ class PooledMachine(Machine):
         # choosing only those which should be run on this machine.
         job_number = 1
 
-        for queue, num_workers in sorted(get_queue_counts().items()):
+        for queue in sorted(get_queue_counts().keys()):
             if self.only_queue and self.only_queue != queue:
                 continue
 
-            for worker_num in range(1, num_workers + 1):
+            for worker_num in get_worker_numbers(queue):
                 if (job_number % self.machine_count) + 1 == self.machine_number:  # noqa: S001
-                    worker_names.append((queue, WorkerNumber(worker_num)))
+                    worker_names.append((queue, worker_num))
 
                 job_number += 1
 
@@ -108,7 +108,7 @@ class DirectlyConfiguredMachine(Machine):
     @cached_property
     def worker_names(self) -> Sequence[Tuple[QueueName, WorkerNumber]]:
         return tuple(
-            (queue, WorkerNumber(worker_number))
-            for queue, num_workers in sorted(get_queue_counts().items())
-            for worker_number in range(num_workers)
+            (queue, worker_number)
+            for queue in sorted(get_queue_counts().keys())
+            for worker_number in get_worker_numbers(queue)
         )

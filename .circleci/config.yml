@@ -9,29 +9,33 @@ references:
   restore-dependencies-cache: &restore-dependencies-cache
     restore_cache:
       keys:
-        - deps-py<< parameters.version >>-{{ checksum "poetry.lock" }}
+        - deps-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
   install-dependencies: &install-dependencies
     run:
       name: Install Dependencies
       command: |
         source $HOME/.poetry/env
         poetry install
+        poetry run pip install "django>=<< parameters.django-version >>"
   save-dependencies-cache: &save-dependencies-cache
     save_cache:
-      key: deps-py<< parameters.version >>-{{ checksum "poetry.lock" }}
+      key: deps-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
       paths:
         - /home/circleci/.cache/pypoetry/virtualenvs
   parametrised-python-executor: &parametrised-python-executor
     parameters:
-      version:
+      python-version:
+        type: string
+      django-version:
         type: string
     executor:
       name: python
-      version: << parameters.version >>
-  python-version-matrix: &python-version-matrix
+      version: << parameters.python-version >>
+  version-matrix: &version-matrix
     matrix:
       parameters:
-        version: ["3.5.5", "3.6", "3.7", "3.8"]
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
+        django-version: ["2.2", "3.0", "3.1"]
 
 executors:
   python:
@@ -96,7 +100,7 @@ jobs:
   deploy:
     executor:
       name: python
-      version: "3.5.5"
+      version: "3.7"
     steps:
       - checkout
       - run:
@@ -116,17 +120,21 @@ workflows:
   build-test:
     jobs:
       - build-test:
-          <<: *python-version-matrix
+          name: build-test-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
       - lint:
-          <<: *python-version-matrix
+          name: lint-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
       - type-check:
-          <<: *python-version-matrix
+          name: type-check-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
 
 
   build-test-deploy:
     jobs:
       - build-test:
-          <<: *python-version-matrix
+          name: build-test-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
@@ -134,7 +142,8 @@ workflows:
               ignore: /.*/
 
       - lint:
-          <<: *python-version-matrix
+          name: lint-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/

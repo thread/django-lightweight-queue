@@ -4,8 +4,9 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BackendWithDeduplicate
+from .base import BaseBackend, BackendWithDeduplicate
 from ..types import QueueName, WorkerNumber
+from ..utils import get_worker_numbers
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 
 # Work around https://github.com/python/mypy/issues/9914. Name needs to match
@@ -48,7 +49,16 @@ class ReliableRedisBackend(BackendWithDeduplicate):
             'django_lightweight_queue:{}:processing:*'.format(queue),
         )
 
-        processing_queue_keys = self.client.keys(pattern)
+        # Work out which processing queues no longer have associated workers.
+        # Without this the startup process can end up racing against workers on
+        # other machines which are validly re-populating their processing queues
+        # as they work on jobs.
+        current_processing_queue_keys = set(self.client.keys(pattern))
+        expected_processing_queue_keys = set(
+            self._processing_key(queue, worker_number).encode()
+            for worker_number in get_worker_numbers(queue)
+        )
+        processing_queue_keys = current_processing_queue_keys - expected_processing_queue_keys
 
         def move_processing_jobs_to_main(pipe: redis.client.StrictPipeline) -> None:
             # Collect all the data we need to add, before adding the data back
