@@ -60,7 +60,7 @@ class ReliableRedisBackend(BackendWithDeduplicate):
         )
         processing_queue_keys = current_processing_queue_keys - expected_processing_queue_keys
 
-        def move_processing_jobs_to_main(pipe: redis.client.StrictPipeline) -> None:
+        def move_processing_jobs_to_main(pipe: redis.client.Pipeline) -> None:
             # Collect all the data we need to add, before adding the data back
             # to the main queue of and clearing the processing queues
             # atomically, so if this crashes, we don't lose jobs
