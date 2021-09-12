@@ -151,7 +151,8 @@ workflows:
               ignore: /.*/
 
       - type-check:
-          <<: *python-version-matrix
+          name: type-check-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
