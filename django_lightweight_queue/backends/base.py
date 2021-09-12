@@ -38,4 +38,4 @@ class BackendWithDeduplicate(BaseBackend, metaclass=ABCMeta):
         *,
         progress_logger: ProgressLogger = NULL_PROGRESS_LOGGER
     ) -> Tuple[int, int]:
-        pass
+        raise NotImplementedError()
