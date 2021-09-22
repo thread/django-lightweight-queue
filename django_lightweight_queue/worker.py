@@ -6,13 +6,16 @@ import signal
 import logging
 import datetime
 import itertools
+from typing import Optional
 
 from prometheus_client import Summary, start_http_server
 
 from django.db import connections, transaction
 
 from . import app_settings
+from .types import QueueName, WorkerNumber
 from .utils import get_logger, get_backend, set_process_title
+from .backends.base import BaseBackend
 
 if app_settings.ENABLE_PROMETHEUS:
     job_duration = Summary(
@@ -23,7 +26,13 @@ if app_settings.ENABLE_PROMETHEUS:
 
 
 class Worker:
-    def __init__(self, queue, prometheus_port, worker_num, touch_filename):
+    def __init__(
+        self,
+        queue: QueueName,
+        prometheus_port: int,
+        worker_num: WorkerNumber,
+        touch_filename: str,
+    ) -> None:
         self.queue = queue
         self.prometheus_port = prometheus_port
         self.worker_num = worker_num
@@ -44,7 +53,7 @@ class Worker:
         # Setup @property.setter on Process
         self.name = '{}/{}'.format(queue, worker_num)
 
-    def run(self):
+    def run(self) -> None:
         if app_settings.ENABLE_PROMETHEUS and self.prometheus_port is not None:
             self.log(logging.INFO, "Exporting metrics on port {}".format(self.prometheus_port))
             start_http_server(self.prometheus_port)
@@ -92,15 +101,15 @@ class Worker:
 
         self.log(logging.DEBUG, "Exiting")
 
-    def _handle_sigusr2(self, signum, frame):
+    def _handle_sigusr2(self, signum: int, frame: object) -> None:
         self.running = False
 
-    def idle_time_reached(self, time_item_last_processed):
+    def idle_time_reached(self, time_item_last_processed: datetime.datetime) -> bool:
         idle_time = datetime.datetime.utcnow() - time_item_last_processed
 
         return idle_time > datetime.timedelta(minutes=30)
 
-    def process(self, backend):
+    def process(self, backend: BaseBackend) -> bool:
         self.log(logging.DEBUG, "Checking backend for items")
 
         self.set_process_title("Waiting for items")
@@ -138,7 +147,7 @@ class Worker:
 
         return True
 
-    def configure_cancellation(self, timeout, sigkill_on_stop):
+    def configure_cancellation(self, timeout: Optional[int], sigkill_on_stop: bool) -> None:
         if sigkill_on_stop:
             # SIGUSR2 can be taken to just cause the process to die
             # immediately. This is the default action for SIGUSR2.
@@ -157,10 +166,10 @@ class Worker:
             # Cancel any scheduled alarms
             signal.alarm(0)
 
-    def set_process_title(self, *titles):
+    def set_process_title(self, *titles: str) -> None:
         set_process_title(self.name, *titles)
 
-    def log(self, level, message):
+    def log(self, level: int, message: str) -> None:
         self.logger.log(level, message, extra={
             'queue': self.queue,
             'worker': self.worker_num,

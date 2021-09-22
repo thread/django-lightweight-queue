@@ -6,6 +6,7 @@ authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
 readme = "README.md"
 homepage = "https://github.com/thread/django-lightweight-queue/"
+include = ["django_lightweight_queue/py.typed"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -29,8 +30,9 @@ progress = ["tqdm"]
 fakeredis = "^1.1.0"
 
 # Linting tools
-flake8 = "^3.7.9"
+flake8 = "^3.8.0"
 isort = "^4.3.21"
+mypy = "^0.780"
 
 # Flake 8 plugins
 flake8-bugbear = "^19.8.0"

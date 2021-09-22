@@ -1,6 +1,9 @@
+import redis
+
+
 class RedisCleanupMixin(object):
-    client = None
-    prefix = None
+    client = NotImplemented  # type: redis.StrictRedis
+    prefix = NotImplemented  # type: str
 
     def setUp(self):
         super(RedisCleanupMixin, self).setUp()

@@ -1,10 +1,21 @@
+from typing import Any, Generic, TypeVar, Callable, Optional
+
 from . import app_settings
 from .job import Job
+from .types import QueueName
 from .utils import get_backend, contribute_implied_queue_name
+
+TCallable = TypeVar('TCallable', bound=Callable[..., Any])
 
 
 class task:
-    def __init__(self, queue='default', timeout=None, sigkill_on_stop=False, atomic=None):
+    def __init__(
+        self,
+        queue: str = 'default',
+        timeout: Optional[int] = None,
+        sigkill_on_stop: bool = False,
+        atomic: Optional[bool] = None,
+    ) -> None:
         """
         Define a task to be run.
 
@@ -61,19 +72,26 @@ class task:
         if atomic is None:
             atomic = app_settings.ATOMIC_JOBS
 
-        self.queue = queue
+        self.queue = QueueName(queue)
         self.timeout = timeout
         self.sigkill_on_stop = sigkill_on_stop
         self.atomic = atomic
 
         contribute_implied_queue_name(self.queue)
 
-    def __call__(self, fn):
+    def __call__(self, fn: TCallable) -> 'TaskWrapper[TCallable]':
         return TaskWrapper(fn, self.queue, self.timeout, self.sigkill_on_stop, self.atomic)
 
 
-class TaskWrapper:
-    def __init__(self, fn, queue, timeout, sigkill_on_stop, atomic):
+class TaskWrapper(Generic[TCallable]):
+    def __init__(
+        self,
+        fn: TCallable,
+        queue: QueueName,
+        timeout: Optional[int],
+        sigkill_on_stop: bool,
+        atomic: bool,
+    ):
         self.fn = fn
         self.queue = queue
         self.timeout = timeout
@@ -82,10 +100,10 @@ class TaskWrapper:
 
         self.path = '{}.{}'.format(fn.__module__, fn.__name__)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<TaskWrapper: {}>".format(self.path)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> None:
         # Allow us to override the default values dynamically
         timeout = kwargs.pop('django_lightweight_queue_timeout', self.timeout)
         sigkill_on_stop = kwargs.pop(

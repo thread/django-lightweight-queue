@@ -80,6 +80,23 @@ jobs:
             source $HOME/.poetry/env
             poetry run flake8
 
+  type-check:
+    <<: *parametrised-python-executor
+
+    steps:
+      - checkout
+
+      - *install-poetry
+      - *restore-dependencies-cache
+      - *install-dependencies
+      - *save-dependencies-cache
+
+      - run:
+          name: Run Mypy
+          command: |
+            source $HOME/.poetry/env
+            poetry run ./script/type-check
+
   deploy:
     executor:
       name: python
@@ -108,6 +125,9 @@ workflows:
       - lint:
           name: lint-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
+      - type-check:
+          name: type-check-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
 
 
   build-test-deploy:
@@ -130,11 +150,21 @@ workflows:
             branches:
               ignore: /.*/
 
+      - type-check:
+          name: type-check-py<< matrix.python-version >>-Django<< matrix.django-version >>
+          <<: *version-matrix
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+
       - deploy:
           context: thread-pypi
           requires:
             - build-test
             - lint
+            - type-check
           filters:
               tags:
                 only: /v[0-9]+(\.[0-9]+)*/

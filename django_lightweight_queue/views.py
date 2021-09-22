@@ -5,14 +5,15 @@ import logging
 from django import template
 from django.db import transaction
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 
 from .job import Job
+from .types import QueueName, WorkerNumber
 
 
 # Note: no authentication here -- ensure you only connect up this view in
 # development!
-def debug_run(request):
+def debug_run(request: HttpRequest) -> HttpResponse:
     """
     Run a task on a `GET` request and within a transaction which will always be
     rolled back.
@@ -50,7 +51,7 @@ def debug_run(request):
     try:
         logging.root.addHandler(handler)
         with transaction.atomic():
-            result = job.run(queue='debug', worker_num=0)
+            result = job.run(queue=QueueName('debug'), worker_num=WorkerNumber(0))
             transaction.set_rollback(rollback=True)
     finally:
         logging.root.removeHandler(handler)
