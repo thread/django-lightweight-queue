@@ -129,7 +129,6 @@ workflows:
           name: type-check-py<< matrix.python-version >>-Django<< matrix.django-version >>
           <<: *version-matrix
 
-
   build-test-deploy:
     jobs:
       - build-test:
