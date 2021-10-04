@@ -54,4 +54,4 @@ class Command(BaseCommand):
                 'timeout',
                 'sigkill_on_stop',
             ):
-                print("{:20s}: {}".format(key, config.get(k, '-')))
+                print("{:20s}: {}".format(key, config.get(key, '-')))
