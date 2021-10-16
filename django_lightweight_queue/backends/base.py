@@ -47,6 +47,10 @@ class BackendWithPause(BaseBackend, metaclass=ABCMeta):
     def pause(self, queue: QueueName, until: datetime.datetime) -> None:
         raise NotImplementedError()
 
+    @abstractmethod
+    def is_paused(self, queue: QueueName) -> bool:
+        raise NotImplementedError()
+
 
 class BackendWithPauseResume(BackendWithPause, metaclass=ABCMeta):
     @abstractmethod
