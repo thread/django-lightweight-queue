@@ -69,7 +69,7 @@ class Command(BaseCommand):
             help=(
                 "The time at which the queue should reactivate. Specify as an "
                 "ISO 8601 value, specifically one parsable via datetime.strptime "
-                f"using {TIME_FORMAT.replace('%', r'%%')!r}."
+                f"using {TIME_FORMAT.replace('%', r'%%')!r}, such as {utcnow():{TIME_FORMAT}}."
             ),
         )
 
