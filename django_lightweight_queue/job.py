@@ -3,16 +3,28 @@ import json
 import time
 import datetime
 import warnings
+from typing import Any, Dict, Tuple, Callable, Optional, TYPE_CHECKING
 
 from django.db import transaction
 
+from .types import QueueName, WorkerNumber
 from .utils import get_path, get_middleware
+
+if TYPE_CHECKING:
+    from .task import TaskWrapper
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 
 class Job:
-    def __init__(self, path, args, kwargs, timeout=None, sigkill_on_stop=False):
+    def __init__(
+        self,
+        path: str,
+        args: Tuple[Any, ...],
+        kwargs: Dict[str, Any],
+        timeout: Optional[int] = None,
+        sigkill_on_stop: bool = False,
+    ) -> None:
         self.path = path
         self.args = args
         self.kwargs = kwargs
@@ -20,9 +32,9 @@ class Job:
         self.sigkill_on_stop = sigkill_on_stop
         self.created_time = datetime.datetime.utcnow()
 
-        self._json = None
+        self._json = None  # type: Optional[str]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<Job: {}(*{!r}, **{!r}) @ {}>".format(
             self.path,
             self.args,
@@ -31,7 +43,7 @@ class Job:
         )
 
     @classmethod
-    def from_json(cls, val):
+    def from_json(cls, val: str) -> 'Job':
         as_dict = json.loads(val)
 
         # Historic jobs won't have a created_time, so have a default
@@ -50,10 +62,10 @@ class Job:
         return job
 
     @property
-    def created_time_str(self):
+    def created_time_str(self) -> str:
         return self.created_time.strftime(TIME_FORMAT)
 
-    def run(self, *, queue, worker_num):
+    def run(self, *, queue: QueueName, worker_num: WorkerNumber) -> bool:
         """
         `queue` and `worker_num` arguments are required for context only and do
         not change the behaviour of job execution.
@@ -97,23 +109,23 @@ class Job:
 
         return True
 
-    def validate(self):
+    def validate(self) -> None:
         # Ensure these execute without exception so that we cannot enqueue
         # things that are impossible to dequeue.
         self.get_task_instance()
         self.to_json()
 
-    def get_task_instance(self):
+    def get_task_instance(self) -> 'TaskWrapper[Callable[..., Any]]':
         return get_path(self.path)
 
-    def get_fn(self):
+    def get_fn(self) -> 'TaskWrapper[Callable[..., Any]]':
         warnings.warn(
             "Job.get_fn is deprecated, call Job.get_task_instance instead.",
             DeprecationWarning,
         )
         return self.get_task_instance()
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         return {
             'path': self.path,
             'args': self.args,
@@ -123,12 +135,12 @@ class Job:
             'created_time': self.created_time_str,
         }
 
-    def to_json(self):
+    def to_json(self) -> str:
         if self._json is None:
             self._json = json.dumps(self.as_dict())
         return self._json
 
-    def identity_without_created(self):
+    def identity_without_created(self) -> str:
         """Returns an object which can be used to identify equivalent jobs"""
         self_dict = self.as_dict()
         del self_dict['created_time']

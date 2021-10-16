@@ -1,13 +1,13 @@
 import datetime
+from typing import Optional
 
 import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BackendWithPauseResume
+from .base import BaseBackend, BackendWithPauseResume
+from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
-
-QueueName = str
 
 
 class RedisBackend(BackendWithPauseResume):
@@ -15,16 +15,16 @@ class RedisBackend(BackendWithPauseResume):
     This backend has at-most-once semantics.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
         )
 
-    def enqueue(self, job, queue):
+    def enqueue(self, job: Job, queue: QueueName) -> None:
         self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
 
-    def dequeue(self, queue, worker_num, timeout):
+    def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
         if self.is_paused(queue):
             # Block for a while to avoid constant polling ...
             block_for_time(
@@ -34,14 +34,14 @@ class RedisBackend(BackendWithPauseResume):
             # ... but always indicate that we did no work
             return None
 
-        try:
-            _, data = self.client.brpop(self._key(queue), timeout)
+        raw = self.client.brpop(self._key(queue), timeout)
+        if raw is None:
+            return None
 
-            return Job.from_json(data.decode('utf-8'))
-        except TypeError:
-            pass
+        _, data = raw
+        return Job.from_json(data.decode('utf-8'))
 
-    def length(self, queue):
+    def length(self, queue: QueueName) -> int:
         return self.client.llen(self._key(queue))
 
     def pause(self, queue: QueueName, until: datetime.datetime) -> None:
@@ -71,7 +71,7 @@ class RedisBackend(BackendWithPauseResume):
     def is_paused(self, queue: QueueName) -> bool:
         return self.client.exists(self._pause_key(queue))
 
-    def _key(self, queue):
+    def _key(self, queue: QueueName) -> str:
         if app_settings.REDIS_PREFIX:
             return '{}:django_lightweight_queue:{}'.format(
                 app_settings.REDIS_PREFIX,

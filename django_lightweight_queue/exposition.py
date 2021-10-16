@@ -1,14 +1,18 @@
 import json
 import threading
 from socket import gethostname
+from typing import Any, Dict, List, Tuple, Sequence
 from http.server import HTTPServer
 
 from prometheus_client.exposition import MetricsHandler
 
 from . import app_settings
+from .types import QueueName, WorkerNumber
 
 
-def get_config_response(worker_queue_and_counts):
+def get_config_response(
+    worker_queue_and_counts: Sequence[Tuple[QueueName, WorkerNumber]],
+) -> List[Dict[str, Any]]:
     """
     This is designed to be used by Prometheus, to direct it to scrape the
     correct ports and assign the correct labels to pull in data from all the
@@ -31,7 +35,9 @@ def get_config_response(worker_queue_and_counts):
     ]
 
 
-def metrics_http_server(worker_queue_and_counts):
+def metrics_http_server(
+    worker_queue_and_counts: Sequence[Tuple[QueueName, WorkerNumber]],
+) -> threading.Thread:
     config_response = json.dumps(
         get_config_response(worker_queue_and_counts),
         sort_keys=True,

@@ -6,5 +6,5 @@ from .utils import load_all_tasks
 class DjangoLightweightQueueConfig(AppConfig):
     name = 'django_lightweight_queue'
 
-    def ready(self):
+    def ready(self) -> None:
         load_all_tasks()

@@ -3,7 +3,18 @@ import time
 import datetime
 import warnings
 import importlib
-from typing import Mapping, Callable, Collection
+from typing import (
+    Any,
+    Set,
+    cast,
+    List,
+    Mapping,
+    Callable,
+    Iterable,
+    Sequence,
+    Collection,
+    TYPE_CHECKING,
+)
 from functools import lru_cache
 
 from django.apps import apps
@@ -11,19 +22,23 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
 from . import constants, app_settings
+from .types import Logger, QueueName, WorkerNumber
+
+if TYPE_CHECKING:
+    from .backends.base import BaseBackend
 
 _accepting_implied_queues = True
 
 FIVE_SECONDS = datetime.timedelta(seconds=5)
 
 
-def load_extra_config(file_path):
+def load_extra_config(file_path: str) -> None:
     extra_settings = imp.load_source('extra_settings', file_path)
 
-    def get_setting_names(module):
+    def get_setting_names(module: object) -> Set[str]:
         return set(name for name in dir(module) if name.isupper())
 
-    def with_prefix(names):
+    def with_prefix(names: Iterable[str]) -> Set[str]:
         return set(
             '{}{}'.format(constants.SETTING_NAME_PREFIX, name)
             for name in names
@@ -44,7 +59,7 @@ def load_extra_config(file_path):
 
 
 @lru_cache()
-def get_path(path):
+def get_path(path: str) -> Any:
     module_name, attr = path.rsplit('.', 1)
 
     module = importlib.import_module(module_name)
@@ -53,7 +68,7 @@ def get_path(path):
 
 
 @lru_cache()
-def get_backend(queue):
+def get_backend(queue: QueueName) -> 'BaseBackend':
     return get_path(app_settings.BACKEND_OVERRIDES.get(
         queue,
         app_settings.BACKEND,
@@ -61,15 +76,18 @@ def get_backend(queue):
 
 
 @lru_cache()
-def get_logger(name):
+def get_logger(name: str) -> Logger:
     get_logger_fn = app_settings.LOGGER_FACTORY
     if not callable(get_logger_fn):
-        get_logger_fn = get_path(app_settings.LOGGER_FACTORY)
+        get_logger_fn = cast(
+            Callable[[str], Logger],
+            get_path(app_settings.LOGGER_FACTORY),
+        )
     return get_logger_fn(name)
 
 
 @lru_cache()
-def get_middleware():
+def get_middleware() -> List[Any]:
     middleware = []
 
     for path in app_settings.MIDDLEWARE:
@@ -81,14 +99,12 @@ def get_middleware():
     return middleware
 
 
-def refuse_further_implied_queues():
-    # type: () -> None
+def refuse_further_implied_queues() -> None:
     global _accepting_implied_queues
     _accepting_implied_queues = False
 
 
-def contribute_implied_queue_name(queue):
-    # type: (str) -> None
+def contribute_implied_queue_name(queue: QueueName) -> None:
     if not _accepting_implied_queues:
         raise RuntimeError(
             "Queues have already been enumerated, ensure that "
@@ -97,18 +113,17 @@ def contribute_implied_queue_name(queue):
     app_settings.WORKERS.setdefault(queue, 1)
 
 
-def get_queue_counts():
-    # type: (None) -> Mapping[str, int]
+def get_queue_counts() -> Mapping[QueueName, int]:
     refuse_further_implied_queues()
     return app_settings.WORKERS
 
 
-def get_worker_numbers(queue: str) -> Collection[int]:
+def get_worker_numbers(queue: QueueName) -> Collection[WorkerNumber]:
     count = get_queue_counts()[queue]
-    return range(1, count + 1)
+    return cast(Collection[WorkerNumber], range(1, count + 1))
 
 
-def import_all_submodules(name, exclude=()):
+def import_all_submodules(name: str, exclude: Sequence[str] = ()) -> None:
     for app_config in apps.get_app_configs():
         app_module = app_config.module
 
@@ -124,7 +139,7 @@ def import_all_submodules(name, exclude=()):
                 raise
 
 
-def load_all_tasks():
+def load_all_tasks() -> None:
     import_all_submodules('tasks', app_settings.IGNORE_APPS)
 
 
@@ -162,11 +177,11 @@ try:
 
     original_title = setproctitle.getproctitle()
 
-    def set_process_title(*titles):
+    def set_process_title(*titles: str) -> None:
         setproctitle.setproctitle("{} {}".format(
             original_title,
             ' '.join('[{}]'.format(x) for x in titles),
         ))
 except ImportError:
-    def set_process_title(*titles):
+    def set_process_title(*titles: str) -> None:
         pass

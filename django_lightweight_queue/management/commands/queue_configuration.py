@@ -1,4 +1,6 @@
-from django.core.management.base import BaseCommand
+from typing import Any
+
+from django.core.management.base import BaseCommand, CommandParser
 
 from ... import app_settings
 from ...utils import get_backend, get_queue_counts, load_extra_config
@@ -6,7 +8,7 @@ from ...cron_scheduler import get_cron_config
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             '--config',
             action='store',
@@ -14,7 +16,7 @@ class Command(BaseCommand):
             help="The path to an additional django-style config file to load",
         )
 
-    def handle(self, **options):
+    def handle(self, **options: Any) -> None:
         # Configuration overrides
         extra_config = options['config']
         if extra_config is not None:
@@ -41,9 +43,9 @@ class Command(BaseCommand):
         print("")
         print("Cron configuration")
 
-        for x in get_cron_config():
+        for config in get_cron_config():
             print("")
-            for k in (
+            for key in (
                 'command',
                 'command_args',
                 'hours',
@@ -52,4 +54,4 @@ class Command(BaseCommand):
                 'timeout',
                 'sigkill_on_stop',
             ):
-                print("{:20s}: {}".format(k, x.get(k, '-')))
+                print("{:20s}: {}".format(key, config.get(key, '-')))
