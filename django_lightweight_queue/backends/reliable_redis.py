@@ -212,7 +212,7 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
         self.client.delete(self._pause_key(queue))
 
     def is_paused(self, queue: QueueName) -> bool:
-        return self.client.exists(self._pause_key(queue))
+        return bool(self.client.exists(self._pause_key(queue)))
 
     def _key(self, queue: QueueName) -> str:
         key = 'django_lightweight_queue:{}'.format(queue)

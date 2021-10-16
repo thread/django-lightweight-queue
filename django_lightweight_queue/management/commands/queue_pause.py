@@ -4,10 +4,9 @@ import datetime
 
 from django.core.management.base import BaseCommand, CommandError
 
+from ...types import QueueName
 from ...utils import get_backend
 from ...backends.base import BackendWithPause
-
-QueueName = str
 
 DURATION_PATTERN = r'^((?P<hours>\d+)h)?((?P<minutes>\d+)m)?((?P<seconds>\d+)s)?$'
 TIME_FORMAT = r'%Y-%m-%dT%H:%M:%S%z'

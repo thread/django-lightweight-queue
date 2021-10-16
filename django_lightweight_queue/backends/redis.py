@@ -69,7 +69,7 @@ class RedisBackend(BackendWithPauseResume):
         self.client.delete(self._pause_key(queue))
 
     def is_paused(self, queue: QueueName) -> bool:
-        return self.client.exists(self._pause_key(queue))
+        return bool(self.client.exists(self._pause_key(queue)))
 
     def _key(self, queue: QueueName) -> str:
         if app_settings.REDIS_PREFIX:

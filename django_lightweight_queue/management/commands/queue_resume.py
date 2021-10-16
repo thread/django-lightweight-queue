@@ -2,10 +2,9 @@ import argparse
 
 from django.core.management.base import BaseCommand, CommandError
 
+from ...types import QueueName
 from ...utils import get_backend
 from ...backends.base import BackendWithPauseResume
-
-QueueName = str
 
 
 class Command(BaseCommand):
