@@ -5,7 +5,7 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BaseBackend, BackendWithPauseResume
+from .base import BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
 
