@@ -28,6 +28,7 @@ progress = ["tqdm"]
 [tool.poetry.dev-dependencies]
 # Testing tools
 fakeredis = "^1.1.0"
+freezegun = "^1.1.0"
 
 # Linting tools
 flake8 = "^3.8.0"
