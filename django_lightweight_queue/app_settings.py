@@ -1,4 +1,4 @@
-from typing import Dict, Union, Mapping, TypeVar, Callable, Sequence
+from typing import Dict, Union, Mapping, TypeVar, Callable, Optional, Sequence
 
 from django.conf import settings
 
@@ -42,6 +42,7 @@ IGNORE_APPS = setting('IGNORE_APPS', ())  # type: Sequence[str]
 # Backend-specific settings
 REDIS_HOST = setting('REDIS_HOST', '127.0.0.1')  # type: str
 REDIS_PORT = setting('REDIS_PORT', 6379)  # type: int
+REDIS_PASSWORD = setting('REDIS_PASSWORD', None)  # type: Optional[str]
 REDIS_PREFIX = setting('REDIS_PREFIX', '')  # type: str
 
 ENABLE_PROMETHEUS = setting('ENABLE_PROMETHEUS', False)  # type: bool
