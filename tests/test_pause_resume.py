@@ -10,6 +10,7 @@ from django_lightweight_queue.utils import get_backend
 from django_lightweight_queue.backends.base import BackendWithPauseResume
 from django_lightweight_queue.backends.redis import RedisBackend
 from django_lightweight_queue.management.commands.queue_pause import (
+    TIME_FORMAT,
     parse_duration_to_time,
 )
 
@@ -66,18 +67,15 @@ class PauseResumeTests(unittest.TestCase):
         self.assertNotPaused(OTHER_QUEUE, "initially")
 
         when = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5)
+        when_str = when.strftime(TIME_FORMAT)
         buffer = io.StringIO()
-        # Work around https://code.djangoproject.com/ticket/33205 by bypassing
-        # the argument processing
-        queue_pause = load_command_class(get_commands()['queue_pause'], 'queue_pause')
-        defaults = {'no_color': None, 'force_color': None, 'skip_checks': True}
-        queue_pause.execute(QUEUE, until=when, stdout=buffer, **defaults)
+        call_command('queue_pause', QUEUE, '--until', when_str, stdout=buffer)
 
         self.assertPaused(QUEUE, "after being paused")
         self.assertNotPaused(OTHER_QUEUE, f"after pausing {QUEUE}")
 
         self.assertIn(QUEUE, buffer.getvalue())
-        self.assertIn(when.isoformat(' '), buffer.getvalue())
+        self.assertIn(when.replace(microsecond=0).isoformat(' '), buffer.getvalue())
 
         call_command('queue_resume', QUEUE)
 
@@ -87,11 +85,9 @@ class PauseResumeTests(unittest.TestCase):
         QUEUE = QueueName('unsupported-queue')
 
         when = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=5)
-        # Work around https://code.djangoproject.com/ticket/33205 by bypassing
-        # the argument processing
-        queue_pause = load_command_class(get_commands()['queue_pause'], 'queue_pause')
+        when_str = when.strftime(TIME_FORMAT)
         with self.assertRaises(CommandError):
-            queue_pause.handle(QUEUE, until=when)
+            call_command('queue_pause', QUEUE, '--until', when_str)
 
         with self.assertRaises(CommandError):
             call_command('queue_resume', QUEUE)
