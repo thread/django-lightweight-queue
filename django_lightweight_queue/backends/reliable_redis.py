@@ -40,6 +40,7 @@ class ReliableRedisBackend(BackendWithDeduplicate):
         self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
+            password=app_settings.REDIS_PASSWORD,
         )
 
     def startup(self, queue: QueueName) -> None:
