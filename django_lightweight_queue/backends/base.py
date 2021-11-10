@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, TypeVar, Optional
+from typing import Tuple, TypeVar, Optional, Collection
 
 from ..job import Job
 from ..types import QueueName, WorkerNumber
@@ -17,6 +17,16 @@ class BaseBackend(metaclass=ABCMeta):
     @abstractmethod
     def enqueue(self, job: Job, queue: QueueName) -> None:
         raise NotImplementedError()
+
+    def bulk_enqueue(self, jobs: Collection[Job], queue: QueueName) -> None:
+        """
+        Enqueue a number of tasks in one pass.
+
+        Backends are strongly encouraged to override this with a more efficient
+        implemenation if they can.
+        """
+        for job in jobs:
+            self.enqueue(job, queue)
 
     @abstractmethod
     def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
