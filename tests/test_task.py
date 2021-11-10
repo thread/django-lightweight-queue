@@ -130,3 +130,27 @@ class TaskTests(unittest.TestCase):
             job.as_dict(),
             "Second job",
         )
+
+    def test_bulk_enqueues_jobs_batch_size_boundary(self) -> None:
+        self.assertEqual(0, self.backend.length(QUEUE), "Should initially be empty")
+
+        with dummy_task.bulk_enqueue(batch_size=3) as enqueue:
+            enqueue(1)
+            enqueue(2)
+            enqueue(3)
+            enqueue(4)
+
+        jobs = [
+            self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
+            for _ in range(4)
+        ]
+
+        self.assertEqual(0, self.backend.length(QUEUE), "Should be empty after dequeuing all jobs")
+
+        args = [x.args for x in jobs if x is not None]
+
+        self.assertEqual(
+            [[1], [2], [3], [4]],
+            args,
+            "Wrong jobs bulk enqueued",
+        )
