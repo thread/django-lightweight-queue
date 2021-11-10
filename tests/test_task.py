@@ -74,7 +74,7 @@ class TaskTests(unittest.TestCase):
 
         dummy_task(42)
 
-        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
+        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 1)
         # Plain assert to placate mypy
         assert job is not None, "Failed to get a job after enqueuing one"
 
@@ -97,7 +97,7 @@ class TaskTests(unittest.TestCase):
             enqueue(13)
             enqueue(num=42)
 
-        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
+        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 1)
         # Plain assert to placate mypy
         assert job is not None, "Failed to get a job after enqueuing one"
 
@@ -114,7 +114,7 @@ class TaskTests(unittest.TestCase):
             "First job",
         )
 
-        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
+        job = self.backend.dequeue(QUEUE, WorkerNumber(0), 1)
         # Plain assert to placate mypy
         assert job is not None, "Failed to get a job after enqueuing one"
 
@@ -141,7 +141,7 @@ class TaskTests(unittest.TestCase):
             enqueue(4)
 
         jobs = [
-            self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
+            self.backend.dequeue(QUEUE, WorkerNumber(0), 1)
             for _ in range(4)
         ]
 
