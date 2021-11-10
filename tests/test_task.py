@@ -95,7 +95,7 @@ class TaskTests(unittest.TestCase):
 
         with dummy_task.bulk_enqueue() as enqueue:
             enqueue(13)
-            enqueue(42)
+            enqueue(num=42)
 
         job = self.backend.dequeue(QUEUE, WorkerNumber(0), 5)
         # Plain assert to placate mypy
@@ -121,8 +121,8 @@ class TaskTests(unittest.TestCase):
         self.assertEqual(
             {
                 'path': 'tests.test_task.dummy_task',
-                'args': [42],
-                'kwargs': {},
+                'args': [],
+                'kwargs': {'num': 42},
                 'timeout': None,
                 'sigkill_on_stop': False,
                 'created_time': mock.ANY,
