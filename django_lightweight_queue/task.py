@@ -179,11 +179,10 @@ class TaskWrapper(Generic[TCallable]):
         get_backend(queue).bulk_enqueue(new_jobs, queue)
 
     def __call__(self, *args: Any, **kwargs: Any) -> None:
-        job = self._build_job(args, kwargs)
-
         # Allow queue overrides, but you must ensure that this queue will exist
         queue = kwargs.pop('django_lightweight_queue_queue', self.queue)
 
+        job = self._build_job(args, kwargs)
         get_backend(queue).enqueue(job, queue)
 
     def bulk_enqueue(

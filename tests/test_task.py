@@ -90,6 +90,31 @@ class TaskTests(unittest.TestCase):
             job.as_dict(),
         )
 
+    def test_enqueues_job_queue_override(self) -> None:
+        OTHER_QUEUE = QueueName('other-queue')
+        self.assertEqual(0, self.backend.length(QUEUE))
+        self.assertEqual(0, self.backend.length(OTHER_QUEUE))
+
+        dummy_task(42, django_lightweight_queue_queue=OTHER_QUEUE)
+
+        self.assertIsNone(self.backend.dequeue(QUEUE, WorkerNumber(0), 1))
+
+        job = self.backend.dequeue(OTHER_QUEUE, WorkerNumber(0), 1)
+        # Plain assert to placate mypy
+        assert job is not None, "Failed to get a job after enqueuing one"
+
+        self.assertEqual(
+            {
+                'path': 'tests.test_task.dummy_task',
+                'args': [42],
+                'kwargs': {},
+                'timeout': None,
+                'sigkill_on_stop': False,
+                'created_time': mock.ANY,
+            },
+            job.as_dict(),
+        )
+
     def test_bulk_enqueues_jobs(self) -> None:
         self.assertEqual(0, self.backend.length(QUEUE))
 
