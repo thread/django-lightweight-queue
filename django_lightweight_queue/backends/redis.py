@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Collection
 
 import redis
 
@@ -21,7 +21,13 @@ class RedisBackend(BaseBackend):
         )
 
     def enqueue(self, job: Job, queue: QueueName) -> None:
-        self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
+        return self.bulk_enqueue([job], queue)
+
+    def bulk_enqueue(self, jobs: Collection[Job], queue: QueueName) -> None:
+        self.client.lpush(
+            self._key(queue),
+            *(job.to_json().encode('utf-8') for job in jobs),
+        )
 
     def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: int) -> Optional[Job]:
         raw = self.client.brpop(self._key(queue), timeout)
