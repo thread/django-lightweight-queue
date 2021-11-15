@@ -22,6 +22,8 @@ class BaseBackend(metaclass=ABCMeta):
         """
         Enqueue a number of tasks in one pass.
 
+        The jobs will be inserted in the order provided in the given collection.
+
         Backends are strongly encouraged to override this with a more efficient
         implemenation if they can.
         """
