@@ -61,16 +61,23 @@ class ReliableRedisBackend(BackendWithDeduplicate):
         )
         processing_queue_keys = current_processing_queue_keys - expected_processing_queue_keys
 
-        def move_processing_jobs_to_main(pipe: redis.client.Pipeline) -> None:
+        def move_processing_jobs_to_main(pipe: 'redis.StrictRedis[bytes]') -> None:
+            # Note: the `pipe` argument here is actually a Pipeline (strictly
+            # `redis.client.Pipeline[bytes]`), however it's not the usual
+            # late-executing pipeline that might be expected (or that the
+            # typeshed expects) so we pretend that it's a StrictRedis instance
+            # to get the type checking to *mostly* work. See typeshed issue
+            # https://github.com/python/typeshed/issues/6028 for more details.
+
             # Collect all the data we need to add, before adding the data back
             # to the main queue of and clearing the processing queues
             # atomically, so if this crashes, we don't lose jobs
-            all_data = []
+            all_data: List[bytes] = []
             for key in processing_queue_keys:
                 all_data.extend(pipe.lrange(key, 0, -1))
 
             if all_data or processing_queue_keys:
-                pipe.multi()
+                pipe.multi()  # type: ignore[attr-defined] # see explanation above
 
             # NB we RPUSH, which means these jobs will get processed next
             if all_data:

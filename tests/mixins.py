@@ -2,7 +2,7 @@ import redis
 
 
 class RedisCleanupMixin(object):
-    client = NotImplemented  # type: redis.StrictRedis
+    client = NotImplemented  # type: redis.StrictRedis[bytes]
     prefix = NotImplemented  # type: str
 
     def setUp(self):
