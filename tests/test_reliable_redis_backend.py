@@ -5,6 +5,7 @@ import unittest.mock
 from typing import Any, Dict, Tuple, Mapping, Iterator, Optional
 
 import fakeredis
+
 from django_lightweight_queue.job import Job
 from django_lightweight_queue.types import QueueName
 from django_lightweight_queue.backends.reliable_redis import (

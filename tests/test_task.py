@@ -4,6 +4,7 @@ from typing import Any, Mapping, Iterator
 from unittest import mock
 
 import fakeredis
+
 from django_lightweight_queue import task
 from django_lightweight_queue.types import QueueName, WorkerNumber
 from django_lightweight_queue.utils import get_path, get_backend
