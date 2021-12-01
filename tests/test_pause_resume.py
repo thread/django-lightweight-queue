@@ -14,12 +14,7 @@ from django_lightweight_queue.management.commands.queue_pause import (
     parse_duration_to_time,
 )
 
-from django.core.management import (
-    call_command,
-    CommandError,
-    get_commands,
-    load_command_class,
-)
+from django.core.management import call_command, CommandError
 
 
 class PauseResumeTests(unittest.TestCase):
