@@ -30,21 +30,21 @@ progress = ["tqdm"]
 fakeredis = "^1.1.0"
 
 # Linting tools
-flake8 = "^3.8.0"
+flake8 = "^4.0.0"
 isort = "^5.10"
 mypy = "^0.780"
 
 # Flake 8 plugins
-flake8-bugbear = "^19.8.0"
-flake8-builtins = "^1.5.2"
+flake8-bugbear = "^21.11.29"
+flake8-builtins = "^1.5.3"
 flake8-coding = "^1.3.2"
-flake8-commas = "^2.0.0"
-flake8-comprehensions = "^3.2.2"
-flake8-debugger = "^3.2.1"
-flake8-isort = "^4.0.0"
+flake8-commas = "^2.1.0"
+flake8-comprehensions = "^3.7.0"
+flake8-debugger = "^4.0.0"
+flake8-isort = "^4.1.1"
 flake8-mutable = "^1.2.0"
 flake8-pep3101 = "^1.3.0"
-flake8-tidy-imports = "^4.1.0"
+flake8-tidy-imports = "^4.5.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
