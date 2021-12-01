@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Tuple, TypeVar, Optional
+from typing import Dict, List, Tuple, TypeVar, Optional, Collection
 
 import redis
 
@@ -41,6 +41,7 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
         self.client = redis.StrictRedis(
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
+            password=app_settings.REDIS_PASSWORD,
         )
 
     def startup(self, queue: QueueName) -> None:
@@ -88,7 +89,13 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
         )
 
     def enqueue(self, job: Job, queue: QueueName) -> None:
-        self.client.lpush(self._key(queue), job.to_json().encode('utf-8'))
+        return self.bulk_enqueue([job], queue)
+
+    def bulk_enqueue(self, jobs: Collection[Job], queue: QueueName) -> None:
+        self.client.lpush(
+            self._key(queue),
+            *(job.to_json().encode('utf-8') for job in jobs),
+        )
 
     def dequeue(self, queue: QueueName, worker_number: WorkerNumber, timeout: int) -> Optional[Job]:
         main_queue_key = self._key(queue)

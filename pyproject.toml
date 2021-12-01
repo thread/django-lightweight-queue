@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-lightweight-queue"
-version = "4.1.1"
+version = "4.3.2"
 description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
