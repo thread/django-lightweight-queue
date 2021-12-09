@@ -5,6 +5,9 @@ from unittest import mock
 
 import fakeredis
 import freezegun
+
+from django.core.management import call_command, CommandError
+
 from django_lightweight_queue.types import QueueName
 from django_lightweight_queue.utils import get_backend
 from django_lightweight_queue.backends.base import BackendWithPauseResume
@@ -13,8 +16,6 @@ from django_lightweight_queue.management.commands.queue_pause import (
     TIME_FORMAT,
     parse_duration_to_time,
 )
-
-from django.core.management import call_command, CommandError
 
 
 class PauseResumeTests(unittest.TestCase):
