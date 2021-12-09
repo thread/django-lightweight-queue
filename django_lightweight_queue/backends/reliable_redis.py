@@ -1,12 +1,13 @@
+import datetime
 from typing import Dict, List, Tuple, TypeVar, Optional, Collection
 
 import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BackendWithDeduplicate
+from .base import BackendWithDeduplicate, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
-from ..utils import get_worker_numbers
+from ..utils import block_for_time, get_worker_numbers
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 
 # Work around https://github.com/python/mypy/issues/9914. Name needs to match
@@ -14,7 +15,7 @@ from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 T = TypeVar('T')
 
 
-class ReliableRedisBackend(BackendWithDeduplicate):
+class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
     """
     This backend manages a per-queue-per-worker 'processing' queue. E.g. if we
     had a queue called 'django_lightweight_queue:things', and two workers, we
@@ -107,6 +108,15 @@ class ReliableRedisBackend(BackendWithDeduplicate):
         main_queue_key = self._key(queue)
         processing_queue_key = self._processing_key(queue, worker_number)
 
+        if self.is_paused(queue):
+            # Block for a while to avoid constant polling ...
+            block_for_time(
+                lambda: self.is_paused(queue),
+                timeout=datetime.timedelta(seconds=timeout),
+            )
+            # ... but always indicate that we did no work
+            return None
+
         # Get any jobs off our 'processing' queue - but do not block doing so -
         # this is to catch the fact there may be a job already in our
         # processing queue if this worker crashed and has just been restarted.
@@ -191,10 +201,40 @@ class ReliableRedisBackend(BackendWithDeduplicate):
 
         return original_size, self.client.llen(main_queue_key)
 
+    def pause(self, queue: QueueName, until: datetime.datetime) -> None:
+        """
+        Pause the given queue by setting a pause marker.
+        """
+
+        pause_key = self._pause_key(queue)
+
+        now = datetime.datetime.now(datetime.timezone.utc)
+        delta = until - now
+
+        self.client.setex(
+            pause_key,
+            time=int(delta.total_seconds()),
+            # Store the value for debugging, we rely on setex behaviour for
+            # implementation.
+            value=until.isoformat(' '),
+        )
+
+    def resume(self, queue: QueueName) -> None:
+        """
+        Resume the given queue by deleting the pause marker (if present).
+        """
+        self.client.delete(self._pause_key(queue))
+
+    def is_paused(self, queue: QueueName) -> bool:
+        return bool(self.client.exists(self._pause_key(queue)))
+
     def _key(self, queue: QueueName) -> str:
         key = 'django_lightweight_queue:{}'.format(queue)
 
         return self._prefix_key(key)
+
+    def _pause_key(self, queue: QueueName) -> str:
+        return self._key(queue) + ':pause'
 
     def _processing_key(self, queue: QueueName, worker_number: WorkerNumber) -> str:
         key = 'django_lightweight_queue:{}:processing:{}'.format(

@@ -1,3 +1,4 @@
+import datetime
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, TypeVar, Optional, Collection
 
@@ -50,4 +51,20 @@ class BackendWithDeduplicate(BaseBackend, metaclass=ABCMeta):
         *,
         progress_logger: ProgressLogger = NULL_PROGRESS_LOGGER
     ) -> Tuple[int, int]:
+        raise NotImplementedError()
+
+
+class BackendWithPause(BaseBackend, metaclass=ABCMeta):
+    @abstractmethod
+    def pause(self, queue: QueueName, until: datetime.datetime) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def is_paused(self, queue: QueueName) -> bool:
+        raise NotImplementedError()
+
+
+class BackendWithPauseResume(BackendWithPause, metaclass=ABCMeta):
+    @abstractmethod
+    def resume(self, queue: QueueName) -> None:
         raise NotImplementedError()

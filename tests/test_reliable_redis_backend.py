@@ -1,5 +1,7 @@
+import time
 import datetime
 import unittest
+import itertools
 import contextlib
 import unittest.mock
 from typing import Any, Dict, Tuple, Mapping, Iterator, Optional
@@ -326,3 +328,23 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             actual_job.as_dict(),
             "The queue job should be the original one",
         )
+
+    def test_pause(self):
+        QUEUE = 'the-queue'
+
+        self.enqueue_job(QUEUE)
+
+        now = datetime.datetime.now(datetime.timezone.utc)
+        five_minutes_time = now + datetime.timedelta(minutes=5)
+        self.backend.pause(QUEUE, five_minutes_time)
+
+        with unittest.mock.patch(
+            'time.time',
+            side_effect=itertools.count(time.time(), 1),
+        ), unittest.mock.patch(
+            'time.sleep',
+        ) as mock_sleep:
+            job = self.backend.dequeue(QUEUE, 2, 2)
+
+        self.assertIsNone(job, "Should have indicated no work was done")
+        self.assertTrue(mock_sleep.called)
