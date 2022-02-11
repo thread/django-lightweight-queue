@@ -50,8 +50,15 @@ class CronScheduler(threading.Thread):
         )
 
         while True:
-            # This will run until the process terminates.
-            self.tick(backend)
+            try:
+                # This will run until the process terminates.
+                self.tick(backend)
+            except Exception:
+                # Log that something went wrong, but ensure that this thread
+                # carries on running. Otherwise a single network error talking
+                # to a backend can result in the cron scheduler dying until a
+                # human notices that things aren't running.
+                self.logger.exception("Error during tick")
 
             # Sleep until the next second boundary. This corrects for skew
             # caused by the accumulation of tick() runtime.
