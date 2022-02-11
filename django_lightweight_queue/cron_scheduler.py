@@ -58,7 +58,7 @@ class CronScheduler(threading.Thread):
                 # carries on running. Otherwise a single network error talking
                 # to a backend can result in the cron scheduler dying until a
                 # human notices that things aren't running.
-                self.logger.exception()
+                self.logger.exception("Error during tick")
 
             # Sleep until the next second boundary. This corrects for skew
             # caused by the accumulation of tick() runtime.
