@@ -3,7 +3,7 @@ import time
 import datetime
 import importlib
 import threading
-from typing import Any, cast, Dict, List, Tuple, Callable, Optional, Sequence
+from typing import Any, Dict, List, Tuple, Callable, Optional, Sequence
 
 from typing_extensions import TypedDict
 
@@ -144,7 +144,8 @@ def get_cron_config() -> Sequence[CronConfig]:
                 # No module, move on.
                 continue
 
-        for row in cast(List[CronConfig], mod.CONFIG):
+        app_cron_config: List[CronConfig] = mod.CONFIG  # type: ignore[attr-defined]
+        for row in app_cron_config:
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
             row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
             row['day_matcher'] = get_matcher(1, 7, row.get('days', '*'))
