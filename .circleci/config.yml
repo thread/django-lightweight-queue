@@ -9,17 +9,17 @@ references:
   restore-dependencies-cache: &restore-dependencies-cache
     restore_cache:
       keys:
-        - deps-2-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
+        - deps-3-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
   install-dependencies: &install-dependencies
     run:
       name: Install Dependencies
       command: |
         source $HOME/.poetry/env
         poetry install
-        poetry run pip install "django>=<< parameters.django-version >>"
+        poetry run pip install "django~=<< parameters.django-version >>.0"
   save-dependencies-cache: &save-dependencies-cache
     save_cache:
-      key: deps-2-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
+      key: deps-3-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
       paths:
         - ~/.cache/pypoetry/virtualenvs
   parametrised-python-executor: &parametrised-python-executor
