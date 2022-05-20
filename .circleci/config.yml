@@ -9,7 +9,7 @@ references:
   restore-dependencies-cache: &restore-dependencies-cache
     restore_cache:
       keys:
-        - deps-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
+        - deps-2-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
   install-dependencies: &install-dependencies
     run:
       name: Install Dependencies
@@ -19,9 +19,9 @@ references:
         poetry run pip install "django>=<< parameters.django-version >>"
   save-dependencies-cache: &save-dependencies-cache
     save_cache:
-      key: deps-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
+      key: deps-2-py<< parameters.python-version >>-django<< parameters.django-version >>-{{ checksum "poetry.lock" }}
       paths:
-        - /home/circleci/.cache/pypoetry/virtualenvs
+        - ~/.cache/pypoetry/virtualenvs
   parametrised-python-executor: &parametrised-python-executor
     parameters:
       python-version:
@@ -43,7 +43,7 @@ executors:
       version:
         type: string
     docker:
-      - image: circleci/python:<< parameters.version >>
+      - image: cimg/python:<< parameters.version >>
 
 jobs:
   build-test:
