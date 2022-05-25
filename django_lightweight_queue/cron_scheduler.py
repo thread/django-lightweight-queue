@@ -1,14 +1,15 @@
 import re
-import imp
 import time
 import datetime
+import importlib
 import threading
-from typing import Any, cast, Dict, List, Tuple, Callable, Optional, Sequence
+from typing import Any, Dict, List, Tuple, Callable, Optional, Sequence
 
 from typing_extensions import TypedDict
 
 from django.apps import apps
 from django.core.management import call_command
+from django.utils.module_loading import module_has_submodule
 
 from .task import task
 from .types import QueueName
@@ -132,24 +133,19 @@ def get_cron_config() -> Sequence[CronConfig]:
         return lambda x: x in t_parts
 
     for app_config in apps.get_app_configs():
-        app = app_config.name
+        # Adapted from django.utils.module_loading.autodiscover_modules
         try:
-            # __import__ will break with anything other than a str object(!),
-            # including e.g. unicode. So force to a str.
-            part = str(app.split('.')[-1])
+            mod = importlib.import_module(f'{app_config.name}.cron')
+        except Exception:
+            if module_has_submodule(app_config.module, 'cron'):
+                # The module exists, so the error was something it did -- bubble the error.
+                raise
+            else:
+                # No module, move on.
+                continue
 
-            app_path = __import__(app, {}, {}, [part]).__path__
-        except AttributeError:
-            continue
-
-        try:
-            imp.find_module('cron', app_path)
-        except ImportError:
-            continue
-
-        mod = __import__('{}.cron'.format(app), fromlist=(app,))
-
-        for row in cast(List[CronConfig], mod.CONFIG):
+        app_cron_config: List[CronConfig] = mod.CONFIG  # type: ignore[attr-defined]
+        for row in app_cron_config:
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
             row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
             row['day_matcher'] = get_matcher(1, 7, row.get('days', '*'))
