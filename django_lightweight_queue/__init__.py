@@ -1,7 +1,10 @@
+import django
+
 from .task import task, TaskWrapper
 from .utils import contribute_implied_queue_name
 
-default_app_config = 'django_lightweight_queue.apps.DjangoLightweightQueueConfig'
+if django.VERSION < (3, 2):
+    default_app_config = 'django_lightweight_queue.apps.DjangoLightweightQueueConfig'
 
 __all__ = (
     'task',
