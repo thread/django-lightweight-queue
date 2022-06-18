@@ -15,6 +15,7 @@ class Settings():
 
     # adjustable values at runtime
     _backend = None
+    _redis_password = None
 
     @property
     def WORKERS(self):
