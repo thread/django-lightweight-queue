@@ -27,6 +27,7 @@ class Settings():
     _enable_prometheus = None
     _prometheus_start_port = None
     _atomic_jobs = None
+    _site_url = None
 
     @property
     def WORKERS(self):
@@ -172,6 +173,18 @@ class Settings():
     @ATOMIC_JOBS.setter
     def ATOMIC_JOBS(self, value):
         self._atomic_jobs = value
+
+    @property
+    def SITE_URL(self):
+        if not self._site_url:
+            self._site_url = self._get('SITE_URL', True)
+        return self._site_url  # type: bool
+
+    @SITE_URL.setter
+    def SITE_URL(self, value):
+        self._site_url = value
+
+
 
 
 settings = Settings()
