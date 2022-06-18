@@ -20,7 +20,7 @@ class DebugWebBackend(BaseBackend):
     """
 
     def enqueue(self, job: Job, queue: QueueName) -> None:
-        path = reverse('django-lightweight-queue:debug-run')
+        path = reverse('django_lightweight_queue:debug-run')
         query_string = urllib.parse.urlencode({'job': job.to_json()})
         url = "{}{}?{}".format(settings.SITE_URL, path, query_string)
         print(url)
