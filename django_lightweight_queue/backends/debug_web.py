@@ -1,11 +1,11 @@
 import urllib.parse
 
-from django.conf import settings
 from django.shortcuts import reverse
 
 from ..job import Job
 from .base import BaseBackend
 from ..types import QueueName, WorkerNumber
+from ..app_settings import settings
 
 
 class DebugWebBackend(BaseBackend):

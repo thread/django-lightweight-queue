@@ -185,6 +185,4 @@ class Settings():
         self._site_url = value
 
 
-
-
 settings = Settings()
