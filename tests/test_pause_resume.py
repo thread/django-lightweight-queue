@@ -52,7 +52,7 @@ class PauseResumeTests(unittest.TestCase):
     # Can't use override_settings due to the copying of the settings values into
     # module values at startup.
     @mock.patch(
-        'django_lightweight_queue.app_settings.BACKEND',
+        'django_lightweight_queue.app_settings.Settings.BACKEND',
         new='django_lightweight_queue.backends.redis.RedisBackend',
     )
     def test_pause_resume(self) -> None:
