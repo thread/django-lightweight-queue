@@ -177,7 +177,7 @@ class Settings():
     @property
     def SITE_URL(self):
         if not self._site_url:
-            self._site_url = self._get('SITE_URL', True)
+            self._site_url = self._get('SITE_URL', "http://localhost:8000")
         return self._site_url  # type: bool
 
     @SITE_URL.setter
