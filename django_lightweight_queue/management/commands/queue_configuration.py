@@ -2,8 +2,8 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from ... import app_settings
 from ...utils import get_backend, get_queue_counts, load_extra_config
+from ...app_settings import settings
 from ...cron_scheduler import get_cron_config
 
 
@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
         print("")
         print("Middleware:")
-        for x in app_settings.MIDDLEWARE:
+        for x in settings.MIDDLEWARE:
             print(" * {}".format(x))
 
         print("")

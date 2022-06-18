@@ -3,11 +3,11 @@ from typing import Dict, List, Tuple, TypeVar, Optional, Collection
 
 import redis
 
-from .. import app_settings
 from ..job import Job
 from .base import BackendWithDeduplicate, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time, get_worker_numbers
+from ..app_settings import settings
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 
 # Work around https://github.com/python/mypy/issues/9914. Name needs to match
@@ -39,9 +39,9 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
 
     def __init__(self) -> None:
         self.client = redis.StrictRedis(
-            host=app_settings.REDIS_HOST,
-            port=app_settings.REDIS_PORT,
-            password=app_settings.REDIS_PASSWORD,
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+            password=settings.REDIS_PASSWORD,
         )
 
     def startup(self, queue: QueueName) -> None:
@@ -245,9 +245,9 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
         return self._prefix_key(key)
 
     def _prefix_key(self, key: str) -> str:
-        if app_settings.REDIS_PREFIX:
+        if settings.REDIS_PREFIX:
             return '{}:{}'.format(
-                app_settings.REDIS_PREFIX,
+                settings.REDIS_PREFIX,
                 key,
             )
 
