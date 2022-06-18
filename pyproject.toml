@@ -20,6 +20,7 @@ daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"
 redis = {version = "~=3.*", optional = true}
 tqdm = {version = "^4.54.1", optional = true}
+typing-extensions = "^4.1.1"
 
 [tool.poetry.extras]
 redis = ["redis"]
