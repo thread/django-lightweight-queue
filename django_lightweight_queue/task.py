@@ -12,10 +12,10 @@ from typing import (
     Optional,
 )
 
-from . import app_settings
 from .job import Job
 from .types import QueueName
 from .utils import get_backend, contribute_implied_queue_name
+from .app_settings import settings
 
 TCallable = TypeVar('TCallable', bound=Callable[..., Any])
 
@@ -82,7 +82,7 @@ class task:
         """
 
         if atomic is None:
-            atomic = app_settings.ATOMIC_JOBS
+            atomic = settings.ATOMIC_JOBS
 
         self.queue = QueueName(queue)
         self.timeout = timeout

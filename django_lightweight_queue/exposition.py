@@ -6,8 +6,8 @@ from http.server import HTTPServer
 
 from prometheus_client.exposition import MetricsHandler
 
-from . import app_settings
 from .types import QueueName, WorkerNumber
+from .app_settings import settings
 
 
 def get_config_response(
@@ -23,7 +23,7 @@ def get_config_response(
             "targets": [
                 "{}:{}".format(
                     gethostname(),
-                    app_settings.PROMETHEUS_START_PORT + index,
+                    settings.PROMETHEUS_START_PORT + index,
                 ),
             ],
             "labels": {
@@ -60,7 +60,7 @@ def metrics_http_server(
             super(MetricsServer, self).__init__(*args, **kwargs)
 
         def run(self):
-            httpd = HTTPServer(('0.0.0.0', app_settings.PROMETHEUS_START_PORT), RequestHandler)
+            httpd = HTTPServer(('0.0.0.0', settings.PROMETHEUS_START_PORT), RequestHandler)
             httpd.timeout = 2
 
             try:

@@ -15,6 +15,19 @@ backends are great candidates for community contributions.
 
 ## Basic Usage
 
+Start by adding `django_lightweight_queue` to your `INSTALLED_APPS`:
+
+```python
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    ...,
+    "django_lightweight_queue",
+]
+```
+
+After that, define your task in any file you want:
+
 ```python
 import time
 from django_lightweight_queue import task
@@ -67,12 +80,12 @@ present in the specified file are inherited from the global configuration.
 
 There are four built-in backends:
 
-| Backend        | Type        | Description                                                                                                                                                                       |
-| -------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Synchronous    | Development | Executes the task inline, without any actual queuing.                                                                                                                             |
-| Redis          | Production  | Executes tasks at-most-once using [Redis][redis] for storage of the enqueued tasks.                                                                                               |
-| Reliable Redis | Production  | Executes tasks at-least-once using [Redis][redis] for storage of the enqueued tasks (subject to Redis consistency). Does not guarantee the task _completes_.                      |
-| Debug Web      | Debugging   | Instead of running jobs it prints the url to a view that can be used to run a task in a transaction which will be rolled back. This is useful for debugging and optimising tasks. |
+| Backend        | Import Location                                                       | Type        | Description                                                                                                                                                                       |
+| -------------- |:----------------------------------------------------------------------| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Synchronous    | django_lightweight_queue.backends.synchronous.SynchronousBackend      | Development | Executes the task inline, without any actual queuing.                                                                                                                             |
+| Redis          | django_lightweight_queue.backends.redis.RedisBackend                  | Production  | Executes tasks at-most-once using [Redis][redis] for storage of the enqueued tasks.                                                                                               |
+| Reliable Redis | django_lightweight_queue.backends.reliable_redis.ReliableRedisBackend | Production  | Executes tasks at-least-once using [Redis][redis] for storage of the enqueued tasks (subject to Redis consistency). Does not guarantee the task _completes_.                      |
+| Debug Web      | django_lightweight_queue.backends.debug_web.DebugWebBackend           | Debugging   | Instead of running jobs it prints the url to a view that can be used to run a task in a transaction which will be rolled back. This is useful for debugging and optimising tasks. |
 
 [redis]: https://redis.io/
 
