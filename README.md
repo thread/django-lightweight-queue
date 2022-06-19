@@ -104,6 +104,21 @@ Executes tasks at-least-once using [Redis][redis] for storage of the enqueued ta
 
 Instead of running jobs it prints the url to a view that can be used to run a task in a transaction which will be rolled back. This is useful for debugging and optimising tasks.
 
+Use this to append the appropriate URLs to the bottom of your root `urls.py`:
+
+```python
+from django.conf import settings
+from django.urls import path, include
+
+urlpatterns = [
+    ...
+]
+
+if "debug_web" in settings.LIGHTWEIGHT_QUEUE_BACKEND:
+    from django_lightweight_queue import urls as dlq_urls
+    urlpatterns += [path("", include(dlq_urls))]
+```
+
 This backend may require an extra setting if your debug site is not on localhost:
 
 ```python
