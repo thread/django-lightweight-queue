@@ -514,7 +514,7 @@ redis = ["redis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6.1,<4"
-content-hash = "346278f0990101fa1b95b98e44b910ec82017eb3a595afa05537f222a45af68b"
+content-hash = "df908ca4d0c2f3bd0c8c405c9cbe759316de0f603e4009210b403a4c0268831d"
 
 [metadata.files]
 asgiref = [
