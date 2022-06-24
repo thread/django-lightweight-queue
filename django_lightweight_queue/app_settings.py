@@ -1,4 +1,4 @@
-from typing import Union, Mapping, TypeVar, Callable, Optional, Sequence
+from typing import Union, Mapping, TypeVar, Callable, Optional, Sequence, Dict
 
 from django.conf import settings as django_settings
 
@@ -8,7 +8,7 @@ from .types import Logger, QueueName
 T = TypeVar('T')
 
 
-class Settings():
+class Settings:
     def _get(self, suffix: str, default: T) -> T:
         attr_name = '{}{}'.format(constants.SETTING_NAME_PREFIX, suffix)
         return getattr(django_settings, attr_name, default)
@@ -32,7 +32,7 @@ class Settings():
     def WORKERS(self):
         if not self._workers:
             self._workers = self._get('WORKERS', {})
-        return self._workers
+        return self._workers  # type: Dict[QueueName, int]
 
     @WORKERS.setter
     def WORKERS(self, value):
@@ -174,4 +174,4 @@ class Settings():
         self._atomic_jobs = value
 
 
-settings = Settings()
+app_settings = Settings()
