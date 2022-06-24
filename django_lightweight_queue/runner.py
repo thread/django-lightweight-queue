@@ -7,7 +7,7 @@ from typing import Dict, Tuple, Callable, Optional
 from .types import Logger, QueueName, WorkerNumber
 from .utils import get_backend, set_process_title
 from .exposition import metrics_http_server
-from .app_settings import settings
+from .app_settings import app_settings
 from .machine_types import Machine
 from .cron_scheduler import (
     CronScheduler,
@@ -64,7 +64,7 @@ def runner(
         for x in machine.worker_names
     }  # type: Dict[Tuple[QueueName, WorkerNumber], Tuple[Optional[subprocess.Popen[bytes]], str]]
 
-    if settings.ENABLE_PROMETHEUS:
+    if app_settings.ENABLE_PROMETHEUS:
         metrics_server = metrics_http_server(machine.worker_names)
         metrics_server.start()
 
@@ -107,7 +107,7 @@ def runner(
                     queue,
                     str(worker_num),
                     '--prometheus-port',
-                    str(settings.PROMETHEUS_START_PORT + index),
+                    str(app_settings.PROMETHEUS_START_PORT + index),
                 ]
 
                 touch_filename = touch_filename_fn(queue)

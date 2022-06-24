@@ -14,10 +14,10 @@ from django.db import connections, transaction
 
 from .types import QueueName, WorkerNumber
 from .utils import get_logger, get_backend, set_process_title
-from .app_settings import settings
+from .app_settings import app_settings
 from .backends.base import BaseBackend
 
-if settings.ENABLE_PROMETHEUS:
+if app_settings.ENABLE_PROMETHEUS:
     job_duration = Summary(
         'item_processed_seconds',
         "Item processing time",
@@ -54,7 +54,7 @@ class Worker:
         self.name = '{}/{}'.format(queue, worker_num)
 
     def run(self) -> None:
-        if settings.ENABLE_PROMETHEUS and self.prometheus_port is not None:
+        if app_settings.ENABLE_PROMETHEUS and self.prometheus_port is not None:
             self.log(logging.INFO, "Exporting metrics on port {}".format(self.prometheus_port))
             start_http_server(self.prometheus_port)
 
@@ -88,7 +88,7 @@ class Worker:
                 item_processed = self.process(backend)
                 post_process_time = time.time()
 
-                if settings.ENABLE_PROMETHEUS:
+                if app_settings.ENABLE_PROMETHEUS:
                     job_duration.labels(self.queue).observe(
                         post_process_time - pre_process_time,
                     )

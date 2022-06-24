@@ -7,7 +7,7 @@ from ..job import Job
 from .base import BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
-from ..app_settings import settings
+from ..app_settings import app_settings
 
 
 class RedisBackend(BackendWithPauseResume):
@@ -17,9 +17,9 @@ class RedisBackend(BackendWithPauseResume):
 
     def __init__(self) -> None:
         self.client = redis.StrictRedis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-            password=settings.REDIS_PASSWORD,
+            host=app_settings.REDIS_HOST,
+            port=app_settings.REDIS_PORT,
+            password=app_settings.REDIS_PASSWORD,
         )
 
     def enqueue(self, job: Job, queue: QueueName) -> None:
@@ -79,9 +79,9 @@ class RedisBackend(BackendWithPauseResume):
         return bool(self.client.exists(self._pause_key(queue)))
 
     def _key(self, queue: QueueName) -> str:
-        if settings.REDIS_PREFIX:
+        if app_settings.REDIS_PREFIX:
             return '{}:django_lightweight_queue:{}'.format(
-                settings.REDIS_PREFIX,
+                app_settings.REDIS_PREFIX,
                 queue,
             )
 

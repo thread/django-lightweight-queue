@@ -23,7 +23,7 @@ from django.utils.module_loading import module_has_submodule
 
 from . import constants
 from .types import Logger, QueueName, WorkerNumber
-from .app_settings import settings
+from .app_settings import app_settings
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend
@@ -48,7 +48,7 @@ def load_extra_config(file_path: str) -> None:
             for name in names
         )
 
-    setting_names = get_setting_names(settings)
+    setting_names = get_setting_names(app_settings)
     extra_names = get_setting_names(extra_settings)
 
     unexpected_names = extra_names - with_prefix(setting_names)
@@ -59,7 +59,7 @@ def load_extra_config(file_path: str) -> None:
     override_names = extra_names - unexpected_names
     for name in override_names:
         short_name = name[len(constants.SETTING_NAME_PREFIX):]
-        setattr(settings, short_name, getattr(extra_settings, name))
+        setattr(app_settings, short_name, getattr(extra_settings, name))
 
 
 @lru_cache()
@@ -73,19 +73,19 @@ def get_path(path: str) -> Any:
 
 @lru_cache()
 def get_backend(queue: QueueName) -> 'BaseBackend':
-    return get_path(settings.BACKEND_OVERRIDES.get(
+    return get_path(app_settings.BACKEND_OVERRIDES.get(
         queue,
-        settings.BACKEND,
+        app_settings.BACKEND,
     ))()
 
 
 @lru_cache()
 def get_logger(name: str) -> Logger:
-    get_logger_fn = settings.LOGGER_FACTORY
+    get_logger_fn = app_settings.LOGGER_FACTORY
     if not callable(get_logger_fn):
         get_logger_fn = cast(
             Callable[[str], Logger],
-            get_path(settings.LOGGER_FACTORY),
+            get_path(app_settings.LOGGER_FACTORY),
         )
     return get_logger_fn(name)
 
@@ -94,7 +94,7 @@ def get_logger(name: str) -> Logger:
 def get_middleware() -> List[Any]:
     middleware = []
 
-    for path in settings.MIDDLEWARE:
+    for path in app_settings.MIDDLEWARE:
         try:
             middleware.append(get_path(path)())
         except MiddlewareNotUsed:
@@ -114,12 +114,12 @@ def contribute_implied_queue_name(queue: QueueName) -> None:
             "Queues have already been enumerated, ensure that "
             "'contribute_implied_queue_name' is called during setup.",
         )
-    settings.WORKERS.setdefault(queue, 1)
+    app_settings.WORKERS.setdefault(queue, 1)
 
 
 def get_queue_counts() -> Mapping[QueueName, int]:
     refuse_further_implied_queues()
-    return settings.WORKERS
+    return app_settings.WORKERS
 
 
 def get_worker_numbers(queue: QueueName) -> Collection[WorkerNumber]:
@@ -144,7 +144,7 @@ def import_all_submodules(name: str, exclude: Sequence[str] = ()) -> None:
 
 
 def load_all_tasks() -> None:
-    import_all_submodules('tasks', settings.IGNORE_APPS)
+    import_all_submodules('tasks', app_settings.IGNORE_APPS)
 
 
 def block_for_time(
