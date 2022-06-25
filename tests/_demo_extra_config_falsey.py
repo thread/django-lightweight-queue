@@ -1,0 +1,4 @@
+# Override to falsey values
+LIGHTWEIGHT_QUEUE_REDIS_PASSWORD = None
+
+LIGHTWEIGHT_QUEUE_ATOMIC_JOBS = False
