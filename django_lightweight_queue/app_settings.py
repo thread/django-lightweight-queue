@@ -189,10 +189,10 @@ class Settings:
         self._atomic_jobs = value
 
     @property
-    def SITE_URL(self):
+    def SITE_URL(self) -> str:
         if not self._site_url:
             self._site_url = self._get('SITE_URL', "http://localhost:8000")
-        return self._site_url  # type: bool
+        return self._site_url
 
     @SITE_URL.setter
     def SITE_URL(self, value):

@@ -5,7 +5,7 @@ from django.shortcuts import reverse
 from ..job import Job
 from .base import BaseBackend
 from ..types import QueueName, WorkerNumber
-from ..app_settings import settings
+from ..app_settings import app_settings
 
 
 class DebugWebBackend(BaseBackend):
@@ -22,7 +22,7 @@ class DebugWebBackend(BaseBackend):
     def enqueue(self, job: Job, queue: QueueName) -> None:
         path = reverse('django_lightweight_queue:debug-run')
         query_string = urllib.parse.urlencode({'job': job.to_json()})
-        url = "{}{}?{}".format(settings.SITE_URL, path, query_string)
+        url = "{}{}?{}".format(app_settings.SITE_URL, path, query_string)
         print(url)
 
     def dequeue(self, queue: QueueName, worker_num: WorkerNumber, timeout: float) -> None:
