@@ -43,7 +43,7 @@ class TaskTests(unittest.TestCase):
         with mock.patch('redis.StrictRedis', fakeredis.FakeStrictRedis):
             self.backend = RedisBackend()
 
-        # Mock get_backend. Unfortunately due to the nameing of the 'task'
+        # Mock get_backend. Unfortunately due to the naming of the 'task'
         # decorator class being the same as its containing module and it being
         # exposed as the symbol at django_lightweight_queue.task, we cannot mock
         # this in the normal way. Instead we mock get_path (which get_backend
