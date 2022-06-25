@@ -144,7 +144,7 @@ def get_cron_config() -> Sequence[CronConfig]:
                 # No module, move on.
                 continue
 
-        app_cron_config: List[CronConfig] = mod.CONFIG  # type: ignore[attr-defined]
+        app_cron_config: List[CronConfig] = mod.CONFIG
         for row in app_cron_config:
             row['min_matcher'] = get_matcher(0, 59, row.get('minutes'))
             row['hour_matcher'] = get_matcher(0, 23, row.get('hours'))
