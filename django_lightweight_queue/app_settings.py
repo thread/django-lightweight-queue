@@ -1,4 +1,4 @@
-from typing import Union, Mapping, TypeVar, Callable, Optional, Sequence, Dict
+from typing import Dict, Union, Mapping, TypeVar, Callable, Optional, Sequence
 
 from django.conf import settings as django_settings
 
