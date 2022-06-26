@@ -114,9 +114,15 @@ urlpatterns = [
     ...
 ]
 
-if "debug_web" in settings.LIGHTWEIGHT_QUEUE_BACKEND:
-    from django_lightweight_queue import urls as dlq_urls
-    urlpatterns += [path("", include(dlq_urls))]
+if settings.DEBUG:
+    urlpatterns += [
+        path(
+            "",
+            include(
+                "django_lightweight_queue.urls", namespace="django-lightweight-queue"
+            ),
+        )
+    ]
 ```
 
 This backend may require an extra setting if your debug site is not on localhost:
