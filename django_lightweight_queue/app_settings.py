@@ -1,4 +1,4 @@
-from typing import Dict, Union, Callable, Optional, Sequence
+from typing import Any, Dict, Union, Callable, Optional, Sequence
 
 from django.conf import settings as django_settings
 
@@ -39,7 +39,7 @@ class AppSettings:
     def add_layer(self, layer: Settings) -> None:  # to be called by `load_extra_config`
         self._layers.append(layer)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         # reverse so that later layers override earlier ones
         for layer in reversed(self._layers):
             # check to see if the layer is internal or external
