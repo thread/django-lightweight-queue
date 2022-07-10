@@ -14,6 +14,7 @@ class Defaults(Settings):
     WORKERS: Dict[QueueName, int] = {}
     BACKEND: str = 'django_lightweight_queue.backends.synchronous.SynchronousBackend'
     LOGGER_FACTORY: Union[str, Callable[[str], Logger]] = 'logging.getLogger'
+    # Allow per-queue overrides of the backend.
     BACKEND_OVERRIDES: Dict[QueueName, str] = {}
     MIDDLEWARE: Sequence[str] = ('django_lightweight_queue.middleware.logging.LoggingMiddleware',)
     # Apps to ignore when looking for tasks. Apps must be specified as the dotted
