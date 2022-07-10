@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, Callable, Optional, Sequence
+from typing import Any, Dict, List, Union, Callable, Optional, Sequence
 
 from django.conf import settings as django_settings
 
@@ -33,7 +33,7 @@ class Defaults(Settings):
 
 
 class AppSettings:
-    def __init__(self, layers: list[Settings]) -> None:
+    def __init__(self, layers: List[Settings]) -> None:
         self._layers = layers
 
     def add_layer(self, layer: Settings) -> None:  # to be called by `load_extra_config`
