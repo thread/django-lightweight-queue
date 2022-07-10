@@ -30,7 +30,7 @@ class TaskTests(unittest.TestCase):
             'django_lightweight_queue.utils._accepting_implied_queues',
             new=False,
         ), unittest.mock.patch.dict(
-            'django_lightweight_queue.app_settings.Settings.WORKERS',
+            'django_lightweight_queue.app_settings.Defaults.WORKERS',
             workers,
         ):
             yield
@@ -54,7 +54,7 @@ class TaskTests(unittest.TestCase):
             return get_path(path)
 
         patch = mock.patch(
-            'django_lightweight_queue.app_settings.Settings.BACKEND',
+            'django_lightweight_queue.app_settings.Defaults.BACKEND',
             new='test-backend',
         )
         patch.start()

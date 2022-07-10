@@ -23,7 +23,7 @@ from django.utils.module_loading import module_has_submodule
 
 from . import constants
 from .types import Logger, QueueName, WorkerNumber
-from .app_settings import app_settings
+from .app_settings import Settings, app_settings
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend
@@ -34,6 +34,11 @@ FIVE_SECONDS = datetime.timedelta(seconds=5)
 
 
 def load_extra_config(file_path: str) -> None:
+
+    class Overrides(Settings):
+        """Container for holding internally overridden settings."""
+        pass
+
     extra_settings = imp.load_source('extra_settings', file_path)
 
     def get_setting_names(module: object) -> Set[str]:
@@ -54,9 +59,14 @@ def load_extra_config(file_path: str) -> None:
         warnings.warn("Ignoring unexpected setting(s) '{}'.".format(unexpected_str))
 
     override_names = extra_names - unexpected_names
+
+    overrides = Overrides()
+
     for name in override_names:
         short_name = name[len(constants.SETTING_NAME_PREFIX):]
-        setattr(app_settings, short_name, getattr(extra_settings, name))
+        setattr(overrides, short_name, getattr(extra_settings, name))
+
+    app_settings.add_layer(overrides)
 
 
 @lru_cache()
