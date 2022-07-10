@@ -45,8 +45,8 @@ class AppSettings:
             # check to see if the layer is internal or external
             use_short_names = getattr(layer, "_uses_short_names", False)
             attr_name = (
+                name if use_short_names else
                 '{}{}'.format(constants.SETTING_NAME_PREFIX, name)
-                if use_short_names else name
             )
             if hasattr(layer, attr_name):
                 return getattr(layer, attr_name)
