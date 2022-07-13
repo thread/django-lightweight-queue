@@ -37,7 +37,7 @@ class AppSettings:
     def __init__(self, layers: List[Settings]) -> None:
         self._layers = layers
 
-    def add_layer(self, layer: Settings) -> None:  # to be called by `load_extra_config`
+    def add_layer(self, layer: Settings) -> None:
         self._layers.append(layer)
 
     def __getattr__(self, name: str) -> Any:
