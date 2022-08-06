@@ -82,4 +82,7 @@ class AppSettings:
         raise AttributeError(f"Sorry, '{name}' is not a valid setting.")
 
 
-app_settings: Settings = AppSettings(layers=[Defaults(), LongNameAdapter(django_settings)])
+app_settings: Settings = AppSettings(layers=[
+    Defaults(),
+    LongNameAdapter(django_settings),
+])
