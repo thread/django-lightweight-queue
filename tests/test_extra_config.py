@@ -1,6 +1,6 @@
-import importlib
 from typing import Optional
 from pathlib import Path
+from unittest import mock
 
 from django.test import SimpleTestCase
 
@@ -27,11 +27,19 @@ class TestBackend(BaseBackend):
 class ExtraConfigTests(SimpleTestCase):
     def setUp(self) -> None:
         get_backend.cache_clear()
+
+        self.settings: app_settings.Settings = app_settings.AppSettings([app_settings.Defaults()])
+        self._settings_patch = mock.patch(
+            'django_lightweight_queue.utils.app_settings',
+            new=self.settings,
+        )
+        self._settings_patch.start()
+
         super().setUp()
 
     def tearDown(self) -> None:
-        importlib.reload(app_settings)
         get_backend.cache_clear()
+        self._settings_patch.stop()
         super().tearDown()
 
     def test_updates_configuration(self) -> None:
@@ -40,20 +48,20 @@ class ExtraConfigTests(SimpleTestCase):
         backend = get_backend('test-queue')
         self.assertIsInstance(backend, TestBackend)
 
-        self.assertEqual('a very bad password', app_settings.REDIS_PASSWORD)
+        self.assertEqual('a very bad password', self.settings.REDIS_PASSWORD)
 
     def test_warns_about_unexpected_settings(self) -> None:
         with self.assertWarnsRegex(Warning, r'Ignoring unexpected setting.+\bNOT_REDIS_PASSWORD\b'):
             load_extra_config(str(TESTS_DIR / '_demo_extra_config_unexpected.py'))
 
-        self.assertEqual('expected', app_settings.REDIS_PASSWORD)
+        self.assertEqual('expected', self.settings.REDIS_PASSWORD)
 
     def test_updates_configuration_with_falsey_values(self) -> None:
         load_extra_config(str(TESTS_DIR / '_demo_extra_config.py'))
         load_extra_config(str(TESTS_DIR / '_demo_extra_config_falsey.py'))
 
-        self.assertIsNone(app_settings.REDIS_PASSWORD)
-        self.assertFalse(app_settings.ATOMIC_JOBS)
+        self.assertIsNone(self.settings.REDIS_PASSWORD)
+        self.assertFalse(self.settings.ATOMIC_JOBS)
 
     def test_rejects_missing_file(self) -> None:
         with self.assertRaises(FileNotFoundError):
