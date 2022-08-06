@@ -3,11 +3,11 @@ from typing import Dict, List, Tuple, TypeVar, Optional, Collection
 
 import redis
 
-from .. import app_settings
 from ..job import Job
 from .base import BackendWithDeduplicate, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time, get_worker_numbers
+from ..app_settings import app_settings
 from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 
 # Work around https://github.com/python/mypy/issues/9914. Name needs to match

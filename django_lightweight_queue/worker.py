@@ -12,9 +12,9 @@ from prometheus_client import Summary, start_http_server
 
 from django.db import connections, transaction
 
-from . import app_settings
 from .types import QueueName, WorkerNumber
 from .utils import get_logger, get_backend, set_process_title
+from .app_settings import app_settings
 from .backends.base import BaseBackend
 
 if app_settings.ENABLE_PROMETHEUS:

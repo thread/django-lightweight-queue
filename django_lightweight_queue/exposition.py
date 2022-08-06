@@ -6,8 +6,8 @@ from http.server import HTTPServer
 
 from prometheus_client.exposition import MetricsHandler
 
-from . import app_settings
 from .types import QueueName, WorkerNumber
+from .app_settings import app_settings
 
 
 def get_config_response(

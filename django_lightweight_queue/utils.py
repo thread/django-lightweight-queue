@@ -21,8 +21,9 @@ from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
-from . import constants, app_settings
+from . import constants
 from .types import Logger, QueueName, WorkerNumber
+from .app_settings import app_settings
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend

@@ -50,7 +50,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             'django_lightweight_queue.utils._accepting_implied_queues',
             new=False,
         ), unittest.mock.patch.dict(
-            'django_lightweight_queue.app_settings.WORKERS',
+            'django_lightweight_queue.app_settings.app_settings.WORKERS',
             workers,
         ):
             yield
