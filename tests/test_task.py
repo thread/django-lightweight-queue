@@ -5,6 +5,8 @@ from unittest import mock
 
 import fakeredis
 
+from django.test import SimpleTestCase, override_settings
+
 from django_lightweight_queue import task
 from django_lightweight_queue.types import QueueName, WorkerNumber
 from django_lightweight_queue.utils import get_path, get_backend
@@ -20,7 +22,8 @@ def dummy_task(num: int) -> None:
     pass
 
 
-class TaskTests(unittest.TestCase):
+@override_settings(LIGHTWEIGHT_QUEUE_BACKEND='test-backend')
+class TaskTests(SimpleTestCase):
     longMessage = True
     prefix = settings.LIGHTWEIGHT_QUEUE_REDIS_PREFIX
 
@@ -29,9 +32,8 @@ class TaskTests(unittest.TestCase):
         with unittest.mock.patch(
             'django_lightweight_queue.utils._accepting_implied_queues',
             new=False,
-        ), unittest.mock.patch.dict(
-            'django_lightweight_queue.app_settings.Defaults.WORKERS',
-            workers,
+        ), override_settings(
+            LIGHTWEIGHT_QUEUE_WORKERS=workers,
         ):
             yield
 
@@ -53,12 +55,6 @@ class TaskTests(unittest.TestCase):
                 return lambda: self.backend
             return get_path(path)
 
-        patch = mock.patch(
-            'django_lightweight_queue.app_settings.Defaults.BACKEND',
-            new='test-backend',
-        )
-        patch.start()
-        self.addCleanup(patch.stop)
         patch = mock.patch(
             'django_lightweight_queue.utils.get_path',
             side_effect=mocked_get_path,

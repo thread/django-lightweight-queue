@@ -1,11 +1,11 @@
 import io
 import datetime
-import unittest
 from unittest import mock
 
 import fakeredis
 import freezegun
 
+from django.test import SimpleTestCase, override_settings
 from django.core.management import call_command, CommandError
 
 from django_lightweight_queue.types import QueueName
@@ -18,7 +18,7 @@ from django_lightweight_queue.management.commands.queue_pause import (
 )
 
 
-class PauseResumeTests(unittest.TestCase):
+class PauseResumeTests(SimpleTestCase):
     longMessage = True
 
     def assertPaused(self, queue: QueueName, context: str) -> None:
@@ -49,11 +49,8 @@ class PauseResumeTests(unittest.TestCase):
 
         super().setUp()
 
-    # Can't use override_settings due to the copying of the settings values into
-    # module values at startup.
-    @mock.patch(
-        'django_lightweight_queue.app_settings.Defaults.BACKEND',
-        new='django_lightweight_queue.backends.redis.RedisBackend',
+    @override_settings(
+        LIGHTWEIGHT_QUEUE_BACKEND='django_lightweight_queue.backends.redis.RedisBackend',
     )
     def test_pause_resume(self) -> None:
         QUEUE = QueueName('test-pauseable-queue')
