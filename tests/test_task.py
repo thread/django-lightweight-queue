@@ -53,18 +53,18 @@ class TaskTests(unittest.TestCase):
                 return lambda: self.backend
             return get_path(path)
 
-        patch = mock.patch(
+        backend_patch = mock.patch(
             'django_lightweight_queue.app_settings.BACKEND',
             new='test-backend',
         )
-        patch.start()
-        self.addCleanup(patch.stop)
-        patch = mock.patch(
+        backend_patch.start()
+        self.addCleanup(backend_patch.stop)
+        get_path_patch = mock.patch(
             'django_lightweight_queue.utils.get_path',
             side_effect=mocked_get_path,
         )
-        patch.start()
-        self.addCleanup(patch.stop)
+        get_path_patch.start()
+        self.addCleanup(get_path_patch.stop)
 
     def tearDown(self) -> None:
         super().tearDown()
