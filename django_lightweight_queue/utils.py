@@ -1,8 +1,8 @@
-import imp
 import time
 import datetime
 import warnings
 import importlib
+import importlib.util
 from typing import (
     Any,
     Set,
@@ -33,7 +33,10 @@ FIVE_SECONDS = datetime.timedelta(seconds=5)
 
 
 def load_extra_config(file_path: str) -> None:
-    extra_settings = imp.load_source('extra_settings', file_path)
+    # Based on https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
+    spec = importlib.util.spec_from_file_location('extra_settings', file_path)
+    extra_settings = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(extra_settings)  # type: ignore[union-attr]
 
     def get_setting_names(module: object) -> Set[str]:
         return set(name for name in dir(module) if name.isupper())
