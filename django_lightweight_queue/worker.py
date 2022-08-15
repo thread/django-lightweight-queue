@@ -159,12 +159,24 @@ class Worker:
             signal.signal(signal.SIGUSR2, self._handle_sigusr2)
 
         if timeout is not None:
+            signal.signal(signal.SIGALRM, self._handle_alarm)
             # alarm(3) takes whole seconds
             alarm_duration = int(math.ceil(timeout))
             signal.alarm(alarm_duration)
         else:
             # Cancel any scheduled alarms
             signal.alarm(0)
+
+    def _handle_alarm(self, signal_number: int, frame: object) -> None:
+        # Log for observability
+        self.log(logging.ERROR, "Alarm received: job has timed out")
+
+        # Disconnect ourselves then re-signal so that Python does what it
+        # normally would. We could raise an exception here, however raising
+        # exceptions from signal handlers is generally discouraged.
+        signal.signal(signal.SIGALRM, signal.SIG_DFL)
+        # TODO(python-upgrade): use signal.raise_signal on Python 3.8+
+        os.kill(os.getpid(), signal.SIGALRM)
 
     def set_process_title(self, *titles: str) -> None:
         set_process_title(self.name, *titles)
