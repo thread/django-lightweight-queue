@@ -55,7 +55,7 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
         # Without this the startup process can end up racing against workers on
         # other machines which are validly re-populating their processing queues
         # as they work on jobs.
-        current_processing_queue_keys = set(self.client.keys(pattern))
+        current_processing_queue_keys = set(self.client.scan_iter(pattern))
         expected_processing_queue_keys = set(
             self._processing_key(queue, worker_number).encode()
             for worker_number in get_worker_numbers(queue)
