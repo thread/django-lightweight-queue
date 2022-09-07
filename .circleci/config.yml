@@ -15,7 +15,6 @@ references:
     run:
       name: Install Dependencies
       command: |
-        source $HOME/.poetry/env
         poetry install
         poetry run pip install "django~=<< parameters.django-version >>.0"
   save-dependencies-cache: &save-dependencies-cache
@@ -66,7 +65,6 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            source $HOME/.poetry/env
             poetry run ./runtests
 
   lint:
@@ -83,7 +81,6 @@ jobs:
       - run:
           name: Run Flake8
           command: |
-            source $HOME/.poetry/env
             poetry run flake8
 
   type-check:
@@ -100,7 +97,6 @@ jobs:
       - run:
           name: Run Mypy
           command: |
-            source $HOME/.poetry/env
             poetry run ./script/type-check
 
   deploy:
@@ -113,7 +109,6 @@ jobs:
       - run:
           name: Push to PyPI
           command: |
-            source $HOME/.poetry/env
             poetry publish \
               --build \
               --username "${PYPI_USERNAME}" \
