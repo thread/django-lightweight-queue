@@ -149,7 +149,7 @@ part of a pool:
 $ python manage.py queue_runner --machine 2 --of 4
 ```
 
-Alternatively a runner can have be told explicitly how to be have by having
+Alternatively a runner can be told explicitly how to behave by having
 extra settings loaded (any `LIGHTWEIGHT_QUEUE_*` constants found in the file
 will replace equivalent django settings) and being configured to run exactly as
 the settings describe:
