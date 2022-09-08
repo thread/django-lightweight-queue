@@ -69,7 +69,7 @@ LIGHTWEIGHT_QUEUE_REDIS_PORT = 12345
 and then running:
 
 ```
-$ python manage.py queue_runner --config=special.py
+$ python manage.py queue_runner --extra-settings=special.py
 ```
 
 will result in the runner to use the settings from the specified configuration
@@ -149,10 +149,13 @@ part of a pool:
 $ python manage.py queue_runner --machine 2 --of 4
 ```
 
-Alternatively a runner can be told explicitly which configuration to use:
+Alternatively a runner can be told explicitly how to behave by having
+extra settings loaded (any `LIGHTWEIGHT_QUEUE_*` constants found in the file
+will replace equivalent django settings) and being configured to run exactly as
+the settings describe:
 
 ```
-$ python manage.py queue_runner --exact-configuration --config=special.py
+$ python manage.py queue_runner --exact-configuration --extra-settings=special.py
 ```
 
 When using `--exact-configuration` the number of workers is configured exactly,
@@ -188,7 +191,7 @@ $ python manage.py queue_runner --machine 3 --of 3
 will result in one worker for `queue1` on the current machine, while:
 
 ```
-$ python manage.py queue_runner --exact-configuration --config=special.py
+$ python manage.py queue_runner --exact-configuration --extra-settings=special.py
 ```
 
 will result in two workers on the current machine.
