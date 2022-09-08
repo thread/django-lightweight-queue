@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandParser
 
 from ... import app_settings
 from ...utils import get_backend, get_queue_counts, load_extra_settings
+from ...constants import SETTING_NAME_PREFIX
 from ...cron_scheduler import get_cron_config
 
 
@@ -22,7 +23,9 @@ class Command(BaseCommand):
             '--extra-settings',
             action='store',
             default=None,
-            help="The path to an additional django-style settings file to load",
+            help="The path to an additional django-style settings file to load. "
+                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
+                 "override those from the default Django settings.",
         )
 
     def handle(self, **options: Any) -> None:

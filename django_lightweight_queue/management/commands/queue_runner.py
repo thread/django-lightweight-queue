@@ -18,6 +18,7 @@ from ...utils import (
     load_extra_settings,
 )
 from ...runner import runner
+from ...constants import SETTING_NAME_PREFIX
 from ...machine_types import Machine, PooledMachine, DirectlyConfiguredMachine
 
 
@@ -69,7 +70,9 @@ class Command(BaseCommand):
             '--extra-settings',
             action='store',
             default=None,
-            help="The path to an additional django-style settings file to load",
+            help="The path to an additional django-style settings file to load. "
+                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
+                 "override those from the default Django settings.",
         )
         parser.add_argument(
             '--exact-configuration',
