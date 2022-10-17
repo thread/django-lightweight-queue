@@ -43,7 +43,7 @@ def runner(
 
     # Note: we deliberately configure our handling of SIGTERM _after_ the
     # startup processes have happened; this ensures that the startup processes
-    # (which could take a long time) are naturally interupted by the signal.
+    # (which could take a long time) are naturally interrupted by the signal.
     def handle_term(signum: int, stack: object) -> None:
         nonlocal running
         logger.debug("Caught TERM signal")

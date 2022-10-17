@@ -45,7 +45,7 @@ class TaskTests(SimpleTestCase):
         with mock.patch('redis.StrictRedis', fakeredis.FakeStrictRedis):
             self.backend = RedisBackend()
 
-        # Mock get_backend. Unfortunately due to the nameing of the 'task'
+        # Mock get_backend. Unfortunately due to the naming of the 'task'
         # decorator class being the same as its containing module and it being
         # exposed as the symbol at django_lightweight_queue.task, we cannot mock
         # this in the normal way. Instead we mock get_path (which get_backend
@@ -55,12 +55,12 @@ class TaskTests(SimpleTestCase):
                 return lambda: self.backend
             return get_path(path)
 
-        patch = mock.patch(
+        get_path_patch = mock.patch(
             'django_lightweight_queue.utils.get_path',
             side_effect=mocked_get_path,
         )
-        patch.start()
-        self.addCleanup(patch.stop)
+        get_path_patch.start()
+        self.addCleanup(get_path_patch.stop)
 
     def tearDown(self) -> None:
         super().tearDown()

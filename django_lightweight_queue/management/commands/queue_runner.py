@@ -1,3 +1,4 @@
+import warnings
 from typing import Any, Dict, Optional
 
 import daemonize
@@ -10,8 +11,14 @@ from django.core.management.base import (
 )
 
 from ...types import QueueName
-from ...utils import get_logger, get_backend, get_middleware, load_extra_config
+from ...utils import (
+    get_logger,
+    get_backend,
+    get_middleware,
+    load_extra_settings,
+)
 from ...runner import runner
+from ...constants import SETTING_NAME_PREFIX
 from ...machine_types import Machine, PooledMachine, DirectlyConfiguredMachine
 
 
@@ -51,23 +58,42 @@ class Command(BaseCommand):
             default=None,
             help="Only run the given queue, useful for local debugging",
         )
-        parser.add_argument(
+        extra_settings_group = parser.add_mutually_exclusive_group()
+        extra_settings_group.add_argument(
             '--config',
             action='store',
             default=None,
-            help="The path to an additional django-style config file to load",
+            help="The path to an additional django-style config file to load "
+                 "(this spelling is deprecated in favour of '--extra-settings')",
+        )
+        extra_settings_group.add_argument(
+            '--extra-settings',
+            action='store',
+            default=None,
+            help="The path to an additional django-style settings file to load. "
+                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
+                 "override those from the default Django settings.",
         )
         parser.add_argument(
             '--exact-configuration',
             action='store_true',
             help="Run queues on this machine exactly as specified. Requires the"
-                 " use of the '--config' option in addition. It is an error to"
-                 " use this option together with either '--machine' or '--of'.",
+                 " use of the '--extra-settings' option in addition. It is an"
+                 " error to use this option together with either '--machine' or"
+                 " '--of'.",
         )
 
     def validate_and_normalise(self, options: Dict[str, Any]) -> None:
+        extra_config = options.pop('config')
+        if extra_config is not None:
+            warnings.warn(
+                "Use of '--config' is deprecated in favour of '--extra-settings'.",
+                category=DeprecationWarning,
+            )
+            options['extra_settings'] = extra_config
+
         if options['exact_configuration']:
-            if not options['config']:
+            if not options['extra_settings']:
                 raise CommandError(
                     "Must provide a value for '--config' when using "
                     "'--exact-configuration'.",
@@ -110,9 +136,9 @@ class Command(BaseCommand):
                 return None
 
         # Configuration overrides
-        extra_config = options['config']
+        extra_config = options['extra_settings']
         if extra_config is not None:
-            load_extra_config(extra_config)
+            load_extra_settings(extra_config)
 
         logger.info("Starting queue master")
 

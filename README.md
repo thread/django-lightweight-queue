@@ -15,6 +15,19 @@ backends are great candidates for community contributions.
 
 ## Basic Usage
 
+Start by adding `django_lightweight_queue` to your `INSTALLED_APPS`:
+
+```python
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    ...,
+    "django_lightweight_queue",
+]
+```
+
+After that, define your task in any file you want:
+
 ```python
 import time
 from django_lightweight_queue import task
@@ -56,7 +69,7 @@ LIGHTWEIGHT_QUEUE_REDIS_PORT = 12345
 and then running:
 
 ```
-$ python manage.py queue_runner --config=special.py
+$ python manage.py queue_runner --extra-settings=special.py
 ```
 
 will result in the runner to use the settings from the specified configuration
@@ -67,12 +80,57 @@ present in the specified file are inherited from the global configuration.
 
 There are four built-in backends:
 
-| Backend        | Type        | Description                                                                                                                                                                       |
-| -------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Synchronous    | Development | Executes the task inline, without any actual queuing.                                                                                                                             |
-| Redis          | Production  | Executes tasks at-most-once using [Redis][redis] for storage of the enqueued tasks.                                                                                               |
-| Reliable Redis | Production  | Executes tasks at-least-once using [Redis][redis] for storage of the enqueued tasks (subject to Redis consistency). Does not guarantee the task _completes_.                      |
-| Debug Web      | Debugging   | Instead of running jobs it prints the url to a view that can be used to run a task in a transaction which will be rolled back. This is useful for debugging and optimising tasks. |
+### Synchronous (Development backend)
+
+`django_lightweight_queue.backends.synchronous.SynchronousBackend`
+
+Executes the task inline, without any actual queuing.
+
+### Redis (Production backend)
+
+`django_lightweight_queue.backends.redis.RedisBackend`
+
+Executes tasks at-most-once using [Redis][redis] for storage of the enqueued tasks.
+
+### Reliable Redis (Production backend)
+
+`django_lightweight_queue.backends.reliable_redis.ReliableRedisBackend`
+
+Executes tasks at-least-once using [Redis][redis] for storage of the enqueued tasks (subject to Redis consistency). Does not guarantee the task _completes_.
+
+### Debug Web (Debug backend)
+
+`django_lightweight_queue.backends.debug_web.DebugWebBackend`
+
+Instead of running jobs it prints the url to a view that can be used to run a task in a transaction which will be rolled back. This is useful for debugging and optimising tasks.
+
+Use this to append the appropriate URLs to the bottom of your root `urls.py`:
+
+```python
+from django.conf import settings
+from django.urls import path, include
+
+urlpatterns = [
+    ...
+]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path(
+            "",
+            include(
+                "django_lightweight_queue.urls", namespace="django-lightweight-queue"
+            ),
+        )
+    ]
+```
+
+This backend may require an extra setting if your debug site is not on localhost:
+
+```python
+# defaults to http://localhost:8000
+LIGHTWEIGHT_QUEUE_SITE_URL = "http://example.com:8000"
+```
 
 [redis]: https://redis.io/
 
@@ -91,10 +149,13 @@ part of a pool:
 $ python manage.py queue_runner --machine 2 --of 4
 ```
 
-Alternatively a runner can be told explicitly which configuration to use:
+Alternatively a runner can be told explicitly how to behave by having
+extra settings loaded (any `LIGHTWEIGHT_QUEUE_*` constants found in the file
+will replace equivalent django settings) and being configured to run exactly as
+the settings describe:
 
 ```
-$ python manage.py queue_runner --exact-configuration --config=special.py
+$ python manage.py queue_runner --exact-configuration --extra-settings=special.py
 ```
 
 When using `--exact-configuration` the number of workers is configured exactly,
@@ -130,7 +191,7 @@ $ python manage.py queue_runner --machine 3 --of 3
 will result in one worker for `queue1` on the current machine, while:
 
 ```
-$ python manage.py queue_runner --exact-configuration --config=special.py
+$ python manage.py queue_runner --exact-configuration --extra-settings=special.py
 ```
 
 will result in two workers on the current machine.

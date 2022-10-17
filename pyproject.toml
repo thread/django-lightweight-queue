@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-lightweight-queue"
-version = "4.5.1"
+version = "4.9.0"
 description = "Lightweight & modular queue and cron system for Django"
 authors = ["Thread Engineering <tech@thread.com>"]
 license = "BSD-3-Clause"
@@ -34,7 +34,7 @@ freezegun = "^1.1.0"
 # Linting tools
 flake8 = "^4.0.0"
 isort = "^5.10"
-mypy = "^0.910"
+mypy = "^0.940"
 
 # Flake 8 plugins
 flake8-bugbear = "^21.11.29"

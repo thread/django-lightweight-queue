@@ -1,26 +1,46 @@
+import warnings
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from ...utils import get_backend, get_queue_counts, load_extra_config
+from ...utils import get_backend, get_queue_counts, load_extra_settings
+from ...constants import SETTING_NAME_PREFIX
 from ...app_settings import app_settings
 from ...cron_scheduler import get_cron_config
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument(
+        extra_settings_group = parser.add_mutually_exclusive_group()
+        extra_settings_group.add_argument(
             '--config',
             action='store',
             default=None,
-            help="The path to an additional django-style config file to load",
+            help="The path to an additional django-style config file to load "
+                 "(this spelling is deprecated in favour of '--extra-settings')",
+        )
+        extra_settings_group.add_argument(
+            '--extra-settings',
+            action='store',
+            default=None,
+            help="The path to an additional django-style settings file to load. "
+                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
+                 "override those from the default Django settings.",
         )
 
     def handle(self, **options: Any) -> None:
-        # Configuration overrides
-        extra_config = options['config']
+        extra_config = options.pop('config')
         if extra_config is not None:
-            load_extra_config(extra_config)
+            warnings.warn(
+                "Use of '--config' is deprecated in favour of '--extra-settings'.",
+                category=DeprecationWarning,
+            )
+            options['extra_settings'] = extra_config
+
+        # Configuration overrides
+        extra_settings = options['extra_settings']
+        if extra_settings is not None:
+            load_extra_settings(extra_settings)
 
         print("django-lightweight-queue")
         print("========================")
