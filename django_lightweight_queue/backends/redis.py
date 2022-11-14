@@ -5,12 +5,12 @@ import redis
 
 from .. import app_settings
 from ..job import Job
-from .base import BackendWithPauseResume
+from .base import BackendWithClear, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
 
 
-class RedisBackend(BackendWithPauseResume):
+class RedisBackend(BackendWithPauseResume, BackendWithClear):
     """
     This backend has at-most-once semantics.
     """
@@ -77,6 +77,9 @@ class RedisBackend(BackendWithPauseResume):
 
     def is_paused(self, queue: QueueName) -> bool:
         return bool(self.client.exists(self._pause_key(queue)))
+
+    def clear(self, queue: QueueName) -> None:
+        self.client.delete(self._key(queue))
 
     def _key(self, queue: QueueName) -> str:
         if app_settings.REDIS_PREFIX:
