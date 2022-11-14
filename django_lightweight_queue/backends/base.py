@@ -54,6 +54,12 @@ class BackendWithDeduplicate(BaseBackend, metaclass=ABCMeta):
         raise NotImplementedError()
 
 
+class BackendWithClear(BaseBackend, metaclass=ABCMeta):
+    @abstractmethod
+    def clear(self, queue: QueueName) -> None:
+        raise NotImplementedError()
+
+
 class BackendWithPause(BaseBackend, metaclass=ABCMeta):
     @abstractmethod
     def pause(self, queue: QueueName, until: datetime.datetime) -> None:

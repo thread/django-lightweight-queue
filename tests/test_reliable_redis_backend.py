@@ -348,3 +348,13 @@ class ReliableRedisTests(RedisCleanupMixin, unittest.TestCase):
 
         self.assertIsNone(job, "Should have indicated no work was done")
         self.assertTrue(mock_sleep.called)
+
+    def test_clear(self):
+        QUEUE = 'the-queue'
+
+        self.enqueue_job(QUEUE)
+
+        self.backend.clear(QUEUE)
+
+        dequeued = self.backend.dequeue(QUEUE, worker_number=3, timeout=1)
+        self.assertIsNone(dequeued)
