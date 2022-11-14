@@ -132,7 +132,7 @@ class Command(CommandWithExtraSettings):
             )
 
         def run() -> None:
-            runner(touch_filename, machine, logger)
+            runner(touch_filename, machine, logger, extra_settings)
 
         # fork() only after we have started enough to catch failure, including
         # being able to write to our pidfile.

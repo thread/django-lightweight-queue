@@ -20,6 +20,7 @@ def runner(
     touch_filename_fn: Callable[[QueueName], Optional[str]],
     machine: Machine,
     logger: Logger,
+    extra_settings_filename: Optional[str],
 ) -> None:
     set_process_title("Master process")
 
@@ -115,6 +116,12 @@ def runner(
                     args.extend([
                         '--touch-file',
                         touch_filename,
+                    ])
+
+                if extra_settings_filename is not None:
+                    args.extend([
+                        '--extra-settings',
+                        extra_settings_filename,
                     ])
 
                 worker = subprocess.Popen(args)
