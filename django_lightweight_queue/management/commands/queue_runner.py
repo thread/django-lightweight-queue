@@ -1,29 +1,21 @@
-import warnings
 from typing import Any, Dict, Optional
 
 import daemonize
 
 from django.apps import apps
-from django.core.management.base import (
-    BaseCommand,
-    CommandError,
-    CommandParser,
-)
+from django.core.management.base import CommandError, CommandParser
 
 from ...types import QueueName
-from ...utils import (
-    get_logger,
-    get_backend,
-    get_middleware,
-    load_extra_settings,
-)
+from ...utils import get_logger, get_backend, get_middleware
 from ...runner import runner
-from ...constants import SETTING_NAME_PREFIX
+from ...command_utils import CommandWithExtraSettings
 from ...machine_types import Machine, PooledMachine, DirectlyConfiguredMachine
 
 
-class Command(BaseCommand):
+class Command(CommandWithExtraSettings):
     def add_arguments(self, parser: CommandParser) -> None:
+        super().add_arguments(parser)
+
         parser.add_argument(
             '--pidfile',
             action='store',
@@ -58,22 +50,6 @@ class Command(BaseCommand):
             default=None,
             help="Only run the given queue, useful for local debugging",
         )
-        extra_settings_group = parser.add_mutually_exclusive_group()
-        extra_settings_group.add_argument(
-            '--config',
-            action='store',
-            default=None,
-            help="The path to an additional django-style config file to load "
-                 "(this spelling is deprecated in favour of '--extra-settings')",
-        )
-        extra_settings_group.add_argument(
-            '--extra-settings',
-            action='store',
-            default=None,
-            help="The path to an additional django-style settings file to load. "
-                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
-                 "override those from the default Django settings.",
-        )
         parser.add_argument(
             '--exact-configuration',
             action='store_true',
@@ -83,17 +59,9 @@ class Command(BaseCommand):
                  " '--of'.",
         )
 
-    def validate_and_normalise(self, options: Dict[str, Any]) -> None:
-        extra_config = options.pop('config')
-        if extra_config is not None:
-            warnings.warn(
-                "Use of '--config' is deprecated in favour of '--extra-settings'.",
-                category=DeprecationWarning,
-            )
-            options['extra_settings'] = extra_config
-
+    def validate_and_normalise(self, options: Dict[str, Any], had_extra_settings: bool) -> None:
         if options['exact_configuration']:
-            if not options['extra_settings']:
+            if not had_extra_settings:
                 raise CommandError(
                     "Must provide a value for '--extra-settings' when using "
                     "'--exact-configuration'.",
@@ -127,18 +95,18 @@ class Command(BaseCommand):
     def handle(self, **options: Any) -> None:
         logger = get_logger('dlq.master')
 
-        self.validate_and_normalise(options)
+        extra_settings = super().handle_extra_settings(**options)
+
+        self.validate_and_normalise(
+            options,
+            had_extra_settings=extra_settings is not None,
+        )
 
         def touch_filename(name: str) -> Optional[str]:
             try:
                 return options['touchfile'] % name
             except TypeError:
                 return None
-
-        # Configuration overrides
-        extra_config = options['extra_settings']
-        if extra_config is not None:
-            load_extra_settings(extra_config)
 
         logger.info("Starting queue master")
 
