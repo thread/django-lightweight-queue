@@ -18,7 +18,7 @@ from . import settings
 from .mixins import RedisCleanupMixin
 
 
-class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
+class ReliableRedisTests(RedisCleanupMixin, unittest.TestCase):
     longMessage = True
     prefix = settings.LIGHTWEIGHT_QUEUE_REDIS_PREFIX
 
@@ -60,11 +60,11 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             self.backend = ReliableRedisBackend()
         self.client = self.backend.client
 
-        super(ReliableRedisDeduplicationTests, self).setUp()
+        super(ReliableRedisTests, self).setUp()
 
         self.start_time = datetime.datetime.utcnow()
 
-    def test_empty_queue(self):
+    def test_deduplicate_empty_queue(self):
         result = self.backend.deduplicate('empty-queue')
         self.assertEqual(
             (0, 0),
@@ -72,7 +72,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             "Should do nothing when queue empty",
         )
 
-    def test_single_entry_in_queue(self):
+    def test_deduplicate_single_entry_in_queue(self):
         QUEUE = 'single-job-queue'
 
         self.enqueue_job(QUEUE)
@@ -96,7 +96,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             "Should still be a single entry in the queue",
         )
 
-    def test_unique_entries_in_queue(self):
+    def test_deduplicate_unique_entries_in_queue(self):
         QUEUE = 'unique-jobs-queue'
 
         self.enqueue_job(QUEUE, args=('args1',))
@@ -121,7 +121,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             "Should still be a single entry in the queue",
         )
 
-    def test_duplicate_entries_in_queue(self):
+    def test_deduplicate_duplicate_entries_in_queue(self):
         QUEUE = 'duplicate-jobs-queue'
 
         self.enqueue_job(QUEUE)
@@ -146,7 +146,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             "Should still be a single entry in the queue",
         )
 
-    def test_preserves_order_with_fixed_timestamps(self):
+    def test_deduplicate_preserves_order_with_fixed_timestamps(self):
         QUEUE = 'job-queue'
         WORKER_NUMBER = 0
 
@@ -201,7 +201,7 @@ class ReliableRedisDeduplicationTests(RedisCleanupMixin, unittest.TestCase):
             "Third job dequeued should be the third job enqueued",
         )
 
-    def test_preserves_order_with_unique_timestamps(self):
+    def test_deduplicate_preserves_order_with_unique_timestamps(self):
         QUEUE = 'job-queue'
         WORKER_NUMBER = 0
 
