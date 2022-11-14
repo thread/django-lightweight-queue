@@ -95,7 +95,7 @@ class Command(BaseCommand):
         if options['exact_configuration']:
             if not options['extra_settings']:
                 raise CommandError(
-                    "Must provide a value for '--config' when using "
+                    "Must provide a value for '--extra-settings' when using "
                     "'--exact-configuration'.",
                 )
 
