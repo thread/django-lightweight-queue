@@ -20,6 +20,7 @@ class RedisBackend(BackendWithPauseResume, BackendWithClear):
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
             password=app_settings.REDIS_PASSWORD,
+            db=app_settings.REDIS_DATABASE,
         )
 
     def enqueue(self, job: Job, queue: QueueName) -> None:

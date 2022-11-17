@@ -46,6 +46,7 @@ class ReliableRedisBackend(BackendWithClear, BackendWithDeduplicate, BackendWith
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
             password=app_settings.REDIS_PASSWORD,
+            db=app_settings.REDIS_DATABASE,
         )
 
     def startup(self, queue: QueueName) -> None:
