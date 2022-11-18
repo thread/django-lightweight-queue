@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         parser.add_argument(
             '--yes',
-            'skip_prompt',
+            dest='skip_prompt',
             action='store_true',
             help="Skip confirmation prompt.",
         )
