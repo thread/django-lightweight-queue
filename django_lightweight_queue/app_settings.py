@@ -35,6 +35,7 @@ class Settings(Protocol):
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_PASSWORD: Optional[str]
+    REDIS_DATABASE: int
     REDIS_PREFIX: str
 
     ENABLE_PROMETHEUS: bool
@@ -57,6 +58,7 @@ class Defaults(Settings):
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_PASSWORD = None
+    REDIS_DATABASE = 0
     REDIS_PREFIX = ""
 
     ENABLE_PROMETHEUS = False

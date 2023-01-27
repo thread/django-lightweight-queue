@@ -1,15 +1,18 @@
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import CommandParser
 
 from ...types import QueueName, WorkerNumber
 from ...worker import Worker
+from ...command_utils import CommandWithExtraSettings
 
 
-class Command(BaseCommand):
+class Command(CommandWithExtraSettings):
     help = "Run an individual queue worker"  # noqa:A003 # inherited name
 
     def add_arguments(self, parser: CommandParser) -> None:
+        super().add_arguments(parser)
+
         parser.add_argument(
             'queue',
             help="queue for which this is a worker",
@@ -40,6 +43,8 @@ class Command(BaseCommand):
         touch_filename: str,
         **options: Any
     ) -> None:
+        super().handle_extra_settings(**options)
+
         worker = Worker(
             queue=queue,
             worker_num=number,

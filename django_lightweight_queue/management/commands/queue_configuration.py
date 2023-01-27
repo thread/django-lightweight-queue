@@ -1,46 +1,14 @@
-import warnings
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
-
-from ...utils import get_backend, get_queue_counts, load_extra_settings
-from ...constants import SETTING_NAME_PREFIX
+from ...utils import get_backend, get_queue_counts
 from ...app_settings import app_settings
+from ...command_utils import CommandWithExtraSettings
 from ...cron_scheduler import get_cron_config
 
 
-class Command(BaseCommand):
-    def add_arguments(self, parser: CommandParser) -> None:
-        extra_settings_group = parser.add_mutually_exclusive_group()
-        extra_settings_group.add_argument(
-            '--config',
-            action='store',
-            default=None,
-            help="The path to an additional django-style config file to load "
-                 "(this spelling is deprecated in favour of '--extra-settings')",
-        )
-        extra_settings_group.add_argument(
-            '--extra-settings',
-            action='store',
-            default=None,
-            help="The path to an additional django-style settings file to load. "
-                 f"{SETTING_NAME_PREFIX}* settings discovered in this file will "
-                 "override those from the default Django settings.",
-        )
-
+class Command(CommandWithExtraSettings):
     def handle(self, **options: Any) -> None:
-        extra_config = options.pop('config')
-        if extra_config is not None:
-            warnings.warn(
-                "Use of '--config' is deprecated in favour of '--extra-settings'.",
-                category=DeprecationWarning,
-            )
-            options['extra_settings'] = extra_config
-
-        # Configuration overrides
-        extra_settings = options['extra_settings']
-        if extra_settings is not None:
-            load_extra_settings(extra_settings)
+        super().handle_extra_settings(**options)
 
         print("django-lightweight-queue")
         print("========================")

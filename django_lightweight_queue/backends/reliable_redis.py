@@ -4,7 +4,11 @@ from typing import Dict, List, Tuple, TypeVar, Optional, Collection
 import redis
 
 from ..job import Job
-from .base import BackendWithDeduplicate, BackendWithPauseResume
+from .base import (
+    BackendWithClear,
+    BackendWithDeduplicate,
+    BackendWithPauseResume,
+)
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time, get_worker_numbers
 from ..app_settings import app_settings
@@ -15,7 +19,7 @@ from ..progress_logger import ProgressLogger, NULL_PROGRESS_LOGGER
 T = TypeVar('T')
 
 
-class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
+class ReliableRedisBackend(BackendWithClear, BackendWithDeduplicate, BackendWithPauseResume):
     """
     This backend manages a per-queue-per-worker 'processing' queue. E.g. if we
     had a queue called 'django_lightweight_queue:things', and two workers, we
@@ -42,6 +46,7 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
             password=app_settings.REDIS_PASSWORD,
+            db=app_settings.REDIS_DATABASE,
         )
 
     def startup(self, queue: QueueName) -> None:
@@ -227,6 +232,9 @@ class ReliableRedisBackend(BackendWithDeduplicate, BackendWithPauseResume):
 
     def is_paused(self, queue: QueueName) -> bool:
         return bool(self.client.exists(self._pause_key(queue)))
+
+    def clear(self, queue: QueueName) -> None:
+        self.client.delete(self._key(queue))
 
     def _key(self, queue: QueueName) -> str:
         key = 'django_lightweight_queue:{}'.format(queue)

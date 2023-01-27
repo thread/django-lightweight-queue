@@ -4,13 +4,13 @@ from typing import Optional, Collection
 import redis
 
 from ..job import Job
-from .base import BackendWithPauseResume
+from .base import BackendWithClear, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
 from ..app_settings import app_settings
 
 
-class RedisBackend(BackendWithPauseResume):
+class RedisBackend(BackendWithPauseResume, BackendWithClear):
     """
     This backend has at-most-once semantics.
     """
@@ -20,6 +20,7 @@ class RedisBackend(BackendWithPauseResume):
             host=app_settings.REDIS_HOST,
             port=app_settings.REDIS_PORT,
             password=app_settings.REDIS_PASSWORD,
+            db=app_settings.REDIS_DATABASE,
         )
 
     def enqueue(self, job: Job, queue: QueueName) -> None:
@@ -77,6 +78,9 @@ class RedisBackend(BackendWithPauseResume):
 
     def is_paused(self, queue: QueueName) -> bool:
         return bool(self.client.exists(self._pause_key(queue)))
+
+    def clear(self, queue: QueueName) -> None:
+        self.client.delete(self._key(queue))
 
     def _key(self, queue: QueueName) -> str:
         if app_settings.REDIS_PREFIX:
