@@ -38,7 +38,9 @@ jobs:
           poetry-version: 1.1.15
 
       - name: Set up dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry run pip install "django~=${{ matrix.django-version }}.0"
 
       - name: Run tests
         run: poetry run ./runtests
@@ -74,7 +76,9 @@ jobs:
           poetry-version: 1.1.15
 
       - name: Set up dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry run pip install "django~=${{ matrix.django-version }}.0"
 
       - name: Run linters
         run: poetry run flake8 --jobs=auto --format=github
@@ -110,7 +114,9 @@ jobs:
           poetry-version: 1.1.15
 
       - name: Set up dependencies
-        run: poetry install
+        run: |
+          poetry install
+          poetry run pip install "django~=${{ matrix.django-version }}.0"
 
       - name: Run type checking
         run: poetry run ./script/type-check
