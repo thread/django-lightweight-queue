@@ -32,7 +32,7 @@ _accepting_implied_queues = True
 FIVE_SECONDS = datetime.timedelta(seconds=5)
 
 
-def load_extra_settings(file_path: str) -> None:
+def load_extra_settings(file_path:str):
     # Based on https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
     spec = importlib.util.spec_from_file_location('extra_settings', file_path)
     extra_settings = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
