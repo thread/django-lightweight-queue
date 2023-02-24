@@ -1,0 +1,42 @@
+name: Create Release & Publish to PYPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  run-checks:
+    uses: ./.github/workflows/check.yml
+
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+      - run-checks
+    steps:
+      # Using v2 or later strips tag annotations https://github.com/actions/checkout/issues/290
+      - uses: actions/checkout@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.7'
+
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          # Need to use version < 1.2.0 in order to support Python 3.6
+          poetry-version: 1.1.15
+
+      - name: Build
+        run: poetry build
+
+      - name: Publish to PyPI
+        run: |
+          poetry config pypi-token.pypi "${{ secrets.DLQ_PYPI_TOKEN }}"
+          poetry publish
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.tag_data.outputs.git-tag-annotation }}
