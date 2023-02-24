@@ -539,7 +539,7 @@ redis = ["redis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4"
-content-hash = "e05d2f5af7f075541346242f5d2d99ac0697c813cde7d1b5a28ae9e632af0b78"
+content-hash = "ac28222b0ef77d27d7556949c6384b427cdc87991ba8fc77ac5c78478359b062"
 
 [metadata.files]
 asgiref = [
