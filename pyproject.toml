@@ -14,8 +14,8 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6.1,<4"
-django = ">=2.2"
+python = ">=3.8,<4"
+django = ">=3.2"
 daemonize = "~=2.5.0"
 prometheus-client = "~=0.7"
 typing-extensions = "^4"
