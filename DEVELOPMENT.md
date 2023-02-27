@@ -7,7 +7,7 @@ Tests are run with `./runtests`
 ## Releasing
 
 CI handles releasing to PyPI.
-Releases on GitHub are created manually.
+Releases on GitHub are created automatically, using the message from the annotated tag.
 
 Here's how to do a release:
 
@@ -15,7 +15,6 @@ Here's how to do a release:
  - Wait for CI to pass that
  - Add a bump commit (see previous "Declare vX.Y.Z" commits; `poetry version` may be useful here)
  - Push that commit on master
- - Create a tag of that version number (`git tag v$(poetry version --short)`)
+ - Create a tag of that version number, with a description of the changes in the annotation (`git tag v$(poetry version --short) --annotate`)
  - Push the tag (`git push --tags`)
- - CI will build & deploy that release
- - Create a Release on GitHub, ideally with a summary of changes
+ - CI will build & deploy that release as a GitHub Release and to PyPI
