@@ -11,7 +11,19 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
-        django-version: ["3.2", "4.0", "4.1"]
+        django-version: ["3.2", "4.0", "4.1", "4.2", "5.0"]
+        exclude:
+          # Python 3.11 is not supported until Django 4.1
+          - python-version: "3.11"
+            django-version: "3.2"
+          - python-version: "3.11"
+            django-version: "4.0"
+
+          # Python <3.10 is not supported by Django 5.0+
+          - python-version: "3.8"
+            django-version: "5.0"
+          - python-version: "3.9"
+            django-version: "5.0"
 
     steps:
       - name: Checkout
@@ -41,7 +53,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.11"]
-        django-version: ["3.2", "4.1"]
+        django-version: ["3.2", "4.2", "5.0"]
+        exclude:
+          # Python <3.10 is not supported by Django 5.0+
+          - python-version: "3.8"
+            django-version: "5.0"
 
     steps:
       - name: Checkout
@@ -71,7 +87,11 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.8", "3.11"]
-        django-version: ["3.2", "4.1"]
+        django-version: ["3.2", "4.2", "5.0"]
+        exclude:
+          # Python <3.10 is not supported by Django 5.0+
+          - python-version: "3.8"
+            django-version: "5.0"
 
     steps:
       - name: Checkout
