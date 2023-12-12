@@ -23,7 +23,7 @@ from django.utils.module_loading import module_has_submodule
 
 from . import constants
 from .types import Logger, QueueName, WorkerNumber
-from .app_settings import Defaults, AppSettings, app_settings, LongNameAdapter
+from .app_settings import Defaults, app_settings, LongNameAdapter
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend
@@ -56,7 +56,7 @@ def load_extra_settings(file_path: str) -> None:
         unexpected_str = "' ,'".join(unexpected_names)
         warnings.warn("Ignoring unexpected setting(s) '{}'.".format(unexpected_str))
 
-    cast(AppSettings, app_settings).add_layer(LongNameAdapter(extra_settings))
+    app_settings.add_layer(LongNameAdapter(extra_settings))
 
 
 @lru_cache()

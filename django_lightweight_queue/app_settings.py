@@ -1,3 +1,11 @@
+"""
+Internal API facade over Django settings.
+
+This provides a typed interface over Django settings as well as handling default
+values for settings not set by users and supporting the addition of overrides in
+some management commands.
+"""
+
 from typing import Any, Dict, List, Union, Callable, Optional, Sequence
 
 from typing_extensions import Protocol
@@ -45,6 +53,11 @@ class Settings(Protocol):
     ATOMIC_JOBS: bool
 
 
+class LayeredSettings(Settings, Protocol):
+    def add_layer(self, layer: Settings) -> None:
+        ...
+
+
 class Defaults(Settings):
     WORKERS: Dict[QueueName, int] = {}
     BACKEND = 'django_lightweight_queue.backends.synchronous.SynchronousBackend'
@@ -84,7 +97,7 @@ class AppSettings:
         raise AttributeError(f"Sorry, '{name}' is not a valid setting.")
 
 
-app_settings: Settings = AppSettings(layers=[
+app_settings: LayeredSettings = AppSettings(layers=[
     Defaults(),
     LongNameAdapter(django_settings),
 ])
