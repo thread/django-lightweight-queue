@@ -8,6 +8,8 @@ from typing import Any, Dict, Tuple, Mapping, Iterator, Optional
 
 import fakeredis
 
+from django.test import SimpleTestCase, override_settings
+
 from django_lightweight_queue.job import Job
 from django_lightweight_queue.types import QueueName
 from django_lightweight_queue.backends.reliable_redis import (
@@ -18,7 +20,7 @@ from . import settings
 from .mixins import RedisCleanupMixin
 
 
-class ReliableRedisTests(RedisCleanupMixin, unittest.TestCase):
+class ReliableRedisTests(RedisCleanupMixin, SimpleTestCase):
     longMessage = True
     prefix = settings.LIGHTWEIGHT_QUEUE_REDIS_PREFIX
 
@@ -49,9 +51,8 @@ class ReliableRedisTests(RedisCleanupMixin, unittest.TestCase):
         with unittest.mock.patch(
             'django_lightweight_queue.utils._accepting_implied_queues',
             new=False,
-        ), unittest.mock.patch.dict(
-            'django_lightweight_queue.app_settings.WORKERS',
-            workers,
+        ), override_settings(
+            LIGHTWEIGHT_QUEUE_WORKERS=workers,
         ):
             yield
 

@@ -1,7 +1,7 @@
 from typing import Any
 
-from ... import app_settings
 from ...utils import get_backend, get_queue_counts
+from ...app_settings import app_settings
 from ...command_utils import CommandWithExtraSettings
 from ...cron_scheduler import get_cron_config
 

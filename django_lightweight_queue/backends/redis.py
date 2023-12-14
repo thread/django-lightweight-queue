@@ -3,11 +3,11 @@ from typing import Optional, Collection
 
 import redis
 
-from .. import app_settings
 from ..job import Job
 from .base import BackendWithClear, BackendWithPauseResume
 from ..types import QueueName, WorkerNumber
 from ..utils import block_for_time
+from ..app_settings import app_settings
 
 
 class RedisBackend(BackendWithPauseResume, BackendWithClear):

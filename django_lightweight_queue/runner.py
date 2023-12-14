@@ -4,10 +4,10 @@ import signal
 import subprocess
 from typing import Dict, Tuple, Callable, Optional
 
-from . import app_settings
 from .types import Logger, QueueName, WorkerNumber
 from .utils import get_backend, set_process_title
 from .exposition import metrics_http_server
+from .app_settings import app_settings
 from .machine_types import Machine
 from .cron_scheduler import (
     CronScheduler,

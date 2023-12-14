@@ -21,8 +21,9 @@ from django.apps import apps
 from django.core.exceptions import MiddlewareNotUsed
 from django.utils.module_loading import module_has_submodule
 
-from . import constants, app_settings
+from . import constants
 from .types import Logger, QueueName, WorkerNumber
+from .app_settings import Defaults, app_settings, LongNameAdapter
 
 if TYPE_CHECKING:
     from .backends.base import BaseBackend
@@ -47,7 +48,7 @@ def load_extra_settings(file_path: str) -> None:
             for name in names
         )
 
-    setting_names = get_setting_names(app_settings)
+    setting_names = get_setting_names(Defaults())
     extra_names = get_setting_names(extra_settings)
 
     unexpected_names = extra_names - with_prefix(setting_names)
@@ -55,10 +56,7 @@ def load_extra_settings(file_path: str) -> None:
         unexpected_str = "' ,'".join(unexpected_names)
         warnings.warn("Ignoring unexpected setting(s) '{}'.".format(unexpected_str))
 
-    override_names = extra_names - unexpected_names
-    for name in override_names:
-        short_name = name[len(constants.SETTING_NAME_PREFIX):]
-        setattr(app_settings, short_name, getattr(extra_settings, name))
+    app_settings.add_layer(LongNameAdapter(extra_settings))
 
 
 @lru_cache()
